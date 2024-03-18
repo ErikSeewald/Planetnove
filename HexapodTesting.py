@@ -58,7 +58,7 @@ def sendMoveCMD(control, turn='none', move='none', steps=3, gait_mode=1, speed=1
     :param turn: either 'none', 'right' or 'left'
     :param move: either 'none', 'forward' or 'backward'
     :param steps: Amount of steps of the given action to take
-    :param gait_mode: 1 (Each leg one after the other) or 1 (All legs at the same time)
+    :param gait_mode: 0 (Each leg one after the other) or 1 (All legs at the same time)
     :param speed: 2 to 10
     :param action_mode: 1 (No turning) 2 (Turning)
     :return: None
@@ -66,7 +66,7 @@ def sendMoveCMD(control, turn='none', move='none', steps=3, gait_mode=1, speed=1
 
     print(f"Move instruction: "
           f"[turn={turn}, move={move}, steps={steps}, gait_move={gait_mode}, speed={speed}, action_mode={action_mode}")
-    sendParsedMoveCMD(_parseMoveCMD(turn, move, gait_mode, speed, action_mode))
+    sendParsedMoveCMD(control, parseMoveCMD(turn, move, gait_mode, speed, action_mode), steps)
 
 
 def walkUntilUltrasonicBelow(control, ultrasonic, below) -> None:
