@@ -1,6 +1,7 @@
 from Motor import Motor
 import time
 
+
 class CalibratedMotor:
     PWM: Motor
 
@@ -11,6 +12,8 @@ class CalibratedMotor:
 
     def __init__(self):
         self.PWM = Motor()
+
+        # These values can be different for each tank.
         self.calibrate_straight(1400, 1000)
 
     def calibrate_straight(self, speed_left: int, speed_right: int):
