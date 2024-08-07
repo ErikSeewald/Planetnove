@@ -1,5 +1,5 @@
 from movement.line_following import LineFollower
-from movement.calibrated_movement import CalibratedMotor
+from movement.calibrated_motor import CalibratedMotor
 from sensors.infrared import InfraredSensor
 
 
