@@ -46,7 +46,7 @@ class Ultrasonic:
             GPIO.output(self.trigger_pin, GPIO.LOW)
 
             pulse_time = self.pulse(GPIO.HIGH)
-            distances_cm[i] = pulse_time * 340.0 / 2.0  # distance with speed of sound 340m/s
+            distances_cm[i] = pulse_time * 340.0 / 2.0 * 100  # distance with speed of sound 340m/s
 
         distances_cm = sorted(distances_cm)
         return distances_cm[2] # Return median measurement

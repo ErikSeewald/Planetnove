@@ -1,4 +1,4 @@
-from pwm import PWM
+from movement.pwm import PWM
 import time
 
 

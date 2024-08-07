@@ -1,5 +1,5 @@
 from sensors.infrared import InfraredSensor, SensorBitmap
-from movement.calibrated_movement import CalibratedMotor
+from movement.calibrated_motor import CalibratedMotor
 import time
 
 
@@ -16,7 +16,7 @@ class LineFollower:
 
         # Valid bitmaps in this case are simply SensorBitmap states that the script can currently deal with.
         last_valid_bitmap = SensorBitmap.MIDDLE
-        valid_bitmaps = [SensorBitmap.LEFT, SensorBitmap.MIDDLE, SensorBitmap.RIGHT]
+        valid_bitmaps = [SensorBitmap.LEFT, SensorBitmap.MIDDLE, SensorBitmap.RIGHT, SensorBitmap.ALL]
 
         while True:
             time.sleep(0.1)
@@ -44,3 +44,8 @@ class LineFollower:
 
             elif bitmap == SensorBitmap.MIDDLE:
                 self.motor.move_straight(seconds=0.1)
+
+            # NODE INDICATOR
+            elif bitmap == SensorBitmap.ALL:
+                self.motor.move_straight(seconds=0.4)
+                return # TODO

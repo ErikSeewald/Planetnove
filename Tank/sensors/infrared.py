@@ -6,16 +6,17 @@ class SensorBitmap(Enum):
     """
     Enum representing all configurations of bitmap states that the infrared sensor can have.
     The MSB represents the left sensor, the LSB the right sensor. '1' -> black underneath sensor, else '0'.
+    Example: SensorBitmap.RIGHT -> Black below right sensor
     """
 
     NONE = 0b000
     RIGHT = 0b001
     MIDDLE = 0b010
     MIDDLE_RIGHT = 0b011
-    LEFT = 0b100
+    LEFT = 0b10
     LEFT_RIGHT = 0b101
     LEFT_MIDDLE = 0b110
-    ALL = 0b111
+    ALL = 0b111 # Level node indicator
 
 
 class InfraredSensor:
