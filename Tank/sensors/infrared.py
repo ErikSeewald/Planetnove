@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 from enum import Enum
 
 
-class SensorBitmaps(Enum):
+class SensorBitmap(Enum):
     """
     Enum representing all configurations of bitmap states that the infrared sensor can have.
     The MSB represents the left sensor, the LSB the right sensor. '1' -> black underneath sensor, else '0'.
@@ -49,11 +49,11 @@ class InfraredSensor:
         self.middle = GPIO.input(self.IR02)
         self.right = GPIO.input(self.IR03)
 
-    def get_bitmap(self) -> int:
+    def get_bitmap(self) -> SensorBitmap:
         """
         :return: The bitmap representation of the current sensor states.
         The MSB represents the left sensor, the LSB the right sensor.
         '1' -> black underneath sensor, else '0'.
-        Use 'SensorBitmaps' enum for clarity.
         """
-        return (self.left * 4) | (self.middle * 2) | self.right
+
+        return SensorBitmap((self.left * 4) | (self.middle * 2) | self.right)
