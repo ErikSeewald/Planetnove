@@ -25,14 +25,12 @@ class CalibratedMotor:
         time.sleep(seconds)
         self.PWM.setMotors(0, 0)
 
-    def turn_left(self, seconds: float, turn_speed: float, forward_speed: float = 1,):
-        turn_factor = 1 / (turn_speed + 1)
-        self.PWM.setMotors(self.c_left * forward_speed * turn_factor, self.c_right * forward_speed)
+    def rotate_right(self, seconds: float, rotation_speed: float = 1):
+        self.PWM.setMotors(1500 * rotation_speed, -1500 * rotation_speed)
         time.sleep(seconds)
         self.PWM.setMotors(0, 0)
 
-    def turn_right(self, seconds: float, turn_speed: float, forward_speed: float = 1,):
-        turn_factor = 1 / (turn_speed + 1)
-        self.PWM.setMotors(self.c_left * forward_speed, self.c_right * forward_speed * turn_factor)
+    def rotate_left(self, seconds: float, rotation_speed: float = 1):
+        self.PWM.setMotors(-1500 * rotation_speed, 1500 * rotation_speed)
         time.sleep(seconds)
         self.PWM.setMotors(0, 0)

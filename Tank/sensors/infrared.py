@@ -45,14 +45,21 @@ class InfraredSensor:
         self.middle = False
         self.right = False
 
-    def update(self):
+    def update(self) -> SensorBitmap:
+        """
+        Updates and returns the bitmap representation of the sensor states.
+        The MSB represents the left sensor, the LSB the right sensor.
+        '1' -> black underneath sensor, else '0'.
+        """
+
         self.left = GPIO.input(self.IR01)
         self.middle = GPIO.input(self.IR02)
         self.right = GPIO.input(self.IR03)
+        return self.get_bitmap()
 
     def get_bitmap(self) -> SensorBitmap:
         """
-        :return: The bitmap representation of the current sensor states.
+        Returns the bitmap representation of the last updated sensor states.
         The MSB represents the left sensor, the LSB the right sensor.
         '1' -> black underneath sensor, else '0'.
         """

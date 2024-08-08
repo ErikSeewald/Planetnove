@@ -20,10 +20,7 @@ class LineFollower:
 
         while True:
             time.sleep(0.1)
-
-            # BITMAP UPDATING
-            self.sensor.update()
-            bitmap = self.sensor.get_bitmap()
+            bitmap = self.sensor.update()
 
             # Handling inbetween states:
             # For example, starting with SensorBitmap.LEFT and turning left to get to SensorBitmap.MIDDLE can result
@@ -37,15 +34,24 @@ class LineFollower:
 
             # BITMAP MOVEMENT
             if bitmap == SensorBitmap.LEFT:
-                self.motor.turn_left(seconds=0.1, turn_speed=2, forward_speed=2)
+                self.motor.rotate_left(seconds=0.05)
 
             elif bitmap == SensorBitmap.RIGHT:
-                self.motor.turn_right(seconds=0.1, turn_speed=2, forward_speed=2)
+                self.motor.rotate_right(seconds=0.05)
 
             elif bitmap == SensorBitmap.MIDDLE:
                 self.motor.move_straight(seconds=0.1)
 
             # NODE INDICATOR
-            elif bitmap == SensorBitmap.ALL:
+            if bitmap == SensorBitmap.ALL:
                 self.motor.move_straight(seconds=0.4)
-                return # TODO
+
+                choice = input("l or r: ")
+                if choice == "l":
+                    self.motor.rotate_left(seconds=0.8)
+                    last_valid_bitmap = SensorBitmap.LEFT
+                elif choice == "r":
+                    self.motor.rotate_right(seconds=0.8)
+                    last_valid_bitmap = SensorBitmap.RIGHT
+                time.sleep(0.1)
+                self.motor.move_straight(seconds=0.3)
