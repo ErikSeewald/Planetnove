@@ -16,7 +16,7 @@ class SensorBitmap(Enum):
     LEFT = 0b10
     LEFT_RIGHT = 0b101
     LEFT_MIDDLE = 0b110
-    ALL = 0b111 # Level node indicator
+    ALL = 0b111
 
 
 class InfraredSensor:

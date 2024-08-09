@@ -1,57 +1,82 @@
+from enum import Enum
+from movement.movement_routines import MovementRoutines
 from sensors.infrared import InfraredSensor, SensorBitmap
 from movement.calibrated_motor import CalibratedMotor
 import time
 
 
 class LineFollower:
+    """
+    Class handling the robots main line following. Relies on the motor and sensor classes.
+    Responsible for line following, node and obstacle detection and rotation adjustments.
+    Does not make pathing decisions.
+    """
 
-    sensor: InfraredSensor
+    class FollowResult(Enum):
+        ARRIVED_AT_NODE = 1
+        TIMED_OUT = -1
+
+    SECONDS_UNTIL_TIMEOUT: float = 60
+
+    class StrategyState(Enum):
+        GO_FORWARD = 1
+        GO_BACKWARD = -1
+        ROTATE_LEFT = 2
+        ROTATE_RIGHT = -2
+        NODE_ARRIVAL = 3
+    strategy: StrategyState
+
+    bitmap_to_strategy: dict[SensorBitmap, StrategyState] = {
+        SensorBitmap.LEFT: StrategyState.ROTATE_LEFT,
+        SensorBitmap.RIGHT: StrategyState.ROTATE_RIGHT,
+        SensorBitmap.MIDDLE: StrategyState.GO_FORWARD,
+        SensorBitmap.ALL: StrategyState.NODE_ARRIVAL,
+    }
+
+    infrared: InfraredSensor
     motor: CalibratedMotor
+    movement_routines: MovementRoutines
 
-    def __init__(self, sensor: InfraredSensor, motor: CalibratedMotor):
-        self.sensor = sensor
+    def __init__(self, sensor: InfraredSensor, motor: CalibratedMotor, movement_routines: MovementRoutines):
+        self.infrared = sensor
         self.motor = motor
+        self.movement_routines = movement_routines
 
-    def run(self):
+    def update_strategy(self, bitmap: SensorBitmap):
+        new_strat = self.bitmap_to_strategy.get(bitmap)
 
-        # Valid bitmaps in this case are simply SensorBitmap states that the script can currently deal with.
-        last_valid_bitmap = SensorBitmap.MIDDLE
-        valid_bitmaps = [SensorBitmap.LEFT, SensorBitmap.MIDDLE, SensorBitmap.RIGHT, SensorBitmap.ALL]
-
-        while True:
-            time.sleep(0.1)
-            bitmap = self.sensor.update()
-
-            # Handling inbetween states:
+        if new_strat is not None:
+            self.strategy = new_strat
+        else:
             # For example, starting with SensorBitmap.LEFT and turning left to get to SensorBitmap.MIDDLE can result
             # in temporary SensorBitmap.NONE state where the black tape is inbetween the left and middle sensor.
-            # In that case, continue to use the last valid bitmap as the current bitmap until the sensors
-            # detect the tape again.
-            if bitmap in valid_bitmaps:
-                last_valid_bitmap = bitmap
-            else:
-                bitmap = last_valid_bitmap
+            # In that case, continue to use StrategyState.LEFT.
+            pass
 
-            # BITMAP MOVEMENT
-            if bitmap == SensorBitmap.LEFT:
+    def change_strategy(self, new_strategy: StrategyState):
+        self.strategy = new_strategy
+
+    def follow_to_next_node(self) -> FollowResult:
+        start_time = time.time()
+
+        while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
+            time.sleep(0.1)
+
+            bitmap = self.infrared.update()
+            self.update_strategy(bitmap)
+
+            # STRATEGIES
+            if self.strategy == self.StrategyState.ROTATE_LEFT:
                 self.motor.rotate_left(seconds=0.05)
 
-            elif bitmap == SensorBitmap.RIGHT:
+            elif self.strategy == self.StrategyState.ROTATE_RIGHT:
                 self.motor.rotate_right(seconds=0.05)
 
-            elif bitmap == SensorBitmap.MIDDLE:
+            elif self.strategy == self.StrategyState.GO_FORWARD:
                 self.motor.move_straight(seconds=0.1)
 
-            # NODE INDICATOR
-            if bitmap == SensorBitmap.ALL:
-                self.motor.move_straight(seconds=0.4)
+            elif self.strategy == self.StrategyState.NODE_ARRIVAL:
+                self.movement_routines.node_arrival()
+                return self.FollowResult.ARRIVED_AT_NODE
 
-                choice = input("l or r: ")
-                if choice == "l":
-                    self.motor.rotate_left(seconds=0.8)
-                    last_valid_bitmap = SensorBitmap.LEFT
-                elif choice == "r":
-                    self.motor.rotate_right(seconds=0.8)
-                    last_valid_bitmap = SensorBitmap.RIGHT
-                time.sleep(0.1)
-                self.motor.move_straight(seconds=0.3)
+        return self.FollowResult.TIMED_OUT

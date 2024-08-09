@@ -1,9 +1,10 @@
-from movement.line_following import LineFollower
-from movement.calibrated_motor import CalibratedMotor
-from sensors.infrared import InfraredSensor
+from core.tank_robot import TankRobot
 
 
-motor = CalibratedMotor()
-sensor = InfraredSensor()
-line_follower = LineFollower(sensor, motor)
-line_follower.run()
+def main():
+    tank = TankRobot()
+    tank.core_loop()
+
+
+if __name__ == "__main__":
+    main()
