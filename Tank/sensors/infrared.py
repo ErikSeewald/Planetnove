@@ -13,7 +13,7 @@ class SensorBitmap(Enum):
     RIGHT = 0b001
     MIDDLE = 0b010
     MIDDLE_RIGHT = 0b011
-    LEFT = 0b10
+    LEFT = 0b100
     LEFT_RIGHT = 0b101
     LEFT_MIDDLE = 0b110
     ALL = 0b111

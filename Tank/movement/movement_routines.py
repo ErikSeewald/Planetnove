@@ -1,12 +1,18 @@
 from enum import Enum
 from movement.calibrated_motor import CalibratedMotor
 from core.direction import RelativeDirection
-import time
 
 
 class MovementRoutines:
+    """
+    Class defining commonly used movement routines for the tank robot.
+    Each routine returns a RoutineResult.
+    """
 
     class RoutineResult(Enum):
+        """
+        Enum representing the result of a movement routine
+        """
         SUCCESS = 1
         FAILURE = -1
 
@@ -24,8 +30,6 @@ class MovementRoutines:
         if target_direction == RelativeDirection.UNKNOWN:
             return self.RoutineResult.FAILURE
 
-        time.sleep(0.1)
-
         if target_direction == RelativeDirection.AHEAD:
             pass
         elif target_direction == RelativeDirection.RIGHT:
@@ -33,8 +37,8 @@ class MovementRoutines:
         elif target_direction == RelativeDirection.LEFT:
             self.motor.rotate_left(seconds=0.8)
         elif target_direction == RelativeDirection.BEHIND:
-            pass # TODO
+            self.motor.rotate_right(seconds=1.6)
 
         # Move towards path to avoid tracking node again
-        self.motor.move_straight(seconds=0.3)
+        self.motor.move_straight(seconds=0.4)
         return self.RoutineResult.SUCCESS
