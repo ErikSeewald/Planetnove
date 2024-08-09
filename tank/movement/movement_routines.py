@@ -1,6 +1,6 @@
 from enum import Enum
-from movement.calibrated_motor import CalibratedMotor
-from core.direction import RelativeDirection
+from tank.movement.calibrated_motor import CalibratedMotor
+from tank.core.direction import RelativeDirection
 
 
 class MovementRoutines:

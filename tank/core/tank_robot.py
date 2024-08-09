@@ -1,12 +1,12 @@
 import time
 from enum import Enum
-from movement.line_following import LineFollower
-from movement.calibrated_motor import CalibratedMotor
-from movement.movement_routines import MovementRoutines
-from sensors.infrared import InfraredSensor
-from core.direction import Direction, RelativeDirection
-from core import direction
-from core.logger import Logger
+from tank.movement.line_following import LineFollower
+from tank.movement.calibrated_motor import CalibratedMotor
+from tank.movement.movement_routines import MovementRoutines
+from tank.sensors.infrared import InfraredSensor
+from tank.core.direction import Direction, RelativeDirection
+from tank.core import direction
+from tank.core.logger import Logger
 
 
 class TankRobot:

@@ -1,4 +1,4 @@
-from core.tank_robot import TankRobot
+from tank.core.tank_robot import TankRobot
 
 
 def main():

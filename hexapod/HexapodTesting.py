@@ -11,10 +11,10 @@ import time
 def relax(control, turn_on: bool) -> None:
     if turn_on:
         GPIO.output(control.GPIO_4, True)
-        print("Hexapod relaxed")
+        print("hexapod relaxed")
     else:
         GPIO.output(control.GPIO_4, False)
-        print("Hexapod no longer relaxed")
+        print("hexapod no longer relaxed")
 
 
 def parseMoveCMD(turn='none', move='none', gait_mode=1, speed=10, action_mode=2) -> list:
@@ -54,7 +54,7 @@ def sendParsedMoveCMD(control, command, steps=3) -> None:
 
 def sendMoveCMD(control, turn='none', move='none', steps=3, gait_mode=1, speed=10, action_mode=2) -> None:
     """
-    :param control: Hexapod Control instance
+    :param control: hexapod Control instance
     :param turn: either 'none', 'right' or 'left'
     :param move: either 'none', 'forward' or 'backward'
     :param steps: Amount of steps of the given action to take
@@ -86,7 +86,7 @@ def walkUntilUltrasonicBelow(control, ultrasonic, below) -> None:
 
 def setHeadYaw(control, angle) -> None:
     """
-    :param control: Hexapod Control instance
+    :param control: hexapod Control instance
     :param angle: Turn angle (LEFT:180, STRAIGHT:90, RIGHT:0)
     :return: None
     """
@@ -96,7 +96,7 @@ def setHeadYaw(control, angle) -> None:
 
 def setHeadPitch(control, angle) -> None:
     """
-    :param control: Hexapod Control instance
+    :param control: hexapod Control instance
     :param angle: Turn angle (DOWN: 50, STRAIGHT:100, UP: 180)
     :return: None
     """
@@ -121,12 +121,12 @@ def setAllLEDsTo(led, r, g, b) -> None:
 # ---------------- MAIN ----------------
 # --------------------------------------
 
-# This file needs to be placed in <Hexapod-Directory>/Code/Server to run
+# This file needs to be placed in <hexapod-Directory>/Code/Server to run
 def main() -> None:
     # Erik: All the functions in the file do not even come close to all the things the
-    # Hexapod can do yet. To add more, just look through the python files in the Code/Server directory
+    # hexapod can do yet. To add more, just look through the python files in the Code/Server directory
     # and see what functions have not been added here yet
-    # This file mainly focuses on providing an easier interface for understanding the Hexapod Commands
+    # This file mainly focuses on providing an easier interface for understanding the hexapod Commands
 
     # CONTROL
     control = Control()

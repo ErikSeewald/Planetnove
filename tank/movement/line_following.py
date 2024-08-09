@@ -1,7 +1,7 @@
 from enum import Enum
-from movement.movement_routines import MovementRoutines
-from sensors.infrared import InfraredSensor, SensorBitmap
-from movement.calibrated_motor import CalibratedMotor
+from tank.movement.movement_routines import MovementRoutines
+from tank.sensors.infrared import InfraredSensor, SensorBitmap
+from tank.movement.calibrated_motor import CalibratedMotor
 import time
 
 
