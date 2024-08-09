@@ -6,7 +6,7 @@ from movement.movement_routines import MovementRoutines
 from sensors.infrared import InfraredSensor
 from core.direction import Direction, RelativeDirection
 from core import direction
-from io.logger import Logger
+from core.logger import Logger
 
 
 class TankRobot:
@@ -36,12 +36,12 @@ class TankRobot:
     next_departure_direction: Direction
 
     def __init__(self):
+        self.logger = Logger()
         self.switch_state(self.TankState.INITIALIZING)
+
         self.facing_direction = Direction.UNKNOWN
         self.last_departure_direction = Direction.UNKNOWN
         self.next_departure_direction = Direction.UNKNOWN
-
-        self.logger = Logger()
 
         self.motor = CalibratedMotor()
         self.infrared = InfraredSensor()
