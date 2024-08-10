@@ -1,12 +1,19 @@
 # Planetnove
 A planet exploration sim using Freenove robots.
 
+The tank robot explores the planet board using simple line following. Whenever it reaches a node, it starts communicating with the mothership. It sends the last node it departed from and which direction 
+it departed in and the mothership then uses it's superior processing power to triangulate the tank's new position. The tank then receives a message with it's new position as well as the available paths from this
+position. To keep the cost of communications low, the tank has to remember the map layout and make its own pathing decisions based on only these short messages.
+
 ## Board
-The board representing the planets is made up of 1m x 1m white wooden pieces that can be rearranged into different layouts. 
+The board representing the planets is made up of 1m x 1m white wooden pieces that can be rearranged into different layouts. Each board has 3 connecting points at each of its 4 edges. These are the only points
+on which a path can connect to another piece. This way, new maps can modularly and dynamically be constructed by simply shifting these puzzle pieces.
 
 ## Mothership
 Unlike the other actors, the mothership is not a physical agent on the board. It receives messages from and sends commands to its agents from afar.
 The mothership is hosted on the main device running Planetnove, usually a PC or Laptop.
+Though the game is based on the mothership 'triangulating' the robots new position after reaching a node, behind the scenes it actually knows the entire layout of the map from the start. The mothership simply
+sends back information about the node connected to the path the tank robot last departed from. 
 
 ## Tank
 The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). It's components include infrared sensors for line following,
