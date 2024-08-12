@@ -1,8 +1,7 @@
 # Planetnove
 A planet exploration sim using Freenove robots.
 
-The tank robot explores the planet board using simple line following. Whenever it reaches a node, it starts communicating with the mothership. It sends the last node it departed from and which direction 
-it departed in and the mothership then uses it's superior processing power to triangulate the tank's new position. The tank then receives a message with it's new position as well as the available paths from this
+The tank robot explores the planet board using simple line following. Whenever it reaches a node, it starts communicating with the mothership. When it has decided what direction to depart in, it sends that information to the mothership and waits for confirmation. The mothership can then use its superior triangulation processing power to determine the next node the tank will arive at. Upon arrival the tank notifies the mothership and then receives a message with it's new position as well as the available paths from this
 position. To keep the cost of communications low, the tank has to remember the map layout and make its own pathing decisions based on only these short messages.
 
 ## Board
