@@ -16,7 +16,7 @@ def main():
     image = DraggableTile(svg_file, x=500, y=500, scale=0.35)
 
     while True:
-        screen.fill((6, 26, 23))
+        screen.fill((26, 26, 26))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
