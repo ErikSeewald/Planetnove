@@ -20,3 +20,25 @@ an ultrasound sensor, a camera, LEDs and a crane arm for picking up objects.
 
 ## Hexapod
 The hexapod does not yet have an active role in Planetnove. It is hosted on raspberry pi 4 on the [Freenove Big Hexapod Robot](https://github.com/Freenove/Freenove_Big_Hexapod_Robot_Kit_for_Raspberry_Pi).
+
+# Requirements
+
+## Cairo
+#### Linux
+```
+sudo apt-get install libcairo2-dev
+```
+
+#### Mac OS X 
+```
+sudo port install cairo
+```
+
+#### Windows
+1. Install [MSYS2](https://github.com/msys2/msys2-installer?tab=readme-ov-file)
+2. Inside the MSYS2 console, run the following commands:
+- ``` 
+  pacman -Syu
+- ```
+   pacman -S mingw-w64-x86_64-cairo
+3. Add MSYS2 to PATH in environment variables (usually C:\msys64\mingw64\bin)
