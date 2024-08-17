@@ -4,8 +4,7 @@ from tank.movement.line_following import LineFollower
 from tank.movement.calibrated_motor import CalibratedMotor
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor
-from tank.core.direction import Direction, RelativeDirection
-from tank.core import direction
+from util.direction import Direction, RelativeDirection
 from tank.core.logger import Logger
 
 
@@ -91,8 +90,8 @@ class TankRobot:
 
     def on_node_arrival(self):
         # TODO: Replace with actual path choosing
-        cur_dir = direction.str_to_direction(input("Which direction (N,E,S,W) am I facing? "))
-        depart_dir = direction.str_to_direction(input("In which direction (N,E,S,W) should I depart? "))
+        cur_dir = Direction.from_str(input("Which direction (N,E,S,W) am I facing? "))
+        depart_dir = Direction.from_str(input("In which direction (N,E,S,W) should I depart? "))
 
         self.facing_direction = cur_dir
         self.next_departure_direction = depart_dir
@@ -108,7 +107,7 @@ class TankRobot:
         """
 
         # RELATIVE TARGET DIRECTION
-        target_direction = direction.get_relative_direction(self.facing_direction, self.next_departure_direction)
+        target_direction = RelativeDirection.from_absolute(self.facing_direction, self.next_departure_direction)
         if target_direction == RelativeDirection.UNKNOWN:
             self.switch_state(self.TankState.ERROR)  # TODO: Handle error
             return
