@@ -1,0 +1,38 @@
+<svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <g id="h_joints">
+      <rect x="0" y="110" width="23" height="20" fill="black"/>
+      <rect x="0" y="490" width="23" height="20" fill="black"/>
+      <rect x="0" y="870" width="23" height="20" fill="black"/>
+    </g>
+
+    <g id="v_joints">
+      <rect x="110" y="0" width="20" height="23" fill="black"/>
+      <rect x="490" y="0" width="20" height="23" fill="black"/>
+      <rect x="870" y="0" width="20" height="23" fill="black"/>
+    </g>
+
+    <g id="base-tile">
+      <rect x="0" y="0" width="1000" height="1000" fill="white"/>
+      <use href="#h_joints" x="0" y="0"/>    <!--WEST DOCKERS-->
+      <use href="#h_joints" x="977" y="0"/>  <!--EAST DOCKERS-->
+      <use href="#v_joints" x="0" y="0"/>    <!--NORTH DOCKERS-->
+      <use href="#v_joints" x="0" y="977"/>  <!--SOUTH DOCKERS-->
+    </g>
+  </defs>
+
+  <use href="#base-tile" x="0" y="0"/>
+
+  <!--PATHS-->
+  <rect x="870" y="0" width="20" height="1000"> </rect>  
+  <rect x="470" y="110" width="510" height="20"> </rect>
+  <rect x="490" y="0" width="20" height="150"> </rect>
+  <rect x="470" y="870" width="510" height="20"> </rect>
+  <rect x="490" y="800" width="20" height="180"> </rect>
+  <path d="M 500 860 C 500 720 300 360 500 360 C 700 360 500 721 500 860" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 120 980 Q 120 880, 20 880" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 120 20 Q 120 120, 20 120" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 17.5 501.5 C 320 320 320 120, 491 119" fill="none" stroke="black" stroke-width="20"/>
+
+</svg>
