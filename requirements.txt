@@ -1,5 +1,0 @@
-pygame
-cairosvg
-cairo
-RPi.GPIO
-pigpio

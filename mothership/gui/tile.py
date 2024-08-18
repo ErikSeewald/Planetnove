@@ -139,11 +139,9 @@ class DraggableTile:
         """
         Draws the tile to the given screen.
         """
-
         image: pygame.Surface
         if self.blank_mode:
             image = self.blank_image.copy()
-            screen.blit(self.blank_image, self.rect)
         else:
             image = self.detailed_image.copy()
 
