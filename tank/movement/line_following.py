@@ -45,7 +45,7 @@ class LineFollower:
     movement_routines: MovementRoutines
 
     # ATTRIBUTES
-    SECONDS_UNTIL_TIMEOUT: float = 60 # Maximum time for a line following step
+    SECONDS_UNTIL_TIMEOUT: float = 600 # Maximum time for a line following step
 
     def __init__(self, sensor: InfraredSensor, motor: CalibratedMotor, movement_routines: MovementRoutines):
         self.infrared = sensor

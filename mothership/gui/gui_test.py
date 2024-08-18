@@ -11,7 +11,7 @@ def main():
     pygame.init()
 
     # SCREEN
-    screen: pygame.Surface = pygame.display.set_mode((1400, 1000))
+    screen: pygame.Surface = pygame.display.set_mode((1400, 800), pygame.RESIZABLE)
     pygame.display.set_caption("Tile viewer")
 
     clock = pygame.time.Clock()
@@ -72,13 +72,15 @@ def main():
 
 
 def drag_screen(event, is_dragging_screen, last_mouse_pos, tiles):
+    keys = pygame.key.get_pressed()
+
     if event.type == pygame.MOUSEBUTTONDOWN:
-        if event.button == 2:
+        if event.button == 2 or (event.button == 1 and keys[pygame.K_LSHIFT]):
             is_dragging_screen = True
             last_mouse_pos = event.pos
 
     elif event.type == pygame.MOUSEBUTTONUP:
-        if event.button == 2:
+        if event.button == 2 or (event.button == 1 and keys[pygame.K_LSHIFT]):
             is_dragging_screen = False
 
     elif event.type == pygame.MOUSEMOTION:
