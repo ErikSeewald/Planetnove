@@ -1,78 +1,62 @@
 {
-	"unit": "mm",
-	"height": 1000,
-	"width": 1000,
-
 	"joints": {
 		"NORTH": [
 			{
 				"name": "joint_N1",
-				"node_coord": [1, 4],
-				"tile_coord": [120, 1000]
+				"node_coord": [1, 4]
 			},
 			{
 				"name": "joint_N2",
-				"node_coord": [2, 4],
-				"tile_coord": [500, 1000]
+				"node_coord": [2, 4]
 			},
 			{
 				"name": "joint_N3",
-				"node_coord": [3, 4],
-				"tile_coord": [880, 1000]
+				"node_coord": [3, 4]
 			}
 		],
 
 		"EAST": [
 			{
 				"name": "joint_E1",
-				"node_coord": [4, 1],
-				"tile_coord": [1000, 120]
+				"node_coord": [4, 1]
 			},
 			{
 				"name": "joint_E2",
-				"node_coord": [4, 2],
-				"tile_coord": [1000, 500]
+				"node_coord": [4, 2]
 			},
 			{
 				"name": "joint_E3",
-				"node_coord": [4, 3],
-				"tile_coord": [1000, 880]
+				"node_coord": [4, 3]
 			}
 		],
 
 		"SOUTH": [
 			{
 				"name": "joint_S1",
-				"node_coord": [1, 0],
-				"tile_coord": [120, 0]
+				"node_coord": [1, 0]
 			},
 			{
 				"name": "joint_S2",
-				"node_coord": [2, 0],
-				"tile_coord": [500, 0]
+				"node_coord": [2, 0]
 			},
 			{
 				"name": "joint_S3",
-				"node_coord": [3, 0],
-				"tile_coord": [880, 0]
+				"node_coord": [3, 0]
 			}
 		],
 
 		"WEST": [
 			{
 				"name": "joint_W1",
-				"node_coord": [0, 1],
-				"tile_coord": [0, 120]
+				"node_coord": [0, 1]
 			},
 			{
 				"name": "joint_W2",
-				"node_coord": [0, 2],
-				"tile_coord": [0, 500]
+				"node_coord": [0, 2]
 			},
 			{
 				"name": "joint_W3",
-				"node_coord": [0, 3],
-				"tile_coord": [0, 880]
+				"node_coord": [0, 3]
 			}
 		]
 	},

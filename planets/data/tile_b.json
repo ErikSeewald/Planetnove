@@ -1,141 +1,91 @@
 {
-	"unit": "mm",
-	"height": 1000,
-	"width": 1000,
-
 	"joints": "base_tile",
 
 	"nodes": [
 		{
 			"name": "brivon",
-			"node_coord": [1, 2],
-			"tile_coord": [120, 500],
-			"paths": {
-				"NORTH": "None",
-				"EAST": "None",
-				"SOUTH": "None",
-				"WEST": "brivon_west_exit"
-			}
+			"node_coord": [1, 2]
+
 		},
 
 		{
 			"name": "bunyold",
-			"node_coord": [1, 3],
-			"tile_coord": [120, 880],
-			"paths": {
-				"NORTH": "bunyold_north_exit",
-				"EAST": "bunyold_bomvorn_bridge",
-				"SOUTH": "bunyold_south_exit",
-				"WEST": "bunyold_west_exit"
-			}
+			"node_coord": [1, 3]
 		},
 
 		{
 			"name": "bomvorn",
-			"node_coord": [2, 3],
-			"tile_coord": [500, 880],
-			"paths": {
-				"NORTH": "bomvorn_north_exit",
-				"EAST": "bomvorn_bylora_bridge",
-				"SOUTH": "None",
-				"WEST": "bunyold_bomvorn_bridge"
-			}
+			"node_coord": [2, 3]
 		},
 
 		{
 			"name": "bylora",
-			"node_coord": [3, 3],
-			"tile_coord": [880, 880],
-			"paths": {
-				"NORTH": "bylora_north_exit",
-				"EAST": "bylora_east_exit",
-				"SOUTH": "bylora_beltrix_bridge",
-				"WEST": "bomvorn_bylora_bridge"
-			}
+			"node_coord": [3, 3]
 		},
 
 		{
 			"name": "beltrix",
-			"node_coord": [3, 2],
-			"tile_coord": [880, 500],
-			"paths": {
-				"NORTH": "bylora_beltrix_bridge",
-				"EAST": "beltrix_east_exit",
-				"SOUTH": "None",
-				"WEST": "beltrix_west_exit"
-			}
+			"node_coord": [3, 2]
 		}
 	],
 
 	"paths": [
 		{
-			"name": "brivon_west_exit",
 			"from": "brivon:W",
 			"to": "joint_W2"
 		},
 
 		{
-			"name": "bunyold_north_exit",
 			"from": "bunyold:N",
 			"to": "joint_N1"
 		},
 
 		{
-			"name": "bunyold_bomvorn_bridge",
 			"from": "bunyold:E",
 			"to": "bomvorn:W"
 		},
 
 		{
-			"name": "bunyold_south_exit",
 			"from": "bunyold:S",
 			"to": "joint_S2"
 		},
 
 		{
-			"name": "bunyold_west_exit",
 			"from": "bunyold:W",
 			"to": "joint_W3"
 		},
 
 		{
-			"name": "bomvorn_north_exit",
 			"from": "bomvorn:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"name": "bomvorn_bylora_bridge",
-			"from": "bombvorn:E",
+			"from": "bomvorn:E",
 			"to": "bylora:W"
 		},
 
 		{
-			"name": "bylora_north_exit",
 			"from": "bylora:N",
 			"to": "joint_N3"
 		},
 
 		{
-			"name": "bylora_east_exit",
 			"from": "bylora:E",
 			"to": "joint_E3"
 		},
 
 		{
-			"name": "bylora_beltrix_bridge",
 			"from": "bylora:S",
 			"to": "beltrix:N"
 		},
 
 		{
-			"name": "beltrix_east_exit",
 			"from": "beltrix:E",
 			"to": "joint_E2"
 		},
 
 		{
-			"name": "beltrix_west_exit",
 			"from": "beltrix:W",
 			"to": "joint_E1"
 		}

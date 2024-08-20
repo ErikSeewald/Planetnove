@@ -1,93 +1,60 @@
 {
-	"unit": "mm",
-	"height": 1000,
-	"width": 1000,
-
 	"joints": "base_tile",
 
 	"nodes": [
 		{
 			"name": "astrago",
-			"node_coord": [1, 2],
-			"tile_coord": [120, 500],
-			"paths": {
-				"NORTH": "astrago_north_exit",
-				"EAST": "astrago_aventis_bridge",
-				"SOUTH": "astrago_south_exit",
-				"WEST": "astrago_west_exit"
-			}
+			"node_coord": [1, 2]
 		},
 
 		{
 			"name": "aventis",
-			"node_coord": [2, 2],
-			"tile_coord": [500, 500],
-			"paths": {
-				"NORTH": "aventis_arconis_bridge",
-				"EAST": "None",
-				"SOUTH": "None",
-				"WEST": "astrago_aventis_bridge"
-			}
+			"node_coord": [2, 2]
 		},
 
 		{
 			"name": "arconis",
-			"node_coord": [2, 3],
-			"tile_coord": [500, 880],
-			"paths": {
-				"NORTH": "arconis_north_exit",
-				"EAST": "arconis_east_exit",
-				"SOUTH": "aventis_arconis_bridge",
-				"WEST": "None"
-			}
+			"node_coord": [2, 3]
 		}
 	],
 
 	"paths": [
 		{
-			"name": "ampere_highway",
 			"from": "joint_S2",
 			"to": "joint_E2"
 		},
 
 		{
-			"name": "astrago_north_exit",
 			"from": "astrago:N",
 			"to": "joint_N1"
 		},
 
 		{
-			"name": "astrago_aventis_bridge",
 			"from": "astrago:E",
 			"to": "aventis:W"
 		},
 
 		{
-			"name": "astrago_south_exit",
 			"from": "astrago:S",
 			"to": "joint_S1"
 		},
 
 		{
-			"name": "astrago_west_exit",
 			"from": "astrago:W",
 			"to": "joint_W2"
 		},
 
 		{
-			"name": "aventis_arconis_bridge",
 			"from": "aventis:N",
 			"to": "arconis:S"
 		},
 
 		{
-			"name": "arconis_north_exit",
 			"from": "arconis:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"name": "arconis_east_exit",
 			"from": "arconis:E",
 			"to": "joint_E3"
 		}

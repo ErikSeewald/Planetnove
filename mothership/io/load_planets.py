@@ -1,8 +1,9 @@
+import json
 import os
 import glob
 from pygame import Vector2
 from mothership.gui.tile import DraggableTile
-from util.result_msg import ResultMSG
+from planets.code.tile_data import Tile
 
 
 class PlanetLoader:
@@ -14,14 +15,15 @@ class PlanetLoader:
     planet_directory: str
 
     svg_tiles: list[DraggableTile]
-    tile_data: list[str] # TODO: make datastructure
+    tile_data: list[Tile]
+    base_tile: Tile
 
     def __init__(self, planet_dir: str):
         self.planet_directory = planet_dir
         self.svg_tiles = list()
         self.tile_data = list()
 
-    def load(self) -> ResultMSG:
+    def load(self):
         svg_dir = os.path.join(self.planet_directory, "svg")
         data_dir = os.path.join(self.planet_directory, "data")
 
@@ -35,23 +37,34 @@ class PlanetLoader:
         svg_bases = {os.path.splitext(os.path.basename(f))[0] for f in tile_files}
         data_bases = {os.path.splitext(os.path.basename(f))[0] for f in data_files}
         if svg_bases != data_bases:
-            return ResultMSG.failure("data files and svg files do not match")
+            raise FileNotFoundError("data files and svg files do not match")
 
         # Check if each tile has a blank version and the other way around
         blank_pattern = os.path.join(svg_dir, 'tile_[a-zA-Z]_blank.svg')
         blank_files = glob.glob(blank_pattern)
         blank_bases = {os.path.splitext(os.path.basename(f))[0][0:6] for f in blank_files}
         if svg_bases != blank_bases:
-            return ResultMSG.failure("svg tile and svg blank tile files do not match")
+            raise FileNotFoundError("svg tile and svg blank tile files do not match")
 
         # TILES
         for file in tile_files:
             tile_id = os.path.splitext(os.path.basename(file))[0]
+            print(f"Loading svg for: {tile_id}...")
             blank_file = os.path.join(svg_dir, tile_id + "_blank.svg")
-            self.svg_tiles.append(DraggableTile(tile_id, file, blank_file, Vector2(500,500), scale=0.4))
+            self.svg_tiles.append(DraggableTile(tile_id, file, blank_file, Vector2(500, 500), scale=0.4))
+
+        # BASE_TILE
+        print("Loading data for: base_tile...")
+        base_tile_path = os.path.join(data_dir, "base_tile.json")
+        if not os.path.isfile(base_tile_path):
+            raise FileNotFoundError("could not find base_tile.json")
+        data = open(base_tile_path, "r").read()
+        self.base_tile = Tile.as_base_tile(json.loads(data))
 
         # DATA
         for file in data_files:
-            self.tile_data.append(file)
+            data = open(file, "r").read()
+            tile_id = os.path.splitext(os.path.basename(file))[0]
 
-        return ResultMSG.success()
+            print(f"Loading data for: {tile_id}...", flush=True)
+            self.tile_data.append(Tile.from_json_dict(json.loads(data), self.base_tile, tile_id))

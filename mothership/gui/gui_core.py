@@ -1,9 +1,12 @@
 from __future__ import annotations
+
+import time
 from typing import Optional
 import pygame
 from pygame.math import Vector2
-from mothership.gui import joint_attacher
+from mothership.gui import joint_attacher, planet_parser
 from mothership.gui.tile import DraggableTile
+from planets.code.tile_data import Tile
 
 
 class GUICore:
@@ -18,13 +21,14 @@ class GUICore:
     # TILES
     draggable_tiles: list[DraggableTile]
     dragged_tile: Optional[DraggableTile]
+    tile_data: list[Tile]
 
     # STATE
     is_dragging_screen: bool
     last_mouse_pos: Vector2
     is_exiting: bool
 
-    def __init__(self, draggable_tiles: list[DraggableTile]):
+    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
         # PYGAME
         pygame.init()
         self.screen = pygame.display.set_mode((1400, 800), pygame.RESIZABLE)
@@ -34,6 +38,7 @@ class GUICore:
         # PLANET TILES
         self.draggable_tiles = draggable_tiles
         self.dragged_tile = None
+        self.tile_data = tile_data
 
         # STATE
         self.is_dragging_screen = False
@@ -81,6 +86,10 @@ class GUICore:
                     for tile in self.draggable_tiles:
                         if tile.is_dragging:
                             tile.rotate_right()
+
+                # PARSE
+                if event.key == pygame.K_p:
+                    planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
 
             # SCREEN DRAG
             self.drag_screen(event)

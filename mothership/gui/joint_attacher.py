@@ -38,15 +38,20 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
             side_attached = False  # Have any attachments been made in this side loop?
             global_dir_a = tile_a.local_direction_to_global(local_dir_a)
 
+            # For both joints, loop over the center joints with joint_num=2 first. If a2 and b2 cannot
+            # be attached, skip this side because we only want attachments of all 3 joints and the center joints
+            # are not dependent on ordering
+            skip_side = False
+
             # JOINTS OF TILE B
-            for joint_num_b in range(1, 4):
+            for joint_num_b in [2, 1, 3]:
                 if not tile_b.is_joint_free(local_dir_b, joint_num_b):
                     continue # Skip joints that already have other joints attached
 
                 joint_pos_b = get_joint_pos(tile_b, global_dir_b, joint_num_b)
 
                 # JOINTS OF TILE A
-                for joint_num_a in range(1, 4):
+                for joint_num_a in [2, 1, 3]:
                     if not tile_a.is_joint_free(local_dir_a, joint_num_a):
                         continue  # Skip joints that already have other joints attached
 
@@ -59,7 +64,7 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
                     # to avoid having to do cascading snapping.
                     if (not tile_a.snapped_in_place and distance < tile_size / 10) or distance < 1:
 
-                        # Snapping and overlap check for both tile a and b
+                        # SNAP OFFSET
                         snap_offset = joint_pos_b - joint_pos_a
                         if would_overlap(tile_a, tile_b, all_tiles, snap_offset):
                             break
@@ -76,8 +81,15 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
                         side_attached = True
                         break
 
-            # If this loop attached joints on this side already and then finished the side then
-            # there can be no more attachments on other sides between tile_a and tile_b -> return early
+                    elif joint_num_a == 2 and joint_num_b == 2:
+                        skip_side = True
+                        break
+
+                if skip_side:
+                    break
+
+            # If this loop attached joints on this side already then there can be no more attachments
+            # on other sides between tile_a and tile_b -> return early
             if side_attached:
                 return
 

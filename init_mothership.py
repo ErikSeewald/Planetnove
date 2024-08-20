@@ -6,14 +6,10 @@ from mothership.io.load_planets import PlanetLoader
 def init():
     # PLANET TILES
     planet_loader = PlanetLoader(os.path.join(os.getcwd(), "planets"))
-    load_result = planet_loader.load()
-
-    if not load_result.is_success():
-        print(f"Failed to load planet files: {load_result.message}")
-        return 1
+    planet_loader.load()
 
     # GUI
-    gui = GUICore(planet_loader.svg_tiles)
+    gui = GUICore(planet_loader.svg_tiles, planet_loader.tile_data)
     gui.loop()
 
 

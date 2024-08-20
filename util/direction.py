@@ -10,6 +10,15 @@ class Direction(Enum):
     WEST = 270
     UNKNOWN = -1
 
+    @staticmethod
+    def real_directions_ordered() -> list[Direction]:
+        """
+        Returns the list of real directions, ordered by their degree value.
+        [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]
+        """
+
+        return [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]
+
     def rotated(self, rot_angle_deg: int) -> Direction:
         """
         :param rot_angle_deg: The angle to rotate in degrees

@@ -1,141 +1,97 @@
 {
-	"unit": "mm",
-	"height": 1000,
-	"width": 1000,
-
 	"joints": "base_tile",
 
 	"nodes": [
 		{
 			"name": "calytra",
-			"node_coord": [1, 1],
-			"tile_coord": [120, 120],
-			"paths": {
-				"NORTH": "calytra_calytra_bridge",
-				"EAST": "calytra_calytra_bridge",
-				"SOUTH": "calytra_south_exit",
-				"WEST": "calytra_west_exit"
-			}
+			"node_coord": [1, 1]
 		},
 
 		{
 			"name": "celonix",
-			"node_coord": [1, 3],
-			"tile_coord": [120, 880],
-			"paths": {
-				"NORTH": "celonix_north_exit",
-				"EAST": "None",
-				"SOUTH": "celonix_cygnara_bridge",
-				"WEST": "celonix_west_exit"
-			}
+			"node_coord": [1, 3]
 		},
 
 		{
 			"name": "cygnara",
-			"node_coord": [2, 3],
-			"tile_coord": [500, 880],
-			"paths": {
-				"NORTH": "cygnara_north_exit",
-				"EAST": "cygnara_east_exit",
-				"SOUTH": "cygnara_ceradia_bridge",
-				"WEST": "celonix_cygnara_bridge"
-			}
+			"node_coord": [2, 3]
 		},
 
 		{
 			"name": "ceradia",
-			"node_coord": [2, 2],
-			"tile_coord": [500, 500],
-			"paths": {
-				"NORTH": "cygnara_ceradia_bridge",
-				"EAST": "ceradia_corvex_bridge",
-				"SOUTH": "ceradia_south_exit",
-				"WEST": "None"
-			}
+			"node_coord": [2, 2]
 		},
 
 		{
 			"name": "corvex",
-			"node_coord": [3, 2],
-			"tile_coord": [880, 500],
-			"paths": {
-				"NORTH": "None",
-				"EAST": "corvex_east_exit",
-				"SOUTH": "corvex_south_exit",
-				"WEST": "ceradia_corvex_bridge"
-			}
+			"node_coord": [3, 2]
 		}
 	],
 
 	"paths": [
 		{
-			"name": "calytra_calytra_bridge",
 			"from": "calytra:E",
 			"to": "calytra:N"
 		},
 
 		{
-			"name": "calytra_south_exit",
 			"from": "calytra:S",
+			"to": "joint_S1"
+		},
+
+
+		{
+			"from": "calytra:W",
 			"to": "joint_W1"
 		},
 
+
 		{
-			"name": "celonix_north_exit",
 			"from": "celonix:N",
 			"to": "joint_N1"
 		},
 
 		{
-			"name": "celonix_cygnara_bridge",
 			"from": "celonix:S",
 			"to": "cygnara:W"
 		},
 
 		{
-			"name": "celonix_west_exit",
 			"from": "celonix:W",
 			"to": "joint_W3"
 		},
 
 		{
-			"name": "cygnara_north_exit",
 			"from": "cygnara:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"name": "cygnara_west_exit",
-			"from": "cygnara:W",
+			"from": "cygnara:E",
 			"to": "joint_E3"
 		},
 
 		{
-			"name": "cygnara_ceradia_bridge",
 			"from": "cygnara:S",
 			"to": "ceradia:N"
 		},
 
 		{
-			"name": "ceradia_corvex_bridge",
 			"from": "ceradia:E",
 			"to": "corvex:W"
 		},
 
 		{
-			"name": "ceradia_south_exit",
 			"from": "ceradia:S",
 			"to": "joint_S2"
 		},
 
 		{
-			"name": "corvex_east_exit",
 			"from": "corvex:E",
 			"to": "joint_E2"
 		},
 
 		{
-			"name": "corvex_south_exit",
 			"from": "corvex:S",
 			"to": "joint_S3"
 		}
