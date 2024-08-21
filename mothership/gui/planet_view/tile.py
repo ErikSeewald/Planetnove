@@ -28,7 +28,6 @@ class DraggableTile:
 
     #DRAGGING
     is_dragging: bool
-    waiting_to_attach: bool # Used to let the main loop know that it should check for new joint attachments
     rect: pygame.Rect
     offset_x: float
     offset_y: float
@@ -58,7 +57,6 @@ class DraggableTile:
         self.rotation_deg = 0
         self.is_dragging = False
         self.snapped_pos = False
-        self.waiting_to_attach = False
 
     def set_blank_mode(self, mode: bool):
         """
@@ -109,8 +107,7 @@ class DraggableTile:
 
     def attach_joint(self, joint_dir: Direction, joint_num: int, attach: str):
         """
-        Attaches the given foreign joint to the specified tile joint without updating the waiting_to_attach
-        variable.
+        Attaches the given foreign joint to the specified tile joint.
         :param joint_dir: The direction of the joint where the foreign joint is to be attached
         :param joint_num: Which of the three joints at this direction to attach the foreign joint to (range [1-3])
         :param attach: The joint id (e.g. 'tile_b_joint_N2') of the foreign joint to attach
@@ -126,14 +123,6 @@ class DraggableTile:
         """
 
         self.joints.get(joint_dir)[joint_num-1] = "None"
-
-    def finish_attaching(self):
-        """
-        Finalizes the attachment process started by releasing the tile after dragging.
-        If this method is not called, the tile will keep waiting for attachment calculations indefinitely.
-        """
-
-        self.waiting_to_attach = False
 
     def draw(self, screen: pygame.Surface):
         """
@@ -170,9 +159,6 @@ class DraggableTile:
                 self.offset_y = self.rect.y - mouse_y
 
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            if self.is_dragging:
-                self.waiting_to_attach = True
-
             self.is_dragging = False
 
         elif event.type == pygame.MOUSEMOTION:

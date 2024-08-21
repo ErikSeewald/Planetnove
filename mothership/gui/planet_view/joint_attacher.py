@@ -1,5 +1,7 @@
+from collections import deque
+
 from pygame import Vector2
-from mothership.gui.tile import DraggableTile
+from mothership.gui.planet_view.tile import DraggableTile
 from util.direction import Direction
 
 
@@ -17,7 +19,6 @@ def try_attach(tile: DraggableTile, all_tiles: list[DraggableTile]):
         if tile_b == tile:
             continue
         try_attach_single(tile, tile_b, all_tiles)
-    tile.finish_attaching()
 
 
 def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: list[DraggableTile]):
@@ -27,7 +28,9 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
     """
 
     # IMPORTANT: Maintain nesting structure. Looping over the sides of both tiles in the outer loops
-    # and the side joints in the inner loops allows for early returns if a side has been attached
+    # and the side joints in the inner loops allows for early returns if a side has been attached.
+    # Also keep in mind that this code was originally intended to allow for attachments of less than three joints
+    # per side. This functionality returns if you remove the skip_side check.
 
     # SIDES OF TILE B
     for local_dir_b in tile_b.joints.keys():
@@ -171,3 +174,24 @@ def detach_from_others(tile: DraggableTile, all_tiles: list[DraggableTile]):
             for joint_num_b in range(1, 4):
                 if tile.tile_id in tile_b.joints.get(direction_b)[joint_num_b - 1]:
                     tile_b.detach_joint(direction_b, joint_num_b)
+
+
+def all_tiles_form_one_planet(all_tiles: list[DraggableTile]) -> bool:
+    # Begin with one tile and try to reach all tiles from it -> Success: return True
+    id_to_tile: dict[str, DraggableTile] = {t.tile_id: t for t in all_tiles}
+    reached_tile_ids: set[str] = set()
+    tile_stack: deque[DraggableTile] = deque()
+    tile_stack.append(all_tiles[0])
+
+    while tile_stack:
+
+        if len(reached_tile_ids) == len(id_to_tile):
+            return True
+
+        cur_tile = tile_stack.pop()
+        for direction in cur_tile.joints.keys():
+            connected_tile_id = cur_tile.joints.get(direction)[0].split("_joint")[0]
+            if connected_tile_id != "None" and connected_tile_id not in reached_tile_ids:
+                tile_stack.append(id_to_tile.get(connected_tile_id))
+                reached_tile_ids.add(connected_tile_id)
+    return False

@@ -1,5 +1,5 @@
 from pygame import Vector2
-from mothership.gui.tile import DraggableTile
+from mothership.gui.planet_view.tile import DraggableTile
 from planets.code.node import Node
 from planets.code.path import Path
 from planets.code.planet import Planet

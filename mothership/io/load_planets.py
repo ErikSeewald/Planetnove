@@ -2,7 +2,7 @@ import json
 import os
 import glob
 from pygame import Vector2
-from mothership.gui.tile import DraggableTile
+from mothership.gui.planet_view.tile import DraggableTile
 from planets.code.tile_data import Tile
 
 
