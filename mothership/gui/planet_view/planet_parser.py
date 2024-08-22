@@ -120,7 +120,7 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
             # Only add path if it has not already been added from the other direction
             if paths.get(f"{node_b_rotated}-{node_a_rotated}") is not None:
                 continue
-            paths[path_id] = Path(name=path_id, node_a=node_a_rotated, node_b=node_b_rotated)
+            paths[path_id] = Path(name=path_id, node_a_with_dir=node_a_rotated, node_b_with_dir=node_b_rotated)
 
             # ADD PATH TO NODES
             nodes.get(split_a[0]).set_path(direction_a, path_id)

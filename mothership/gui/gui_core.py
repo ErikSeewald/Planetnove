@@ -4,6 +4,7 @@ from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
 from mothership.gui.planet_view.tile import DraggableTile
 from mothership.gui.sub_gui import SubGUI
+from mothership.mothership import Mothership
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
@@ -22,13 +23,17 @@ class GUICore:
     # DEARPYGUI
     sub_GUIs: list[SubGUI]
 
-    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
+    # MOTHERSHIP
+    mothership: Mothership
+
+    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], mothership: Mothership):
+        self.mothership = mothership
 
         # PYGAME
         self.clock = pygame.time.Clock()
 
         # PLANET VIEW
-        self.planet_view = PlanetView(draggable_tiles, tile_data)
+        self.planet_view = PlanetView(draggable_tiles, tile_data, mothership)
 
         # DEARPYGUI
         dpg.create_context()

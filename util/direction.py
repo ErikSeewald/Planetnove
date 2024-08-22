@@ -47,6 +47,9 @@ class Direction(Enum):
         dir_str = dir_str.upper()
         return upper_str_to_direction.get(dir_str)
 
+    def invert(self) -> Direction:
+        return Direction((self.value + 180) % 360)
+
     def is_inverse_of(self, direction: Direction) -> bool:
         """
         :return: Whether this direction object is the inverse of the given direction

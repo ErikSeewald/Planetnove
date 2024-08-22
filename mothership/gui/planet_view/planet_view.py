@@ -6,8 +6,10 @@ import pygame
 from pygame.math import Vector2
 from mothership.gui.planet_view import planet_parser, joint_attacher
 from mothership.gui.planet_view.tile import DraggableTile
+from mothership.mothership import Mothership
 from planets.code.planet import Planet
 from planets.code.tile_data import Tile
+from util.direction import Direction
 
 
 class PlanetView:
@@ -26,6 +28,9 @@ class PlanetView:
     # PLANET
     planet: Optional[Planet]
 
+    # MOTHERSHIP
+    mothership: Mothership
+
     # STATE
     is_dragging_screen: bool
     last_mouse_pos: Vector2
@@ -38,7 +43,9 @@ class PlanetView:
     # EVENTS
     sub_gui_outdated: bool
 
-    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
+    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], mothership: Mothership):
+        self.mothership = mothership
+
         # PYGAME
         pygame.init()
         self.screen = pygame.display.set_mode((1400, 800), pygame.RESIZABLE)
@@ -78,6 +85,23 @@ class PlanetView:
                 if event.key == pygame.K_b:
                     for tile in self.draggable_tiles:
                         tile.set_blank_mode(not tile.blank_mode)
+
+                # TODO: Remove this debug stuff
+                if event.key == pygame.K_w:
+                    self.mothership.planet_manager.tank.departure_direction = Direction.NORTH
+                    self.mothership.planet_manager.on_tank_arrival()
+
+                elif event.key == pygame.K_a:
+                    self.mothership.planet_manager.tank.departure_direction = Direction.WEST
+                    self.mothership.planet_manager.on_tank_arrival()
+
+                elif event.key == pygame.K_s:
+                    self.mothership.planet_manager.tank.departure_direction = Direction.SOUTH
+                    self.mothership.planet_manager.on_tank_arrival()
+
+                elif event.key == pygame.K_d:
+                    self.mothership.planet_manager.tank.departure_direction = Direction.EAST
+                    self.mothership.planet_manager.on_tank_arrival()
             # SCREEN DRAG
             self.drag_screen(event)
 
@@ -170,7 +194,8 @@ class PlanetView:
         if not self.can_finish_planet():
             return
         self.planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
-        self.mode = self.Mode.PLANET
+        self.mothership.set_planet(self.planet) # TODO: Better way to do this?
+        self.switch_mode(self.Mode.PLANET)
 
     def can_finish_planet(self) -> bool:
         if self.dragged_tile is not None:
@@ -178,6 +203,27 @@ class PlanetView:
         if self.mode != self.Mode.EDIT:
             return False
         return joint_attacher.all_tiles_form_one_planet(self.draggable_tiles)
+
+    def can_switch_to_edit_mode(self) -> bool:
+        if self.mode == self.Mode.PLANET:
+            pass
+
+        return True
+
+    def switch_mode(self, new_mode: Mode):
+        if self.mode == self.Mode.PLANET:
+            if new_mode == self.Mode.EDIT:
+                if self.can_switch_to_edit_mode():
+                    self.mode = self.Mode.EDIT
+            else:
+                self.mode = new_mode
+
+        elif self.mode == self.Mode.EDIT:
+            if new_mode == self.Mode.PLANET:
+                if self.planet is not None:
+                    self.mode = self.Mode.PLANET
+            else:
+                self.mode = new_mode
 
     def register_sub_gui_update(self):
         self.sub_gui_outdated = False

@@ -23,7 +23,9 @@ class PlanetViewSubGUI(SubGUI):
                                        show=False) as header_id:
                 theme.apply_header_theme(header_id)
 
-            dpg.add_spacer(height=5)
+                button_id = dpg.add_button(label="Edit planet",
+                                           callback=self._edit_callback, tag="edit_button", enabled=False)
+                theme.apply_button_theme(button_id)
 
             # EDIT MODE
             with dpg.collapsing_header(label="Edit mode", default_open=True, tag="edit_mode_header",
@@ -42,6 +44,7 @@ class PlanetViewSubGUI(SubGUI):
 
     def _event_update(self):
         self._update_finish_button()
+        self._update_edit_button()
         self.planet_view.register_sub_gui_update()
 
     def _update_finish_button(self):
@@ -51,6 +54,12 @@ class PlanetViewSubGUI(SubGUI):
             dpg.configure_item("finish_button", enabled=False, show=True,
                                label="Finish (Disabled - tiles must form a single planet)")
 
+    def _update_edit_button(self):
+        if self.planet_view.can_switch_to_edit_mode():
+            dpg.configure_item("edit_button", enabled=True, show=True, label="Edit planet")
+        else:
+            dpg.configure_item("edit_button", enabled=False, show=True, label="Edit planet (Disabled)")
+
     def _viewer_mode_switch(self):
         dpg.configure_item("planet_mode_header", show=self.planet_view.mode == PlanetView.Mode.PLANET)
         dpg.configure_item("edit_mode_header", show=self.planet_view.mode == PlanetView.Mode.EDIT)
@@ -58,3 +67,8 @@ class PlanetViewSubGUI(SubGUI):
     def _finish_planet_callback(self):
         self.planet_view.finish_planet()
         self._viewer_mode_switch()
+
+    def _edit_callback(self):
+        self.planet_view.switch_mode(PlanetView.Mode.EDIT)
+        self._viewer_mode_switch()
+
