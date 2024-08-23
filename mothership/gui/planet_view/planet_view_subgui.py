@@ -3,6 +3,7 @@ import dearpygui.dearpygui as dpg
 from mothership.gui import theme
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.sub_gui import SubGUI
+from mothership.gui.update_event import TileGrabbed, TileReleased
 
 
 class PlanetViewSubGUI(SubGUI):
@@ -39,13 +40,18 @@ class PlanetViewSubGUI(SubGUI):
         self.update()
 
     def update(self):
-        if self.planet_view.sub_gui_outdated:
+        if self.event_update_needed():
             self._event_update()
+
+    def event_update_needed(self) -> bool:
+        for event in self.planet_view.update_events:
+            if isinstance(event, TileGrabbed) or isinstance(event, TileReleased):
+                return True
+        return False
 
     def _event_update(self):
         self._update_finish_button()
         self._update_edit_button()
-        self.planet_view.register_sub_gui_update()
 
     def _update_finish_button(self):
         if self.planet_view.can_finish_planet():

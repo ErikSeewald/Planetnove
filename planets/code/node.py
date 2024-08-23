@@ -21,3 +21,10 @@ class Node:
             raise ValueError(f"Node cannot have a path in direction {direction}")
 
         self.paths[direction] = path_id
+
+    def get_available_paths(self) -> dict[Direction, str]:
+        available: dict[Direction, str] = dict()
+        for d, name in self.paths.items():
+            if name != "None":
+                available[d] = name
+        return available

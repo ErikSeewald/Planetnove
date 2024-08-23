@@ -1,5 +1,4 @@
 import os
-from mothership.gui.gui_core import GUICore
 from mothership.io.load_planets import PlanetLoader
 from mothership.mothership import Mothership
 
@@ -10,11 +9,8 @@ def init():
     planet_loader.load()
 
     # MOTHERSHIP
-    mothership = Mothership()
-
-    # GUI
-    gui = GUICore(planet_loader.svg_tiles, planet_loader.tile_data, mothership)
-    gui.loop()
+    mothership = Mothership(planet_loader.svg_tiles, planet_loader.tile_data)
+    mothership.loop()
 
 
 if __name__ == "__main__":

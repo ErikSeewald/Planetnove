@@ -1,10 +1,8 @@
-from __future__ import annotations
-import pygame
+from mothership.gui.update_event import UpdateEvent
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
 from mothership.gui.planet_view.tile import DraggableTile
 from mothership.gui.sub_gui import SubGUI
-from mothership.mothership import Mothership
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
@@ -14,26 +12,15 @@ class GUICore:
     Core class handling the GUI loop of the mothership.
     """
 
-    # PYGAME
-    clock: pygame.time.Clock
-
     # PLANET VIEW
     planet_view: PlanetView
 
     # DEARPYGUI
     sub_GUIs: list[SubGUI]
 
-    # MOTHERSHIP
-    mothership: Mothership
-
-    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], mothership: Mothership):
-        self.mothership = mothership
-
-        # PYGAME
-        self.clock = pygame.time.Clock()
-
+    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
         # PLANET VIEW
-        self.planet_view = PlanetView(draggable_tiles, tile_data, mothership)
+        self.planet_view = PlanetView(draggable_tiles, tile_data)
 
         # DEARPYGUI
         dpg.create_context()
@@ -47,15 +34,16 @@ class GUICore:
         dpg.setup_dearpygui()
         dpg.show_viewport()
 
-    def loop(self):
-        while dpg.is_dearpygui_running():
+    def update(self) -> list[UpdateEvent]:
+        events: list[UpdateEvent] = list()
 
-            # PLANET VIEW
-            self.planet_view.update()
+        # PLANET VIEW
+        pv_events = self.planet_view.update()
+        events.extend(pv_events)
 
-            # DEARPYGUI
-            dpg.render_dearpygui_frame()
-            for gui in self.sub_GUIs:
-                gui.update()
+        # DEARPYGUI
+        dpg.render_dearpygui_frame()
+        for gui in self.sub_GUIs:
+            gui.update()
 
-            self.clock.tick(60)
+        return events

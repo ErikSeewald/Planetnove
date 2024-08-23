@@ -64,7 +64,7 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
 
                     # Connect if the distance between joints is less than a 10th of the tile size.
                     # And if the tile has already snapped to another, the distance needs to be almost zero
-                    # to avoid having to do cascading snapping.
+                    # to avoid cascading snapping.
                     if (not tile_a.snapped_in_place and distance < tile_size / 10) or distance < 1:
 
                         # SNAP OFFSET
