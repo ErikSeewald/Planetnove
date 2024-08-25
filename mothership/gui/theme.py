@@ -43,3 +43,6 @@ def apply_error_msg_theme(text_id: int | str) -> None:
             dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 100, 80, 255))
 
     dpg.bind_item_theme(text_id, msg_theme)
+
+def apply_input_theme(input_id: int | str) -> None:
+    pass

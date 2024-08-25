@@ -11,29 +11,55 @@ class Communications:
 
     planet_manager: PlanetStateManager
     server_socket: socket
+    server_ip: str
+    server_port: int
     tank_socket: Optional[socket]
     tank_address: Optional[Any]
 
+    _COMS_CONFIG_PATH: str = "coms_config.json"
+
     def __init__(self, planet_manager: PlanetStateManager):
+        self._load_coms_config()
+
         self.planet_manager = planet_manager
-
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind(('127.0.0.1', 65432))
-        self.server_socket.listen(1)
-
         self.tank_socket = None
         self.tank_address = None
-
-        #self.connect_tank()
 
         # conn.close()
         # server_socket.close()
 
-    def connect_tank(self):
-        self.tank_socket, self.tank_address = self.server_socket.accept()
-        print(f"Connected by {self.tank_address}")
+    def _load_coms_config(self):
+        print(f"Loading {self._COMS_CONFIG_PATH}...")
+        config = json.loads(open(self._COMS_CONFIG_PATH, "r").read())
 
-        self.tank_socket.settimeout(1.0)
+        self.server_ip = config["mothership_ip"]
+        self.server_port = config["mothership_port"]
+
+        print(f"Setting up server with ip: '{self.server_ip}' on port '{self.server_port}'...")
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind((self.server_ip, self.server_port))
+        self.server_socket.listen(1)
+        self.server_socket.settimeout(0.5)
+
+    def try_connect_tank(self, expected_ip: str) -> bool:
+        try:
+            tank_socket, tank_address = self.server_socket.accept()
+        except TimeoutError:
+            print(f"Timed out while attempting to connect")
+            return False
+
+        print(f"Connection attempt from {tank_address}")
+
+        if tank_address[0] == expected_ip:
+            print(f"Accepted connection from {tank_address}")
+            self.tank_socket = tank_socket
+            self.tank_address = tank_address
+            self.tank_socket.settimeout(1.0)
+            return True
+        else:
+            print(f"Rejected connection from {tank_address}")
+            tank_socket.close()
+            return False
 
     def update(self):
         self.update_tank_socket()
@@ -45,12 +71,18 @@ class Communications:
         try:
             data = self.tank_socket.recv(1024)
             if data:
-                message = json.loads(data.decode('utf-8'))
-                print("Received message:", message)
+                message = data.decode('utf-8')
 
-                # Optionally send a response
-                response = json.dumps({"status": "Message received"})
-                self.tank_socket.sendall(response.encode('utf-8'))
+                if message == "ping":
+                    print("Received ping from client.")
+                    self.tank_socket.sendall(b"pong")
+                else:
+                    json_message = json.loads(message)
+                    print("Received message:", json_message)
+
+                    # Optionally send a response
+                    response = json.dumps({"status": "Message received"})
+                    self.tank_socket.sendall(response.encode('utf-8'))
             else:
                 print("No new messages.")
         except socket.timeout:

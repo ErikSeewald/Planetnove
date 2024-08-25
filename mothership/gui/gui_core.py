@@ -2,7 +2,9 @@ from mothership.gui.update_event import UpdateEvent
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
 from mothership.gui.planet_view.tile import DraggableTile
+from mothership.gui.coms_subgui.coms_subgui import ComsSubGUI
 from mothership.gui.sub_gui import SubGUI
+from mothership.io.communications import Communications
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
@@ -18,7 +20,7 @@ class GUICore:
     # DEARPYGUI
     sub_GUIs: list[SubGUI]
 
-    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
+    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], coms: Communications):
         # PLANET VIEW
         self.planet_view = PlanetView(draggable_tiles, tile_data)
 
@@ -27,6 +29,7 @@ class GUICore:
 
         self.sub_GUIs = [
             PlanetViewSubGUI("planet_view", gui_core=self, planet_view=self.planet_view),
+            ComsSubGUI("coms", gui_core=self, coms=coms)
         ]
 
         dpg.create_viewport(title='Mothership', width=1400, height=850)

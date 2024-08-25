@@ -25,4 +25,4 @@ class Logger:
 
         log = f"{now.hour}:{now.minute}:{now.second} - {caller} (line {frame.f_lineno}): {message}"
         self.logs.appendleft(log)
-        print(log)
+        print(log, flush=True)

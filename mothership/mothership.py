@@ -23,7 +23,7 @@ class Mothership:
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
         self.planet_manager = PlanetStateManager()
         self.communications = Communications(planet_manager=self.planet_manager)
-        self.gui = GUICore(draggable_tiles, tile_data)
+        self.gui = GUICore(draggable_tiles, tile_data, coms=self.communications)
         self.clock = pygame.time.Clock()
 
     def loop(self):

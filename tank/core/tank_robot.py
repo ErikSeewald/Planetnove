@@ -1,5 +1,7 @@
 import time
 from enum import Enum
+
+from tank.core.tank_client import TankClient
 from tank.movement.line_following import LineFollower
 from tank.movement.calibrated_motor import CalibratedMotor
 from tank.movement.movement_routines import MovementRoutines
@@ -34,10 +36,16 @@ class TankRobot:
     # CONTROL CLASSES
     movement_routines: MovementRoutines
     line_follower: LineFollower
+    client: TankClient
     logger: Logger
 
-    def __init__(self):
-        self.logger = Logger()
+    def __init__(self, client: TankClient, logger: Logger):
+        self.logger = logger
+
+        self.client = client
+        if not client.connected_to_server:
+            raise ValueError("Failed to initialize TankRobot: TankClient is not connected to the server.")
+
         self.switch_state(self.TankState.INITIALIZING)
 
         self.facing_direction = Direction.UNKNOWN
