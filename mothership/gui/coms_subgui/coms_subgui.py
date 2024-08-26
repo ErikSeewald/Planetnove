@@ -1,14 +1,18 @@
 from __future__ import annotations
+from enum import Enum
 import dearpygui.dearpygui as dpg
 from mothership.gui import theme
+from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.sub_gui import SubGUI
 from mothership.io.communications import Communications
 
 
 class ComsSubGUI(SubGUI):
 
-    tank_added: bool
-    adding_tank: bool
+    class TankHeaderState(Enum):
+        ADDING_TANK = 0
+        PENDING_START_MESSAGE = 1
+    tank_header_state: TankHeaderState
 
     coms: Communications
 
@@ -16,8 +20,7 @@ class ComsSubGUI(SubGUI):
         super().__init__(tag, gui_core)
 
         self.coms = coms
-        self.tank_added = False
-        self.adding_tank = True
+        self.tank_header_state = self.TankHeaderState.ADDING_TANK
 
         # WINDOW
         with dpg.window(label="Communications", width=400, height=200, no_close=True, tag=self.tag,
@@ -33,15 +36,66 @@ class ComsSubGUI(SubGUI):
                                            callback=self._add_tank_callback, tag="add_tank_button")
                 theme.apply_button_theme(button_id)
 
-                input_id = dpg.add_input_text(hint="ip-address", tag="tank_ip_input")
+                input_id = dpg.add_input_text(hint="IP-Address", tag="tank_ip_input")
                 theme.apply_input_theme(input_id)
 
+                # TANK ADDED
+                text_id = dpg.add_text("", tag="tank_ip_text", show=False)
+                theme.apply_text_theme(text_id)
+
+                # START MESSAGE
+                button_id = dpg.add_button(label="Send start message", tag="start_message_button",
+                                           callback=self._gui_core.tank_start_message_callback, show=False)
+                theme.apply_button_theme(button_id)
+
+                text_id = dpg.add_text("Planet view is still in EDIT mode", tag="edit_mode_error", show=False)
+                theme.apply_error_msg_theme(text_id)
+
+                text_id = dpg.add_text("Starting position is not set", tag="no_start_pos_error", show=False)
+                theme.apply_error_msg_theme(text_id)
         self.update()
 
     def update(self):
-        pass
+        if self.tank_header_state == self.TankHeaderState.PENDING_START_MESSAGE:
+            self._update_start_message_widgets()
+
+    def _update_adding_tank_widgets(self):
+        tank_added = self.tank_header_state != self.TankHeaderState.ADDING_TANK
+
+        dpg.configure_item("add_tank_button", label="Add tank", show=not tank_added, enabled=not tank_added)
+        dpg.configure_item("tank_ip_input", show=not tank_added, enabled=not tank_added)
+
+        dpg.configure_item("tank_ip_text", default_value=f"Ip address: {dpg.get_value('tank_ip_input')}",
+                           show=tank_added)
+
+    def _update_start_message_widgets(self):
+        pending_start = self.tank_header_state == self.TankHeaderState.PENDING_START_MESSAGE
+
+        in_edit_mode = self._gui_core.get_planet_view_mode() == PlanetView.Mode.EDIT
+        dpg.configure_item("edit_mode_error", show=in_edit_mode and pending_start)
+
+        start_pos_locked = self._gui_core.is_start_pos_locked()
+        dpg.configure_item("no_start_pos_error", show=not start_pos_locked and pending_start)
+
+        ready_to_start = pending_start and start_pos_locked and not in_edit_mode
+        dpg.configure_item("start_message_button", show=pending_start, enabled=ready_to_start)
+
+        if not ready_to_start:
+            dpg.configure_item("start_message_button", label="Cannot send start message")
+        else:
+            dpg.configure_item("start_message_button", label="Send start message")
 
     def _add_tank_callback(self):
+        dpg.configure_item("add_tank_button", enabled=False, label="Connecting...")
+        dpg.configure_item("tank_ip_input", enabled=False)
         connect_result = self.coms.try_connect_tank(dpg.get_value("tank_ip_input"))
+
+        if connect_result:
+            self.tank_header_state = self.TankHeaderState.PENDING_START_MESSAGE
+            self._update_adding_tank_widgets()
+            self._update_start_message_widgets()
+        else:
+            dpg.configure_item("add_tank_button", enabled=True, label="Failed to connect. Try again?")
+            dpg.configure_item("tank_ip_input", enabled=True)
 
 

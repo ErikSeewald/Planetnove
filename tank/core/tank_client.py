@@ -1,9 +1,7 @@
 import socket
 import json
-import time
 from typing import Optional
-
-from tank.core.logger import Logger
+from util.logger import Logger
 from util.direction import Direction
 
 
@@ -34,15 +32,15 @@ class TankClient:
                     # Ping server, expect pong response
                     self.client_socket.sendall(b'ping')
                     if not self.client_socket.recv(1024).decode('utf-8') == "pong":
-                        self.logger.log("Server rejected the connection.")
+                        self.logger.log("Mothership rejected the connection.")
                         self.client_socket.close()
                         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     else:
-                        self.logger.log(f"Connected to server at {self.mothership_ip}:{self.mothership_port}")
+                        self.logger.log(f"Connected to mothership at {self.mothership_ip}:{self.mothership_port}")
                         self.connected_to_server = True
                         return
                 except (socket.error, socket.timeout):
-                    self.logger.log("Server rejected the connection.")
+                    self.logger.log("Mothership rejected the connection. Trying again.")
                     self.client_socket.close()
                     self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -54,33 +52,30 @@ class TankClient:
         try:
             message_str = json.dumps(message)
             self.client_socket.sendall(message_str.encode('utf-8'))
-            print("Message sent to server.")
+            self.logger.log(f"Sent message to mothership: {message}")
         except socket.error as e:
-            print(f"Failed to send message: {e}")
+            self.logger.log(f"Failed to send message: {e}")
 
-    def receive_response(self) -> Optional[dict]:
+    def receive_message(self) -> Optional[dict]:
         try:
             response = self.client_socket.recv(1024)
             if response:
                 response_message = json.loads(response.decode('utf-8'))
-                print("Response from server:", response_message)
+                self.logger.log(f"Received message from mothership: {response_message}")
                 return response_message
             else:
-                print("No response received.")
-                return None
+                self.logger.log("No message received.")
         except socket.error as e:
-            print(f"Failed to receive response: {e}")
-            return None
+            self.logger.log(f"Failed to receive message: {e}")
 
-    def wait_for_response_of_type(self, response_type: str, attempts: int) -> Optional[dict]:
-        for i in range(attempts):
-            print(f"Attempt {i}")
+        return None
 
-            response = self.receive_response()
-            if response:
-                if response["type"] != response_type:
-                    print(f"Received incorrect response type: {response['type']}")
-                    continue
+    def get_response_of_type(self, response_type: str) -> Optional[dict]:
+        response = self.receive_message()
+        if response:
+            if response["type"] != response_type:
+                self.logger.log(f"Received incorrect response type: {response['type']}")
+            else:
                 return response
         return None
 
@@ -95,7 +90,7 @@ class TankClient:
         self.send_message(message)
 
     def get_node_arrival_response(self) -> Optional[dict]:
-        return self.wait_for_response_of_type("arrival_response", attempts=5)
+        return self.get_response_of_type("arrival_response")
 
     def send_path_chosen(self, direction: Direction):
         message = {
@@ -105,6 +100,6 @@ class TankClient:
         self.send_message(message)
 
     def get_path_chosen_response(self) -> Optional[dict]:
-        return self.wait_for_response_of_type("path_chosen_response", attempts=5)
+        return self.get_response_of_type("path_chosen_response")
 
 

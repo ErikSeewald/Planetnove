@@ -1,6 +1,6 @@
 import json
 
-from tank.core.logger import Logger
+from util.logger import Logger
 from tank.core.tank_client import TankClient
 from tank.core.tank_robot import TankRobot
 
@@ -19,6 +19,15 @@ def init():
 
     tank_client = TankClient(mothership_ip, mothership_port, logger)
     tank_client.wait_for_server_connection()
+
+    logger.log("Waiting for the mothership to send a start signal...")
+    while True:
+        msg = tank_client.receive_message()
+        if msg:
+            if msg['type'] == "start":
+                logger.log("Received start signal")
+                break
+            else: logger.log(f"Received a message that was not a start signal: {msg}")
 
     # TANK ROBOT
     tank = TankRobot(tank_client, logger)

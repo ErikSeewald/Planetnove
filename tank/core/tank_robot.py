@@ -7,7 +7,7 @@ from tank.movement.calibrated_motor import CalibratedMotor
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor
 from util.direction import Direction, RelativeDirection
-from tank.core.logger import Logger
+from util.logger import Logger
 
 
 class TankRobot:

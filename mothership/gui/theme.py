@@ -17,6 +17,11 @@ def apply_button_theme(button_id: int | str) -> None:
             dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (80, 150, 110, 255))
             dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (110, 180, 140, 255))
 
+        with dpg.theme_component(dpg.mvButton, enabled_state=False):
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (80, 80, 80, 255))
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (80, 80, 80, 255))
+            dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (80, 80, 80, 255))
+
     dpg.bind_item_theme(button_id, button_theme)
 
 
@@ -43,6 +48,7 @@ def apply_error_msg_theme(text_id: int | str) -> None:
             dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 100, 80, 255))
 
     dpg.bind_item_theme(text_id, msg_theme)
+
 
 def apply_input_theme(input_id: int | str) -> None:
     pass

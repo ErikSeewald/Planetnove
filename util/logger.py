@@ -4,10 +4,6 @@ import inspect
 
 
 class Logger:
-    """
-    Class responsible for all logging by the tank robot.
-    """
-
     logs: deque
 
     def __init__(self):

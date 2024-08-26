@@ -10,6 +10,7 @@ from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
 from util.direction import Direction
+from util.logger import Logger
 
 
 class Mothership:
@@ -21,10 +22,12 @@ class Mothership:
     communications: Communications
     gui: GUICore
     clock: pygame.time.Clock
+    logger: Logger
 
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
+        self.logger = Logger()
         self.planet_manager = PlanetStateManager()
-        self.communications = Communications(planet_manager=self.planet_manager)
+        self.communications = Communications(planet_manager=self.planet_manager, logger=self.logger)
         self.gui = GUICore(draggable_tiles, tile_data, coms=self.communications)
         self.clock = pygame.time.Clock()
 
