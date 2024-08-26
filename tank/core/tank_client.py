@@ -1,8 +1,10 @@
 import socket
 import json
 import time
+from typing import Optional
 
 from tank.core.logger import Logger
+from util.direction import Direction
 
 
 class TankClient:
@@ -61,17 +63,53 @@ class TankClient:
         except socket.error as e:
             print(f"Failed to send message: {e}")
 
-    def receive_response(self):
+    def receive_response(self) -> Optional[dict]:
         try:
             response = self.client_socket.recv(1024)
             if response:
                 response_message = json.loads(response.decode('utf-8'))
                 print("Response from server:", response_message)
+                return response_message
             else:
                 print("No response received.")
+                return None
         except socket.error as e:
             print(f"Failed to receive response: {e}")
+            return None
+
+    def wait_for_response_of_type(self, response_type: str, attempts: int) -> Optional[dict]:
+        for i in range(attempts):
+            print(f"Attempt {i}")
+
+            response = self.receive_response()
+            if response:
+                if response["type"] != response_type:
+                    print(f"Received incorrect response type: {response['type']}")
+                    continue
+                return response
+        return None
 
     def close_connection(self):
         self.client_socket.close()
         print("Connection closed.")
+
+    def send_node_arrival(self):
+        message = {
+            "type": "node_arrival"
+        }
+        self.send_message(message)
+
+    def get_node_arrival_response(self) -> Optional[dict]:
+        return self.wait_for_response_of_type("arrival_response", attempts=5)
+
+    def send_path_chosen(self, direction: Direction):
+        message = {
+            "type": "path_chosen",
+            "direction": direction.name
+        }
+        self.send_message(message)
+
+    def get_path_chosen_response(self) -> Optional[dict]:
+        return self.wait_for_response_of_type("path_chosen_response", attempts=5)
+
+

@@ -97,14 +97,32 @@ class TankRobot:
             self.switch_state(self.TankState.ERROR) # TODO: Handle error
 
     def on_node_arrival(self):
-        # TODO: Replace with actual path choosing
-        cur_dir = Direction.from_str(input("Which direction (N,E,S,W) am I facing? "))
-        depart_dir = Direction.from_str(input("In which direction (N,E,S,W) should I depart? "))
 
-        self.facing_direction = cur_dir
+        self.client.send_node_arrival()
+        response = self.client.get_node_arrival_response()
+
+        if response is None:
+            raise ValueError("Response should never be none") # TODO: Actually handle this
+
+        self.facing_direction = Direction.from_str(response['facing_direction'])
+        self.logger.log(f"Facing {self.facing_direction}")
+        # TODO: Handle rest of message
+
+        self.choose_path()
+
+    def choose_path(self):
+        # TODO: Replace with actual path choosing
+        depart_dir = Direction.from_str(input("In which direction (N,E,S,W) should I depart? "))
         self.next_departure_direction = depart_dir
 
-        self.logger.log(f"Facing {self.facing_direction}")
+        self.client.send_path_chosen(self.next_departure_direction)
+        response = self.client.get_path_chosen_response()
+
+        if response is None:
+            raise ValueError("Response should never be none") # TODO: Actually handle this
+
+        # TODO: Handle path rejected response
+
         self.logger.log(f"Next departure direction: {self.next_departure_direction}")
         self.switch_state(self.TankState.READY_TO_DEPART)
 
