@@ -1,4 +1,5 @@
 import json
+import time
 
 from util.logger import Logger
 from tank.core.tank_client import TankClient
@@ -28,6 +29,7 @@ def init():
                 logger.log("Received start signal")
                 break
             else: logger.log(f"Received a message that was not a start signal: {msg}")
+        time.sleep(1)
 
     # TANK ROBOT
     tank = TankRobot(tank_client, logger)

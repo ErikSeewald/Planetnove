@@ -1,5 +1,7 @@
 import json
+import threading
 import time
+from collections import deque
 from typing import Optional, Any
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 import socket
@@ -22,6 +24,9 @@ class Communications:
 
     logger: Logger
 
+    unprocessed_tank_messages = deque[dict]
+    lock: threading.Lock
+
     _COMS_CONFIG_PATH: str = "coms_config.json"
 
     def __init__(self, planet_manager: PlanetStateManager, logger: Logger):
@@ -31,6 +36,9 @@ class Communications:
         self.planet_manager = planet_manager
         self.tank_socket = None
         self.tank_address = None
+
+        self.unprocessed_tank_messages = deque()
+        self.lock = threading.Lock()
 
         # conn.close()
         # server_socket.close()
@@ -60,7 +68,7 @@ class Communications:
         if tank_address[0] == expected_ip:
             self.tank_socket = tank_socket
             self.tank_address = tank_address
-            self.tank_socket.settimeout(1.0)
+            self.tank_socket.settimeout(0.5)
             time.sleep(1) # Give connection some time to be fully set up on both ends, weird errors otherwise
             self.logger.log(f"Accepted connection from {tank_address}")
             return True
@@ -70,7 +78,18 @@ class Communications:
             return False
 
     def update(self):
-        self.update_tank_socket()
+        # Receive messages asynchronously
+        receive_thread = threading.Thread(target=self.update_tank_socket, daemon=True)
+        receive_thread.start()
+
+        # Process messages synchronously
+        while True:
+            with self.lock:
+                if self.unprocessed_tank_messages:
+                    msg = self.unprocessed_tank_messages.pop()
+                else:
+                    return
+            self.handle_tank_message(msg)
 
     def update_tank_socket(self):
         if self.tank_socket is None:
@@ -82,16 +101,17 @@ class Communications:
                 message = data.decode('utf-8')
 
                 if message == "ping":
-                    self.logger.log("Received ping from tank.")
+                    # Ping is allowed to be handled asynchronously
                     self.tank_socket.sendall(b"pong")
                 else:
                     json_message = json.loads(message)
-                    self.logger.log(f"Received message from tank: {json_message}")
-                    self.handle_tank_message(json_message)
+                    self.unprocessed_tank_messages.append(json_message)
         except socket.timeout:
             pass # Socket timeout of 1 second
 
     def handle_tank_message(self, message: dict):
+        self.logger.log(f"Processing message from tank: {message}")
+
         if message['type'] == "node_arrival":
             self.planet_manager.on_tank_arrival()
             self.send_msg_to_tank(self.planet_manager.tank_arrival_response())

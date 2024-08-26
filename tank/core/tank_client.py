@@ -63,8 +63,6 @@ class TankClient:
                 response_message = json.loads(response.decode('utf-8'))
                 self.logger.log(f"Received message from mothership: {response_message}")
                 return response_message
-            else:
-                self.logger.log("No message received.")
         except socket.error as e:
             self.logger.log(f"Failed to receive message: {e}")
 
