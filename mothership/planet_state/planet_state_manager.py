@@ -3,6 +3,7 @@ from typing import Optional
 from mothership.planet_state.tank_entity import TankEntity
 from mothership.io.requests import RequestResponse
 from planets.code.planet import Planet
+from util.direction import Direction
 
 
 class PlanetStateManager:
@@ -38,20 +39,25 @@ class PlanetStateManager:
             self.tank.cur_node_id = taken_path.node_a
             self.tank.facing_direction = taken_path.direction_a.invert()
 
-        self.arrival_message()
-
-    def arrival_message(self):
+    def tank_arrival_response(self) -> dict:
         node = self.planet.nodes.get(self.tank.cur_node_id)
-        message = {
+        return {
+            "type": "arrival_response",
             "facing_direction": self.tank.facing_direction.name,
             "node_id": node.name,
             "node_coord": {"x": node.coord.x, "y": node.coord.y},
             "available_paths": [direction.name for direction in node.get_available_paths().keys()]
         }
-        json_message = json.dumps(message, indent=4)
-        print(json_message)
 
-    def on_tank_depart_request(self) -> RequestResponse:
-        return RequestResponse.approve(f"Here you go {self.tank.tank_id}")
+    def on_tank_path_chosen(self, direction: Direction):
+        # TODO: Handle rejecting directions
+        self.tank.departure_direction = direction
+
+    def tank_path_chosen_response(self) -> dict:
+        # TODO: Handle rejecting directions
+        return {
+            "type": "path_chosen_response",
+            "request_response": RequestResponse.approve("Approved").as_dict()
+        }
 
 

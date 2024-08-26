@@ -9,6 +9,8 @@ from planets.code.planet import Planet
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
+from util.direction import Direction
+
 
 class Mothership:
     """
@@ -55,4 +57,6 @@ class Mothership:
         # TODO: Remove this debug stuff
         tank = TankEntity("tank")
         tank.cur_node_id = "draven"
+        tank.facing_direction = Direction.NORTH
+        tank.departure_direction = Direction.NORTH
         self.planet_manager.set_tank_entity(tank)

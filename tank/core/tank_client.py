@@ -23,12 +23,9 @@ class TankClient:
 
     def wait_for_server_connection(self):
         self.connected_to_server = False
-        timeout_seconds = 5
-        wait_seconds = 10
-        self.client_socket.settimeout(timeout_seconds)
-
         self.logger.log(f"Attempting to connect to mothership server at {self.mothership_ip}:{self.mothership_port}...")
-        while True:
+
+        while not self.connected_to_server:
             try:
                 self.client_socket.connect((self.mothership_ip, self.mothership_port))
 
@@ -39,6 +36,7 @@ class TankClient:
                     if not self.client_socket.recv(1024).decode('utf-8') == "pong":
                         self.logger.log("Server rejected the connection.")
                         self.client_socket.close()
+                        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     else:
                         self.logger.log(f"Connected to server at {self.mothership_ip}:{self.mothership_port}")
                         self.connected_to_server = True
@@ -46,14 +44,11 @@ class TankClient:
                 except (socket.error, socket.timeout):
                     self.logger.log("Server rejected the connection.")
                     self.client_socket.close()
+                    self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
             except socket.error as e:
-                self.logger.log(f"Failed to connect to server: {e}. \nTrying again in {wait_seconds} seconds")
-                time.sleep(wait_seconds)
-
-                # Reinitialize socket
+                self.logger.log(f"Failed to connect to server: {e}. Trying again.")
                 self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.client_socket.settimeout(timeout_seconds)
 
     def send_message(self, message: dict):
         try:

@@ -3,6 +3,8 @@ from typing import Optional, Any
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 import socket
 
+from util.direction import Direction
+
 
 class Communications:
     """
@@ -39,7 +41,6 @@ class Communications:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.server_ip, self.server_port))
         self.server_socket.listen(1)
-        self.server_socket.settimeout(0.5)
 
     def try_connect_tank(self, expected_ip: str) -> bool:
         try:
@@ -79,12 +80,22 @@ class Communications:
                 else:
                     json_message = json.loads(message)
                     print("Received message:", json_message)
-
-                    # Optionally send a response
-                    response = json.dumps({"status": "Message received"})
-                    self.tank_socket.sendall(response.encode('utf-8'))
+                    self.handle_message(json_message)
             else:
                 print("No new messages.")
         except socket.timeout:
             print("No new messages within the last second.")
 
+    def handle_message(self, message: dict):
+        response = None
+
+        if message['type'] == "node_arrival":
+            self.planet_manager.on_tank_arrival()
+            response = json.dumps(self.planet_manager.tank_arrival_response())
+
+        if message['type'] == "path_chosen":
+            self.planet_manager.on_tank_path_chosen(Direction.from_str(message['direction']))
+            response = json.dumps(self.planet_manager.tank_path_chosen_response())
+
+        if response:
+            self.tank_socket.sendall(response.encode('utf-8'))

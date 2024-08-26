@@ -17,6 +17,12 @@ class RequestResponse:
     def deny(msg: str) -> RequestResponse:
         return RequestResponse(False, msg)
 
+    def as_dict(self) -> dict:
+        return {
+            "is_approved": self.is_approved(),
+            "message": self.get_message()
+        }
+
     def is_approved(self):
         return self._approved
 

@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 from mothership.gui import theme
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.sub_gui import SubGUI
-from mothership.gui.update_event import TileGrabbed, TileReleased
+from mothership.gui.update_event import TileGrabbed, TileReleased, SwitchedToPlanetMode
 
 
 class PlanetViewSubGUI(SubGUI):
@@ -45,13 +45,15 @@ class PlanetViewSubGUI(SubGUI):
 
     def event_update_needed(self) -> bool:
         for event in self.planet_view.update_events:
-            if isinstance(event, TileGrabbed) or isinstance(event, TileReleased):
+            if isinstance(event, TileGrabbed) or isinstance(event, TileReleased) \
+                    or isinstance(event, SwitchedToPlanetMode):
                 return True
         return False
 
     def _event_update(self):
         self._update_finish_button()
         self._update_edit_button()
+        self._viewer_mode_switch()
 
     def _update_finish_button(self):
         if self.planet_view.can_finish_planet():
@@ -72,9 +74,6 @@ class PlanetViewSubGUI(SubGUI):
 
     def _finish_planet_callback(self):
         self.planet_view.finish_planet()
-        self._viewer_mode_switch()
 
     def _edit_callback(self):
         self.planet_view.switch_mode(PlanetView.Mode.EDIT)
-        self._viewer_mode_switch()
-

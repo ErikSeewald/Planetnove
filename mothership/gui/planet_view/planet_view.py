@@ -38,6 +38,7 @@ class PlanetView:
 
     # EVENTS
     update_events: list[UpdateEvent]
+    planet_mode_switch_scheduled: bool
 
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
 
@@ -61,15 +62,24 @@ class PlanetView:
 
         # EVENTS
         self.update_events = list()
+        self.planet_mode_switch_scheduled = False
 
     def update(self) -> list[UpdateEvent]:
         self.update_events.clear()
 
+        self.mode_update()
         self.handle_events()
         self.render()
         pygame.display.flip()
 
         return self.update_events.copy()
+
+    def mode_update(self):
+        if self.planet_mode_switch_scheduled:
+            self.planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
+            self.update_events.append(SwitchedToPlanetMode(new_planet=self.planet))
+            self.switch_mode(self.Mode.PLANET)
+            self.planet_mode_switch_scheduled = False
 
     def handle_events(self):
         events: list[pygame.event.Event] = pygame.event.get()
@@ -172,9 +182,9 @@ class PlanetView:
     def finish_planet(self):
         if not self.can_finish_planet():
             return
-        self.planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
-        self.update_events.append(SwitchedToPlanetMode(new_planet=self.planet))
-        self.switch_mode(self.Mode.PLANET)
+
+        # Schedule instead of doing it here so that we can add it to the update events
+        self.planet_mode_switch_scheduled = True
 
     def can_finish_planet(self) -> bool:
         if self.dragged_tile is not None:
