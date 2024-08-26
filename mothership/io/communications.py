@@ -117,8 +117,8 @@ class Communications:
             self.send_msg_to_tank(self.planet_manager.tank_arrival_response())
 
         if message['type'] == "path_chosen":
-            self.planet_manager.on_tank_path_chosen(Direction.from_str(message['direction']))
-            self.send_msg_to_tank(self.planet_manager.tank_path_chosen_response())
+            response = self.planet_manager.tank_path_chosen_response(Direction.from_str(message['direction']))
+            self.send_msg_to_tank(response)
 
     def send_msg_to_tank(self, message: dict):
         self.tank_socket.sendall(json.dumps(message).encode('utf-8'))

@@ -1,5 +1,8 @@
+from pygame import Vector2
+
 from planets.code.node import Node
 from planets.code.path import Path
+from util.direction import Direction
 
 
 class Planet:
@@ -14,6 +17,25 @@ class Planet:
     nodes: dict[str, Node] # Maps node id to Node
     paths: dict[str, Path] # Maps path id to Path
 
-    def __init__(self, nodes: dict[str, Node], paths: dict[str, Path]):
+    def __init__(self, nodes: dict[str, Node], known_paths: dict[str, Path]):
         self.nodes = nodes
-        self.paths = paths
+        self.paths = known_paths
+
+    def node_has_path_direction(self, node_id: str, direction: Direction) -> bool:
+        path = self.nodes.get(node_id).known_paths.get(direction)
+        return path is not None and path != "None"
+
+    def add_node_with_unknown_paths(self, name: str, coord: Vector2, available_paths: set[Direction]):
+        node = Node(name, coord)
+        node.available_paths = available_paths
+        self.nodes[name] = node
+
+    def add_path(self, path: Path):
+        if path.node_a not in self.nodes:
+            raise ValueError(f"Cannot add path with unknown node {path.node_a}")
+        if path.node_b not in self.nodes:
+            raise ValueError(f"Cannot add path with unknown node {path.node_b}")
+
+        self.paths[path.name] = path
+
+

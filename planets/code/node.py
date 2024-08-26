@@ -9,22 +9,29 @@ class Node:
 
     name: str
     coord: Vector2
-    paths: dict[Direction, str] # Maps direction to path id
+    known_paths: dict[Direction, str] # Maps direction to path id
+
+    # All paths that do not lead to 'None'. A path can be available but not yet in known_paths if the node it leads
+    # to is still unknown
+    available_paths: set[Direction]
 
     def __init__(self, name: str, coord: Vector2):
         self.name = name
         self.coord = coord
-        self.paths = {direction: "None" for direction in Direction.real_directions_ordered()}
+
+        self.available_paths = set()
+        self.known_paths = {direction: "None" for direction in Direction.real_directions_ordered()}
 
     def set_path(self, direction: Direction, path_id: str):
         if direction is None or direction == Direction.UNKNOWN:
             raise ValueError(f"Node cannot have a path in direction {direction}")
 
-        self.paths[direction] = path_id
+        self.known_paths[direction] = path_id
+        self.available_paths.add(direction)
 
-    def get_available_paths(self) -> dict[Direction, str]:
-        available: dict[Direction, str] = dict()
-        for d, name in self.paths.items():
-            if name != "None":
-                available[d] = name
-        return available
+    def make_path_unknown(self, direction: Direction):
+        self.known_paths.pop(direction)
+
+    def make_path_unavailable(self, direction: Direction):
+        self.available_paths.remove(direction)
+        self.known_paths.pop(direction)

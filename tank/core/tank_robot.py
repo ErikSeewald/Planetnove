@@ -1,6 +1,10 @@
 import time
 from enum import Enum
 
+from pygame import Vector2
+
+from planets.code.path import Path
+from planets.code.planet import Planet
 from tank.core.tank_client import TankClient
 from tank.movement.line_following import LineFollower
 from tank.movement.calibrated_motor import CalibratedMotor
@@ -29,6 +33,11 @@ class TankRobot:
     last_departure_direction: Direction
     next_departure_direction: Direction
 
+    # EXPLORED PLANET
+    planet: Planet
+    cur_node_id: str
+    cur_node_coord: Vector2
+
     # COMPONENT CLASSES
     motor: CalibratedMotor
     infrared: InfraredSensor
@@ -51,6 +60,10 @@ class TankRobot:
         self.facing_direction = Direction.UNKNOWN
         self.last_departure_direction = Direction.UNKNOWN
         self.next_departure_direction = Direction.UNKNOWN
+
+        self.planet = Planet(nodes=dict(), paths=dict())
+        self.cur_node_id = "None"
+        self.cur_node_coord = Vector2(-1, -1)
 
         self.motor = CalibratedMotor()
         self.infrared = InfraredSensor()
@@ -94,37 +107,66 @@ class TankRobot:
             self.switch_state(self.TankState.AT_NODE)
 
         elif follow_result == LineFollower.FollowResult.TIMED_OUT:
-            self.switch_state(self.TankState.ERROR) # TODO: Handle error
+            self.logger.log("Error: Line following step timed out")
+            self.switch_state(self.TankState.ERROR)
 
     def on_node_arrival(self):
-
         self.client.send_node_arrival()
-        response = self.client.get_node_arrival_response()
 
-        if response is None:
-            raise ValueError("Response should never be none") # TODO: Actually handle this
+        # RESPONSE
+        response = None
+        while response is None:
+            self.logger.log("Waiting for arrival_response...")
+            response = self.client.get_node_arrival_response()
 
         self.facing_direction = Direction.from_str(response['facing_direction'])
         self.logger.log(f"Facing {self.facing_direction}")
-        # TODO: Handle rest of message
+
+        prev_node_id = self.cur_node_id
+        self.cur_node_id = response['node_id']
+        self.logger.log(f"At node {self.cur_node_id}")
+
+        node_coord = response['node_coord']
+        self.cur_node_coord = Vector2(int(node_coord['x']), int(node_coord['y']))
+        self.logger.log(f"With node coord {self.cur_node_coord}")
+
+        path_dirs = [Direction.from_str(d) for d in response['available_paths']]
+        self.logger.log(f"Available paths: {path_dirs}")
+
+        # ADD NEW NODE TO EXPLORED PLANET
+        self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, set(path_dirs))
+
+        # ADD TAKEN PATH TO EXPLORED PLANET
+        arrival_path_dir = self.facing_direction.invert()
+        arrival_path_id = f"{prev_node_id}-{self.cur_node_id}"
+        node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
+        node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
+        arrival_path = Path(arrival_path_id, node_a_with_dir, node_b_with_dir)
+        self.planet.add_path(arrival_path)
+        self.logger.log(f"Added path {arrival_path} to the planet map")
+        self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
 
         self.choose_path()
 
-    def choose_path(self):
-        # TODO: Replace with actual path choosing
+    def choose_path(self, rejected_directions: set[Direction] = None):
+        # TODO: Replace with actual path choosing and handle rejected_directions
         depart_dir = Direction.from_str(input("In which direction (N,E,S,W) should I depart? "))
-        self.next_departure_direction = depart_dir
+        self.client.send_path_chosen(depart_dir)
 
-        self.client.send_path_chosen(self.next_departure_direction)
-        response = self.client.get_path_chosen_response()
+        # RESPONSE
+        response = None
+        while response is None:
+            self.logger.log("Waiting for path_chosen_response...")
+            response = self.client.get_path_chosen_response()
 
-        if response is None:
-            raise ValueError("Response should never be none") # TODO: Actually handle this
-
-        # TODO: Handle path rejected response
-
-        self.logger.log(f"Next departure direction: {self.next_departure_direction}")
-        self.switch_state(self.TankState.READY_TO_DEPART)
+        if response['is_approved']:
+            self.next_departure_direction = depart_dir
+            self.logger.log(f"Next departure direction: {self.next_departure_direction}")
+            self.switch_state(self.TankState.READY_TO_DEPART)
+        else:
+            if rejected_directions is None:
+                rejected_directions = set()
+            self.choose_path(rejected_directions=rejected_directions.add(depart_dir))
 
     def depart_from_node(self):
         """
@@ -135,8 +177,8 @@ class TankRobot:
         # RELATIVE TARGET DIRECTION
         target_direction = RelativeDirection.from_absolute(self.facing_direction, self.next_departure_direction)
         if target_direction == RelativeDirection.UNKNOWN:
-            self.switch_state(self.TankState.ERROR)  # TODO: Handle error
-            return
+            raise ValueError(f"Calculated invalid {target_direction=} from {self.facing_direction=} and "
+                             f"{self.next_departure_direction=}")
 
         self.movement_routines.node_departure(target_direction)
 
