@@ -12,7 +12,16 @@ on which a path can connect to another piece. This way, new maps can modularly a
 Unlike the other actors, the mothership is not a physical agent on the board. It receives messages from and sends commands to its agents from afar.
 The mothership is hosted on the main device running Planetnove, usually a PC or Laptop.
 Though the game is based on the mothership 'triangulating' the robots new position after reaching a node, behind the scenes it actually knows the entire layout of the map from the start. The mothership simply
-sends back information about the node connected to the path the tank robot last departed from. 
+sends back information about the node connected to the path the tank robot last departed from.
+
+#### Coms config
+You need to create a file called 'coms_config.json' at put it at the root level of the repository. The file should contain the following:
+```
+{
+  "mothership_ip": "<your-ip>",
+  "mothership_port": 65432
+}
+```
 
 ## Tank
 The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). It's components include infrared sensors for line following,
