@@ -37,6 +37,7 @@ class TankRobot:
     planet: Planet
     cur_node_id: str
     cur_node_coord: Vector2
+    reached_first_node: bool
 
     # COMPONENT CLASSES
     motor: CalibratedMotor
@@ -64,6 +65,7 @@ class TankRobot:
         self.planet = Planet(nodes=dict(), known_paths=dict())
         self.cur_node_id = "None"
         self.cur_node_coord = Vector2(-1, -1)
+        self.reached_first_node = False
 
         self.motor = CalibratedMotor()
         self.infrared = InfraredSensor()
@@ -136,15 +138,18 @@ class TankRobot:
         # ADD NEW NODE TO EXPLORED PLANET
         self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, set(path_dirs))
 
-        # ADD TAKEN PATH TO EXPLORED PLANET
-        arrival_path_dir = self.facing_direction.invert()
-        arrival_path_id = f"{prev_node_id}-{self.cur_node_id}"
-        node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
-        node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
-        arrival_path = Path(arrival_path_id, node_a_with_dir, node_b_with_dir)
-        self.planet.add_path(arrival_path)
-        self.logger.log(f"Added path {arrival_path} to the planet map")
-        self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
+        if not self.reached_first_node:
+            self.reached_first_node = True
+        else:
+            # ADD TAKEN PATH TO EXPLORED PLANET
+            arrival_path_dir = self.facing_direction.invert()
+            arrival_path_id = f"{prev_node_id}-{self.cur_node_id}"
+            node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
+            node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
+            arrival_path = Path(arrival_path_id, node_a_with_dir, node_b_with_dir)
+            self.planet.add_path(arrival_path)
+            self.logger.log(f"Added path {arrival_path} to the planet map")
+            self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
 
         self.choose_path()
 
