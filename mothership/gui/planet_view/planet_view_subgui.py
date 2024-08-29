@@ -75,9 +75,11 @@ class PlanetViewSubGUI(SubGUI):
 
         self.update()
 
-    def update(self):
+    def update(self) -> list[UpdateEvent]:
         if self.event_update_needed():
             self._event_update()
+
+        return list()
 
     def event_update_needed(self) -> bool:
         for event in self.planet_view.update_events:

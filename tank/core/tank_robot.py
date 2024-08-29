@@ -61,7 +61,7 @@ class TankRobot:
         self.last_departure_direction = Direction.UNKNOWN
         self.next_departure_direction = Direction.UNKNOWN
 
-        self.planet = Planet(nodes=dict(), paths=dict())
+        self.planet = Planet(nodes=dict(), known_paths=dict())
         self.cur_node_id = "None"
         self.cur_node_coord = Vector2(-1, -1)
 

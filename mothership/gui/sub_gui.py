@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from mothership.gui.update_event import UpdateEvent
 
 class SubGUI(ABC):
     """
@@ -13,7 +13,7 @@ class SubGUI(ABC):
         self._gui_core = gui_core
 
     @abstractmethod
-    def update(self) -> None:
+    def update(self) -> list[UpdateEvent]:
         """
         Update the local state of the sub-window.
         """

@@ -58,7 +58,7 @@ class GUICore:
         # DEARPYGUI
         dpg.render_dearpygui_frame()
         for gui in self.sub_GUIs:
-            gui.update()
+            events.extend(gui.update())
 
         return events
 
@@ -71,7 +71,7 @@ class GUICore:
                 return gui.start_pos_locked
         return False
 
-    def get_start_pos_locked(self) -> Optional[tuple[str, Direction]]:
+    def get_start_pos(self) -> Optional[tuple[str, Direction]]:
         for gui in self.sub_GUIs:
             if isinstance(gui, PlanetViewSubGUI):
                 return gui.start_node_id, gui.start_direction
@@ -79,3 +79,4 @@ class GUICore:
 
     def tank_start_message_callback(self):
         self.coms.send_tank_start_message()
+

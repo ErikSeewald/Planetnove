@@ -1,7 +1,7 @@
 import pygame
 from mothership.gui.gui_core import GUICore
 from mothership.gui.planet_view.tile import DraggableTile
-from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode
+from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
@@ -54,5 +54,8 @@ class Mothership:
             if isinstance(event, SwitchedToPlanetMode):
                 self.set_planet(event.new_planet)
 
+            if isinstance(event, AddedTank):
+                tank_entity = TankEntity(event.tank_ip, event.starting_node_id, event.arrival_from.invert())
+                self.planet_manager.set_tank_entity(tank_entity)
     def set_planet(self, planet: Planet):
         self.planet_manager.set_planet(planet)

@@ -24,6 +24,10 @@ class PlanetStateManager:
         self.tank = tank_entity
 
     def on_tank_arrival(self):
+        if not self.tank.reached_first_node:
+            self.tank.reached_first_node = True
+            return
+
         last_node = self.planet.nodes.get(self.tank.cur_node_id)
         taken_path_id = last_node.known_paths.get(self.tank.departure_direction)
         taken_path = self.planet.paths.get(taken_path_id)
@@ -67,6 +71,9 @@ class PlanetStateManager:
         else:
             response = RequestResponse.deny(f"Node {self.tank.cur_node_id} has no valid path in direction {direction}")
         """
+
+        if response.is_approved():
+            self.tank.departure_direction = direction
 
         return {
             "type": "path_chosen_response",

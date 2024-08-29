@@ -4,6 +4,7 @@ import dearpygui.dearpygui as dpg
 from mothership.gui import theme
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.sub_gui import SubGUI
+from mothership.gui.update_event import AddedTank, UpdateEvent
 from mothership.io.communications import Communications
 
 
@@ -16,11 +17,14 @@ class ComsSubGUI(SubGUI):
 
     coms: Communications
 
+    tank_add_event_scheduled: bool
+
     def __init__(self, tag: str, gui_core, coms: Communications):
         super().__init__(tag, gui_core)
 
         self.coms = coms
         self.tank_header_state = self.TankHeaderState.ADDING_TANK
+        self.tank_add_event_scheduled = False
 
         # WINDOW
         with dpg.window(label="Communications", width=400, height=200, no_close=True, tag=self.tag,
@@ -55,9 +59,16 @@ class ComsSubGUI(SubGUI):
                 theme.apply_error_msg_theme(text_id)
         self.update()
 
-    def update(self):
+    def update(self) -> list[UpdateEvent]:
         if self.tank_header_state == self.TankHeaderState.PENDING_START_MESSAGE:
             self._update_start_message_widgets()
+
+        if self.tank_add_event_scheduled:
+            self.tank_add_event_scheduled = False
+            start_pos = self._gui_core.get_start_pos()
+            return [AddedTank(tank_ip=self.coms.tank_address, starting_node_id=start_pos[0], arrival_from=start_pos[1])]
+
+        return list()
 
     def _update_adding_tank_widgets(self):
         tank_added = self.tank_header_state != self.TankHeaderState.ADDING_TANK
@@ -94,6 +105,7 @@ class ComsSubGUI(SubGUI):
             self.tank_header_state = self.TankHeaderState.PENDING_START_MESSAGE
             self._update_adding_tank_widgets()
             self._update_start_message_widgets()
+            self.tank_add_event_scheduled = True
         else:
             dpg.configure_item("add_tank_button", enabled=True, label="Failed to connect. Try again?")
             dpg.configure_item("tank_ip_input", enabled=True)
