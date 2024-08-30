@@ -38,4 +38,6 @@ class Planet:
 
         self.paths[path.name] = path
 
+    def __str__(self) -> str:
+        return f"Nodes: {self.nodes}\nPaths: {self.paths}"
 

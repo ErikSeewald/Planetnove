@@ -27,3 +27,6 @@ class Path:
 
         self.direction_a = Direction.from_str(split_a[1])
         self.direction_b = Direction.from_str(split_b[1])
+
+    def __str__(self):
+        return self.name

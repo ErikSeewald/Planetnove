@@ -6,10 +6,10 @@ from pygame import Vector2
 from planets.code.path import Path
 from planets.code.planet import Planet
 from tank.core.tank_client import TankClient
-from tank.movement.line_following import LineFollower
-from tank.movement.calibrated_motor import CalibratedMotor
-from tank.movement.movement_routines import MovementRoutines
-from tank.sensors.infrared import InfraredSensor
+#DEBUG from tank.movement.line_following import LineFollower
+#DEBUG from tank.movement.calibrated_motor import CalibratedMotor
+#DEBUG from tank.movement.movement_routines import MovementRoutines
+#DEBUG from tank.sensors.infrared import InfraredSensor
 from util.direction import Direction, RelativeDirection
 from util.logger import Logger
 
@@ -40,12 +40,12 @@ class TankRobot:
     reached_first_node: bool
 
     # COMPONENT CLASSES
-    motor: CalibratedMotor
-    infrared: InfraredSensor
+    #DEBUG motor: CalibratedMotor
+    #DEBUG infrared: InfraredSensor
 
     # CONTROL CLASSES
-    movement_routines: MovementRoutines
-    line_follower: LineFollower
+    #DEBUG movement_routines: MovementRoutines
+    #DEBUG line_follower: LineFollower
     client: TankClient
     logger: Logger
 
@@ -67,11 +67,11 @@ class TankRobot:
         self.cur_node_coord = Vector2(-1, -1)
         self.reached_first_node = False
 
-        self.motor = CalibratedMotor()
-        self.infrared = InfraredSensor()
+        #DEBUG self.motor = CalibratedMotor()
+        #DEBUG self.infrared = InfraredSensor()
 
-        self.movement_routines = MovementRoutines(self.motor)
-        self.line_follower = LineFollower(self.infrared, self.motor, self.movement_routines)
+        #DEBUG self.movement_routines = MovementRoutines(self.motor)
+        #DEBUG self.line_follower = LineFollower(self.infrared, self.motor, self.movement_routines)
 
     def switch_state(self, new_state: TankState):
         """
@@ -103,6 +103,7 @@ class TankRobot:
                 time.sleep(1) # TODO: Handle error
 
     def line_follow_step(self):
+        """ DEBUG
         follow_result = self.line_follower.follow_to_next_node()
 
         if follow_result == LineFollower.FollowResult.ARRIVED_AT_NODE:
@@ -111,6 +112,8 @@ class TankRobot:
         elif follow_result == LineFollower.FollowResult.TIMED_OUT:
             self.logger.log("Error: Line following step timed out")
             self.switch_state(self.TankState.ERROR)
+        """
+        self.switch_state(self.TankState.AT_NODE) # DEBUG
 
     def on_node_arrival(self):
         self.client.send_node_arrival()
@@ -122,35 +125,41 @@ class TankRobot:
             response = self.client.get_node_arrival_response()
 
         self.facing_direction = Direction.from_str(response['facing_direction'])
-        self.logger.log(f"Facing {self.facing_direction}")
 
         prev_node_id = self.cur_node_id
         self.cur_node_id = response['node_id']
-        self.logger.log(f"At node {self.cur_node_id}")
 
         node_coord = response['node_coord']
         self.cur_node_coord = Vector2(int(node_coord['x']), int(node_coord['y']))
-        self.logger.log(f"With node coord {self.cur_node_coord}")
 
         path_dirs = [Direction.from_str(d) for d in response['available_paths']]
+
+        self.logger.log(f"Facing '{self.facing_direction}' at node '{self.cur_node_id}:{self.cur_node_coord}'")
         self.logger.log(f"Available paths: {path_dirs}")
 
         # ADD NEW NODE TO EXPLORED PLANET
-        self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, set(path_dirs))
+        if self.planet.nodes.get(self.cur_node_id) is None:
+            self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, set(path_dirs))
 
         if not self.reached_first_node:
             self.reached_first_node = True
         else:
             # ADD TAKEN PATH TO EXPLORED PLANET
             arrival_path_dir = self.facing_direction.invert()
-            arrival_path_id = f"{prev_node_id}-{self.cur_node_id}"
             node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
             node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
-            arrival_path = Path(arrival_path_id, node_a_with_dir, node_b_with_dir)
-            self.planet.add_path(arrival_path)
-            self.logger.log(f"Added path {arrival_path} to the planet map")
-            self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
 
+            arrival_path_id = f"{node_a_with_dir}-{node_b_with_dir}"
+            inverse_id = f"{node_b_with_dir}-{node_a_with_dir}"
+
+            # Only add the path if it does not exist already
+            if self.planet.paths.get(arrival_path_id) is None and self.planet.paths.get(inverse_id) is None:
+                arrival_path = Path(arrival_path_id, node_a_with_dir, node_b_with_dir)
+                self.planet.add_path(arrival_path)
+                self.logger.log(f"Added path {arrival_path} to the planet map")
+                self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
+
+        print(self.planet)
         self.choose_path()
 
     def choose_path(self, rejected_directions: set[Direction] = None):
@@ -185,6 +194,7 @@ class TankRobot:
             raise ValueError(f"Calculated invalid {target_direction=} from {self.facing_direction=} and "
                              f"{self.next_departure_direction=}")
 
+        """ DEBUG
         self.movement_routines.node_departure(target_direction)
 
         # LINE FOLLOWING STRATEGY
@@ -192,6 +202,7 @@ class TankRobot:
             self.line_follower.switch_strategy(LineFollower.StrategyState.ROTATE_RIGHT)
         elif target_direction == RelativeDirection.LEFT:
             self.line_follower.switch_strategy(LineFollower.StrategyState.ROTATE_LEFT)
+        """
 
         # STATE VARIABLES
         self.last_departure_direction = self.next_departure_direction

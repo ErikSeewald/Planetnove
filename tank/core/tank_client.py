@@ -1,5 +1,6 @@
 import socket
 import json
+import sys
 from typing import Optional
 from util.logger import Logger
 from util.direction import Direction
@@ -55,6 +56,7 @@ class TankClient:
             self.logger.log(f"Sent message to mothership: {message}")
         except socket.error as e:
             self.logger.log(f"Failed to send message: {e}")
+            sys.exit(1)
 
     def receive_message(self) -> Optional[dict]:
         try:
@@ -65,6 +67,7 @@ class TankClient:
                 return response_message
         except socket.error as e:
             self.logger.log(f"Failed to receive message: {e}")
+            sys.exit(1)
 
         return None
 
@@ -72,7 +75,7 @@ class TankClient:
         response = self.receive_message()
         if response:
             if response["type"] != response_type:
-                self.logger.log(f"Received incorrect response type: {response['type']}")
+                self.logger.log(f"Received unexpected response type: {response['type']}")
             else:
                 return response
         return None
