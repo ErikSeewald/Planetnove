@@ -172,12 +172,13 @@ class PlanetView:
         self.screen.fill((25, 25, 25))
 
         # TILES
+        is_planet_mode = self.mode == self.Mode.PLANET
         for tile in self.draggable_tiles:
             if tile != self.dragged_tile:  # Draw all other tiles first
-                tile.draw(self.screen)
+                tile.draw(self.screen, is_planet_mode)
 
         if self.dragged_tile:  # Draw dragged tile on top
-            self.dragged_tile.draw(self.screen)
+            self.dragged_tile.draw(self.screen, is_planet_mode)
 
     def finish_planet(self):
         if not self.can_finish_planet():
@@ -193,19 +194,9 @@ class PlanetView:
             return False
         return joint_attacher.all_tiles_form_one_planet(self.draggable_tiles)
 
-    def can_switch_to_edit_mode(self) -> bool:
-        if self.mode == self.Mode.PLANET:
-            pass
-
-        return True
-
     def switch_mode(self, new_mode: Mode):
         if self.mode == self.Mode.PLANET:
-            if new_mode == self.Mode.EDIT:
-                if self.can_switch_to_edit_mode():
-                    self.mode = self.Mode.EDIT
-            else:
-                self.mode = new_mode
+            self.mode = new_mode
 
         elif self.mode == self.Mode.EDIT:
             if new_mode == self.Mode.PLANET:

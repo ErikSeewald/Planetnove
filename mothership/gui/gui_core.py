@@ -22,7 +22,7 @@ class GUICore:
     planet_view: PlanetView
 
     # DEARPYGUI
-    sub_GUIs: list[SubGUI]
+    sub_GUIs: dict[str, SubGUI] # window tag to SubGui
 
     # COMS
     coms: Communications
@@ -37,10 +37,10 @@ class GUICore:
         # DEARPYGUI
         dpg.create_context()
 
-        self.sub_GUIs = [
-            PlanetViewSubGUI("planet_view", gui_core=self, planet_view=self.planet_view),
-            ComsSubGUI("coms", gui_core=self, coms=self.coms)
-        ]
+        self.sub_GUIs = {
+            "planet_view": PlanetViewSubGUI("planet_view", gui_core=self, planet_view=self.planet_view),
+            "coms": ComsSubGUI("coms", gui_core=self, coms=self.coms)
+        }
 
 
         dpg.create_viewport(title='Mothership', width=1400, height=850)
@@ -57,7 +57,7 @@ class GUICore:
 
         # DEARPYGUI
         dpg.render_dearpygui_frame()
-        for gui in self.sub_GUIs:
+        for gui in self.sub_GUIs.values():
             events.extend(gui.update())
 
         return events
@@ -66,17 +66,17 @@ class GUICore:
         return self.planet_view.mode
 
     def is_start_pos_locked(self) -> bool:
-        for gui in self.sub_GUIs:
-            if isinstance(gui, PlanetViewSubGUI):
-                return gui.start_pos_locked
-        return False
+        return self.sub_GUIs.get("planet_view").start_pos_locked
 
     def get_start_pos(self) -> Optional[tuple[str, Direction]]:
-        for gui in self.sub_GUIs:
-            if isinstance(gui, PlanetViewSubGUI):
-                return gui.start_node_id, gui.start_direction
-        return None
+        planet_view_gui = self.sub_GUIs.get("planet_view")
+        return planet_view_gui.start_node_id, planet_view_gui.start_direction
+
+    def can_switch_to_edit_mode(self) -> bool:
+        return self.sub_GUIs.get("coms").tank_header_state == ComsSubGUI.TankHeaderState.ADDING_TANK
 
     def tank_start_message_callback(self):
         self.coms.send_tank_start_message()
+        self.sub_GUIs.get("coms").switch_to_mode_started()
+
 

@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 from mothership.gui import theme
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.sub_gui import SubGUI
-from mothership.gui.update_event import TileGrabbed, TileReleased, SwitchedToPlanetMode
+from mothership.gui.update_event import TileGrabbed, TileReleased, SwitchedToPlanetMode, UpdateEvent
 from util.direction import Direction
 
 
@@ -79,6 +79,7 @@ class PlanetViewSubGUI(SubGUI):
         if self.event_update_needed():
             self._event_update()
 
+        self._update_edit_button()
         return list()
 
     def event_update_needed(self) -> bool:
@@ -101,10 +102,16 @@ class PlanetViewSubGUI(SubGUI):
                                label="Finish (Disabled - tiles must form a single planet)")
 
     def _update_edit_button(self):
-        if self.planet_view.can_switch_to_edit_mode():
+        if self.planet_view.mode == PlanetView.Mode.EDIT:
+            return
+
+        if self._gui_core.can_switch_to_edit_mode():
             dpg.configure_item("edit_button", enabled=True, show=True, label="Edit planet")
+            dpg.configure_item("start_pos_edit_button", enabled=True, label="Edit")
         else:
-            dpg.configure_item("edit_button", enabled=False, show=True, label="Edit planet (Disabled)")
+            dpg.configure_item("edit_button", enabled=False, show=True,
+                               label="Edit planet (Disabled - disconnect tank to enable)")
+            dpg.configure_item("start_pos_edit_button", enabled=False, label="Edit (Disabled)")
 
     def _viewer_mode_switch(self):
         dpg.configure_item("planet_mode_header", show=self.planet_view.mode == PlanetView.Mode.PLANET)
@@ -125,6 +132,7 @@ class PlanetViewSubGUI(SubGUI):
 
     def _edit_callback(self):
         self.planet_view.switch_mode(PlanetView.Mode.EDIT)
+        self._event_update()
 
     def _save_start_pos_callback(self):
         # STARTING NODE

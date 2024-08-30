@@ -124,17 +124,19 @@ class DraggableTile:
 
         self.joints.get(joint_dir)[joint_num-1] = "None"
 
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen: pygame.Surface, is_planet_mode: bool):
         """
         Draws the tile to the given screen.
         """
+        max_alpha = 255 if is_planet_mode else 180
+
         image: pygame.Surface
         if self.blank_mode:
             image = self.blank_image.copy()
         else:
             image = self.detailed_image.copy()
 
-        image.set_alpha(255 if self.snapped_in_place else 128)
+        image.set_alpha(max_alpha if self.snapped_in_place else 90)
         screen.blit(image, self.rect)
 
     def rotate_right(self):

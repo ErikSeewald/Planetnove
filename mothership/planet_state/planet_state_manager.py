@@ -23,6 +23,9 @@ class PlanetStateManager:
     def set_tank_entity(self, tank_entity: TankEntity):
         self.tank = tank_entity
 
+    def remove_tank_entity(self):
+        self.tank = None
+
     def on_tank_arrival(self):
         if not self.tank.reached_first_node:
             self.tank.reached_first_node = True

@@ -14,11 +14,17 @@ class UpdateEvent(ABC):
 class SwitchedToPlanetMode(UpdateEvent):
     new_planet: Planet
 
+
 @dataclass
 class AddedTank(UpdateEvent):
     tank_ip: str
     starting_node_id: str
     arrival_from: Direction
+
+
+@dataclass
+class DisconnectedTank(UpdateEvent):
+    tank_ip: str
 
 
 @dataclass

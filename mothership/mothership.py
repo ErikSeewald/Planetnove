@@ -1,7 +1,7 @@
 import pygame
 from mothership.gui.gui_core import GUICore
 from mothership.gui.planet_view.tile import DraggableTile
-from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank
+from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
@@ -33,7 +33,7 @@ class Mothership:
 
     def loop(self):
         communication_timer = 0
-        communication_interval = 1000  # Update communications every second
+        communication_interval = 500  # Update communications every 0.5 seconds
 
         while dpg.is_dearpygui_running():
             # GUI
@@ -57,5 +57,10 @@ class Mothership:
             if isinstance(event, AddedTank):
                 tank_entity = TankEntity(event.tank_ip, event.starting_node_id, event.arrival_from.invert())
                 self.planet_manager.set_tank_entity(tank_entity)
+
+            if isinstance(event, DisconnectedTank):
+                self.communications.disconnect_tank()
+                self.planet_manager.remove_tank_entity()
+
     def set_planet(self, planet: Planet):
         self.planet_manager.set_planet(planet)

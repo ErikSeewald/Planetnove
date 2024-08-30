@@ -1,4 +1,6 @@
 import json
+import struct
+import sys
 import threading
 import time
 from collections import deque
@@ -21,6 +23,7 @@ class Communications:
     server_port: int
     tank_socket: Optional[socket]
     tank_address: Optional[Any]
+    last_msg_to_tank: Optional[dict]
 
     logger: Logger
 
@@ -29,6 +32,8 @@ class Communications:
 
     _COMS_CONFIG_PATH: str = "coms_config.json"
 
+    tank_disconnect_async_due: bool
+
     def __init__(self, planet_manager: PlanetStateManager, logger: Logger):
         self.logger = logger
         self._load_coms_config()
@@ -36,6 +41,8 @@ class Communications:
         self.planet_manager = planet_manager
         self.tank_socket = None
         self.tank_address = None
+        self.tank_disconnect_async_due = False
+        self.last_msg_to_tank = None
 
         self.unprocessed_tank_messages = deque()
         self.lock = threading.Lock()
@@ -68,7 +75,7 @@ class Communications:
         if tank_address[0] == expected_ip:
             self.tank_socket = tank_socket
             self.tank_address = tank_address
-            self.tank_socket.settimeout(0.5)
+            self.tank_socket.settimeout(0.4)
             time.sleep(1) # Give connection some time to be fully set up on both ends, weird errors otherwise
             self.logger.log(f"Accepted connection from {tank_address}")
             return True
@@ -76,6 +83,19 @@ class Communications:
             self.logger.log(f"Rejected connection from {tank_address}")
             tank_socket.close()
             return False
+
+    def disconnect_tank(self):
+        # Async so that we don't break the async socket update thread
+        self.tank_disconnect_async_due = True
+
+    def _async_tank_disconnect(self):
+        if self.tank_socket is None:
+            return
+
+        self.tank_socket.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
+        self.tank_socket.close()
+        self.tank_socket = None
+        self.tank_address = None
 
     def update(self):
         # Receive messages asynchronously
@@ -95,6 +115,11 @@ class Communications:
         if self.tank_socket is None:
             return
 
+        if self.tank_disconnect_async_due:
+            self._async_tank_disconnect()
+            self.tank_disconnect_async_due = False
+            return
+
         try:
             data = self.tank_socket.recv(1024)
             if data:
@@ -107,22 +132,38 @@ class Communications:
                     json_message = json.loads(message)
                     self.unprocessed_tank_messages.append(json_message)
         except socket.timeout:
-            pass # Socket timeout of 1 second
+            pass
+        except ConnectionResetError as e:
+            self.logger.log(f"Failed to update tank socket: {e}")
 
     def handle_tank_message(self, message: dict):
         self.logger.log(f"Processing message from tank: {message}")
 
         if message['type'] == "node_arrival":
-            self.planet_manager.on_tank_arrival()
-            self.send_msg_to_tank(self.planet_manager.tank_arrival_response())
+            self.handle_on_arrival(message)
 
         if message['type'] == "path_chosen":
-            response = self.planet_manager.tank_path_chosen_response(Direction.from_str(message['direction']))
-            self.send_msg_to_tank(response)
+            self.handle_path_chosen(message)
+
+    def handle_on_arrival(self, _message: dict):
+        last_message_was_approval = (self.last_msg_to_tank['type'] == "path_chosen_response"
+                                     and self.last_msg_to_tank['request_response']['is_approved'])
+
+        if last_message_was_approval or not self.planet_manager.tank.reached_first_node:
+            self.planet_manager.on_tank_arrival()
+            self.send_msg_to_tank(self.planet_manager.tank_arrival_response())
+        else:
+            self.send_msg_to_tank(
+                message={"type": "error", "msg": "Last departure was not approved by the mothership"})
+
+    def handle_path_chosen(self, message: dict):
+        response = self.planet_manager.tank_path_chosen_response(Direction.from_str(message['direction']))
+        self.send_msg_to_tank(response)
 
     def send_msg_to_tank(self, message: dict):
         self.tank_socket.sendall(json.dumps(message).encode('utf-8'))
         self.logger.log(f"Sent message to tank: {message}")
+        self.last_msg_to_tank = message
 
     def send_tank_start_message(self):
         message = {
