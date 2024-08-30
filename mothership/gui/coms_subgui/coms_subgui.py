@@ -31,7 +31,7 @@ class ComsSubGUI(SubGUI):
         self.tank_disconnect_event_scheduled = False
 
         # WINDOW
-        with dpg.window(label="Communications", width=400, height=200, no_close=True, tag=self.tag,
+        with dpg.window(label="Communications", width=400, height=200, no_close=True, tag=self.tag, no_move=True,
                         pos=[10, 250]) as window_id:
             theme.apply_window_theme(window_id)
 

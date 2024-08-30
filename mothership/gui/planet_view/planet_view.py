@@ -41,9 +41,7 @@ class PlanetView:
     planet_mode_switch_scheduled: bool
 
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
-
         # PYGAME
-        pygame.init()
         self.screen = pygame.display.set_mode((1400, 800), pygame.RESIZABLE)
         pygame.display.set_caption("Planet view")
 

@@ -64,3 +64,4 @@ class Mothership:
 
     def set_planet(self, planet: Planet):
         self.planet_manager.set_planet(planet)
+        self.gui.add_planet_DEBUG(planet) # TODO: Remove

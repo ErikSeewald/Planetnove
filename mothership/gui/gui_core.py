@@ -1,5 +1,8 @@
 from typing import Optional
+import pygame
 
+from mothership.gui.tank_internal_map.tank_map_renderer import TankMapRenderer
+from mothership.gui.tank_internal_map.tank_map_subgui import TankMapSubGUI
 from mothership.gui.update_event import UpdateEvent
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
@@ -28,7 +31,7 @@ class GUICore:
     coms: Communications
 
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], coms: Communications):
-        # PLANET VIEW
+        pygame.init()
         self.planet_view = PlanetView(draggable_tiles, tile_data)
 
         # COMS
@@ -39,11 +42,11 @@ class GUICore:
 
         self.sub_GUIs = {
             "planet_view": PlanetViewSubGUI("planet_view", gui_core=self, planet_view=self.planet_view),
-            "coms": ComsSubGUI("coms", gui_core=self, coms=self.coms)
+            "coms": ComsSubGUI("coms", gui_core=self, coms=self.coms),
+            "tank_map": TankMapSubGUI("tank_map", gui_core=self)
         }
 
-
-        dpg.create_viewport(title='Mothership', width=1400, height=850)
+        dpg.create_viewport(title='Mothership', width=1100, height=770)
         dpg.set_viewport_clear_color([20, 20, 20, 255])
         dpg.setup_dearpygui()
         dpg.show_viewport()
@@ -78,5 +81,9 @@ class GUICore:
     def tank_start_message_callback(self):
         self.coms.send_tank_start_message()
         self.sub_GUIs.get("coms").switch_to_mode_started()
+
+    # TODO: Remove
+    def add_planet_DEBUG(self, planet):
+        self.sub_GUIs.get("tank_map").load_image(TankMapRenderer.render_map_image(planet))
 
 

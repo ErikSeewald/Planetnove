@@ -96,6 +96,11 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
 
     for tile_id, tile in tile_data.items():
         for path in tile[1].paths:
+            # Do not consider joint to joint paths here, only in the recursion of parse_path_node()
+            # Doing so would break the tile.rotation_deg use
+            if "joint" in path.from_ and "joint" in path.to_:
+                continue
+
 
             # PATH NODE IDs
             node_a: str = parse_path_node(path.from_, tile_id, tile_data)

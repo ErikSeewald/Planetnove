@@ -26,7 +26,7 @@ class PlanetViewSubGUI(SubGUI):
         self.start_direction = Direction.UNKNOWN
 
         # WINDOW
-        with dpg.window(label="Planet View", width=400, height=200, no_close=True, tag=self.tag,
+        with dpg.window(label="Planet View", width=400, height=200, no_close=True, tag=self.tag, no_move=True,
                         pos=[10, 10]) as window_id:
             theme.apply_window_theme(window_id)
 
