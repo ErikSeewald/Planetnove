@@ -122,6 +122,7 @@ class Communications:
 
     def send_msg_to_tank(self, message: dict):
         self.tank_socket.sendall(json.dumps(message).encode('utf-8'))
+        self.logger.log(f"Sent message to tank: {message}")
 
     def send_tank_start_message(self):
         message = {

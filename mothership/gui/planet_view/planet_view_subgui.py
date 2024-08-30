@@ -59,7 +59,7 @@ class PlanetViewSubGUI(SubGUI):
                     text_id = dpg.add_text("", tag="start_node_text", show=False)
                     theme.apply_text_theme(text_id)
 
-                    input_id = dpg.add_input_text(hint="Arrival direction", tag="start_direction_input")
+                    input_id = dpg.add_input_text(hint="Arrival from direction", tag="start_direction_input")
                     theme.apply_input_theme(input_id)
                     text_id = dpg.add_text("", tag="start_direction_text", show=False)
                     theme.apply_text_theme(text_id)
@@ -117,7 +117,7 @@ class PlanetViewSubGUI(SubGUI):
 
         dpg.configure_item("start_pos_edit_button", show=self.start_pos_locked)
         dpg.configure_item("start_node_text", default_value=f"Node: {self.start_node_id}", show=self.start_pos_locked)
-        dpg.configure_item("start_direction_text", default_value=f"Arrival direction {self.start_direction.name}",
+        dpg.configure_item("start_direction_text", default_value=f"Arrival from direction: {self.start_direction.name}",
                            show=self.start_pos_locked)
 
     def _finish_planet_callback(self):

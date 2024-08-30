@@ -164,7 +164,7 @@ class TankRobot:
             self.logger.log("Waiting for path_chosen_response...")
             response = self.client.get_path_chosen_response()
 
-        if response['is_approved']:
+        if response['request_response']['is_approved']:
             self.next_departure_direction = depart_dir
             self.logger.log(f"Next departure direction: {self.next_departure_direction}")
             self.switch_state(self.TankState.READY_TO_DEPART)
