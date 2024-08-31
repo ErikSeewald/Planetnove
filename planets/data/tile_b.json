@@ -9,12 +9,12 @@
 		},
 
 		{
-			"name": "bunyold",
+			"name": "bunyol",
 			"node_coord": [1, 3]
 		},
 
 		{
-			"name": "bomvorn",
+			"name": "bomvor",
 			"node_coord": [2, 3]
 		},
 
@@ -24,7 +24,7 @@
 		},
 
 		{
-			"name": "beltrix",
+			"name": "beltix",
 			"node_coord": [3, 2]
 		}
 	],
@@ -36,32 +36,32 @@
 		},
 
 		{
-			"from": "bunyold:N",
+			"from": "bunyol:N",
 			"to": "joint_N1"
 		},
 
 		{
-			"from": "bunyold:E",
-			"to": "bomvorn:W"
+			"from": "bunyol:E",
+			"to": "bomvor:W"
 		},
 
 		{
-			"from": "bunyold:S",
+			"from": "bunyol:S",
 			"to": "joint_S2"
 		},
 
 		{
-			"from": "bunyold:W",
+			"from": "bunyol:W",
 			"to": "joint_W3"
 		},
 
 		{
-			"from": "bomvorn:N",
+			"from": "bomvor:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"from": "bomvorn:E",
+			"from": "bomvor:E",
 			"to": "bylora:W"
 		},
 
@@ -77,16 +77,16 @@
 
 		{
 			"from": "bylora:S",
-			"to": "beltrix:N"
+			"to": "beltix:N"
 		},
 
 		{
-			"from": "beltrix:E",
+			"from": "beltix:E",
 			"to": "joint_E2"
 		},
 
 		{
-			"from": "beltrix:W",
+			"from": "beltix:W",
 			"to": "joint_E1"
 		}
 	]

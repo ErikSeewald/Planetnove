@@ -27,7 +27,12 @@ class TankMapSubGUI(SubGUI):
     def update(self) -> list[UpdateEvent]:
         return list()
 
-    def update_image(self, image: np.ndarray) -> None:
+    @staticmethod
+    def remove_image():
+        if dpg.does_item_exist("image"):
+            dpg.delete_item("image")
+
+    def update_image(self, image: np.ndarray):
         texture_tag = f"frame_{self.cur_frame_index}"
 
         # Normalize image format

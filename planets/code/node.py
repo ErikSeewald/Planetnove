@@ -42,7 +42,7 @@ class Node:
             "name": self.name,
             "coord": {"x": self.coord.x, "y": self.coord.y},
             "known_paths": {d.name: p for d, p in self.known_paths.items()},
-            "available_paths": {d.name for d in self.available_paths}
+            "available_paths": [d.name for d in self.available_paths]
         }
 
     @staticmethod

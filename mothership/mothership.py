@@ -63,6 +63,7 @@ class Mothership:
             if isinstance(event, DisconnectedTank):
                 self.communications.disconnect_tank()
                 self.planet_manager.remove_tank_entity()
+                self.gui.remove_tank_internal_planet()
 
     def handle_coms_events(self, events: list[UpdateEvent]):
         for event in events:

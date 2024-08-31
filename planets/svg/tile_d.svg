@@ -39,8 +39,8 @@
   <rect x="325" y="860" width="115" height="40" fill="#992cff"/>
   <text x="337" y="887" font-family="Verdana" font-size="25" fill="#ffffff">dynara</text>
 
-  <rect x="730" y="800" width="115" height="40" fill="#992cff"/>
-  <text x="745" y="829" font-family="Verdana" font-size="25" fill="#ffffff">dallora</text>
+  <rect x="730" y="800" width="110" height="40" fill="#992cff"/>
+  <text x="745" y="829" font-family="Verdana" font-size="25" fill="#ffffff">dalora</text>
 
   <rect x="730" y="150" width="115" height="40" fill="#992cff"/>
   <text x="745" y="178" font-family="Verdana" font-size="25" fill="#ffffff">duskar</text>

@@ -3,22 +3,22 @@
 
 	"nodes": [
 		{
-			"name": "calytra",
+			"name": "calyta",
 			"node_coord": [1, 1]
 		},
 
 		{
-			"name": "celonix",
+			"name": "celiox",
 			"node_coord": [1, 3]
 		},
 
 		{
-			"name": "cygnara",
+			"name": "cygnar",
 			"node_coord": [2, 3]
 		},
 
 		{
-			"name": "ceradia",
+			"name": "cerdia",
 			"node_coord": [2, 2]
 		},
 
@@ -30,59 +30,59 @@
 
 	"paths": [
 		{
-			"from": "calytra:E",
-			"to": "calytra:N"
+			"from": "calyta:E",
+			"to": "calyta:N"
 		},
 
 		{
-			"from": "calytra:S",
+			"from": "calyta:S",
 			"to": "joint_S1"
 		},
 
 
 		{
-			"from": "calytra:W",
+			"from": "calyta:W",
 			"to": "joint_W1"
 		},
 
 
 		{
-			"from": "celonix:N",
+			"from": "celiox:N",
 			"to": "joint_N1"
 		},
 
 		{
-			"from": "celonix:S",
-			"to": "cygnara:W"
+			"from": "celiox:S",
+			"to": "cygnar:W"
 		},
 
 		{
-			"from": "celonix:W",
+			"from": "celiox:W",
 			"to": "joint_W3"
 		},
 
 		{
-			"from": "cygnara:N",
+			"from": "cygnar:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"from": "cygnara:E",
+			"from": "cygnar:E",
 			"to": "joint_E3"
 		},
 
 		{
-			"from": "cygnara:S",
-			"to": "ceradia:N"
+			"from": "cygnar:S",
+			"to": "cerdia:N"
 		},
 
 		{
-			"from": "ceradia:E",
+			"from": "cerdia:E",
 			"to": "corvex:W"
 		},
 
 		{
-			"from": "ceradia:S",
+			"from": "cerdia:S",
 			"to": "joint_S2"
 		},
 

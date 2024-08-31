@@ -13,8 +13,9 @@ class TankMapRenderer:
     """
 
     WHITE = (255, 255, 255)
+    GREY = (90, 90, 90)
     BACKGROUND_COL = (25, 25, 25)
-    NODE_COL_BRIGHT = (60, 130, 90)
+    NODE_COL_BRIGHT = (20, 130, 70)
     NODE_COL_DARK = (10, 60, 35)
 
     COORD_TO_PIXEL = 100
@@ -52,15 +53,24 @@ class TankMapRenderer:
         image_surface: pygame.Surface = pygame.Surface((width, height))
         image_surface.fill(TankMapRenderer.BACKGROUND_COL)
 
+        # UNEXPLORED NODE PATHS (Separate from both paths and node loops for rendering order)
+        for node_id, node in planet.nodes.items():
+            pos = TankMapRenderer._position_adjusted(node.coord, min_x, min_y, height)
+
+            for direction in node.available_paths:
+                if node.known_paths[direction] == "None":
+                    path_pos = TankMapRenderer._offset_path_coord(pos, direction, is_unexplored=True)
+                    pygame.draw.line(image_surface, TankMapRenderer.GREY, pos, path_pos, width=2)
+
         # PATHS
         for path_id, path in planet.paths.items():
             node_a = planet.nodes.get(path.node_a)
             node_pos_a = TankMapRenderer._position_adjusted(node_a.coord, min_x, min_y, height)
-            path_pos_a = TankMapRenderer._offset_path_coord(node_pos_a, path.direction_a)
+            path_pos_a = TankMapRenderer._offset_path_coord(node_pos_a, path.direction_a, is_unexplored=False)
 
             node_b = planet.nodes.get(path.node_b)
             node_pos_b = TankMapRenderer._position_adjusted(node_b.coord, min_x, min_y, height)
-            path_pos_b = TankMapRenderer._offset_path_coord(node_pos_b, path.direction_b)
+            path_pos_b = TankMapRenderer._offset_path_coord(node_pos_b, path.direction_b, is_unexplored=False)
 
             pygame.draw.line(image_surface, TankMapRenderer.WHITE, node_pos_a, path_pos_a, width=2)
             pygame.draw.line(image_surface, TankMapRenderer.WHITE, path_pos_a, path_pos_b, width=2)
@@ -87,8 +97,8 @@ class TankMapRenderer:
             pos = TankMapRenderer._position_adjusted(node.coord, min_x, min_y, height)
 
             # Text surfaces
-            if len(node_id) > 7:
-                node_id = f"{node_id[:7]}-"
+            if len(node_id) > 6:
+                node_id = f"{node_id[:5]}-"
             name_surface = font.render(node_id, True, TankMapRenderer.WHITE)
             coord_surface = font.render(node.coord.__str__(), True, TankMapRenderer.WHITE)
 
@@ -118,15 +128,17 @@ class TankMapRenderer:
         image_surface.blit(text_surface, pos)
 
     @staticmethod
-    def _offset_path_coord(position: (int, int), direction: Direction) -> (int, int):
+    def _offset_path_coord(position: (int, int), direction: Direction, is_unexplored: bool) -> (int, int):
+        extra_offset = 25 if is_unexplored else 0
+
         if direction == Direction.NORTH:
-            return position[0], position[1] - 45
+            return position[0], position[1] - 40
         elif direction == Direction.EAST:
-            return position[0] + 65, position[1]
+            return position[0] + 65 - extra_offset, position[1]
         elif direction == Direction.SOUTH:
-            return position[0], position[1] + 45
+            return position[0], position[1] + 35
         elif direction == Direction.WEST:
-            return position[0] - 45, position[1]
+            return position[0] - 40, position[1]
         else:
             return -1, -1
 

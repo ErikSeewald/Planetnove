@@ -18,7 +18,7 @@
 		},
 
 		{
-			"name": "dallora",
+			"name": "dalora",
 			"node_coord": [3, 1]
 		}
 	],
@@ -31,7 +31,7 @@
 
 		{
 			"from": "dynara:E",
-			"to": "dallora:W"
+			"to": "dalora:W"
 		},
 
 		{
@@ -67,17 +67,17 @@
 
 		{
 			"from": "duskar:S",
-			"to": "dallora:N"
+			"to": "dalora:N"
 		},
 
 		{
-			"from": "dallora:E",
+			"from": "dalora:E",
 			"to": "joint_E1"
 		},
 
 
 		{
-			"from": "dallora:S",
+			"from": "dalora:S",
 			"to": "joint_S3"
 		},
 

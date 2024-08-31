@@ -38,18 +38,18 @@
 
   <!--INFO-->
   <rect x="155" y="915" width="110" height="40" fill="#e95100"/>
-  <text x="167" y="943" font-family="Verdana" font-size="25" fill="#ffffff">calytra</text>
+  <text x="167" y="943" font-family="Verdana" font-size="25" fill="#ffffff">calyta</text>
 
   <rect x="821" y="415" width="115" height="40" fill="#e95100"/>
   <text x="836" y="443" font-family="Verdana" font-size="25" fill="#ffffff">corvex</text>
 
-  <rect x="535" y="152" width="115" height="40" fill="#e95100"/>
-  <text x="543" y="179" font-family="Verdana" font-size="25" fill="#ffffff">cygnara</text>
+  <rect x="535" y="152" width="102" height="40" fill="#e95100"/>
+  <text x="543" y="179" font-family="Verdana" font-size="25" fill="#ffffff">cygnar</text>
 
-  <rect x="535" y="425" width="115" height="40" fill="#e95100"/>
-  <text x="546" y="453" font-family="Verdana" font-size="25" fill="#ffffff">ceradia</text>
+  <rect x="535" y="425" width="100" height="40" fill="#e95100"/>
+  <text x="547" y="453" font-family="Verdana" font-size="25" fill="#ffffff">cerdia</text>
 
-  <rect x="175" y="100" width="115" height="40" fill="#e95100"/>
-  <text x="187" y="128" font-family="Verdana" font-size="25" fill="#ffffff">celonix</text>
+  <rect x="175" y="100" width="97" height="40" fill="#e95100"/>
+  <text x="187" y="128" font-family="Verdana" font-size="25" fill="#ffffff">celiox</text>
 
 </svg>

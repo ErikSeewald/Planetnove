@@ -125,20 +125,33 @@ class Communications:
             return
 
         try:
-            data = self.tank_socket.recv(1024)
-            if data:
-                message = data.decode('utf-8')
+            message_buffer = []
+
+            while True:
+                # Receive data in chunks
+                data = self.tank_socket.recv(1024)
+                if not data:
+                    break
+
+                message_buffer.append(data.decode('utf-8'))
+                message = ''.join(message_buffer)
 
                 if message == "ping":
-                    # Ping is allowed to be handled asynchronously
+                    # Handle 'ping' message asynchronously
                     self.tank_socket.sendall(b"pong")
-                else:
+                    break
+
+                try:
+                    # Attempt to parse message as JSON
                     json_message = json.loads(message)
                     self.unprocessed_tank_messages.append(json_message)
+                    break
+                except json.JSONDecodeError:
+                    # JSON not yet complete -> continue receiving data
+                    continue
+
         except socket.timeout:
             pass
-        except ConnectionResetError as e:
-            self.logger.log(f"Failed to update tank socket: {e}")
 
     def handle_tank_message(self, message: dict) -> list[UpdateEvent]:
         events: list[UpdateEvent] = list()

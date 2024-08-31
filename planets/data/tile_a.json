@@ -3,17 +3,17 @@
 
 	"nodes": [
 		{
-			"name": "astrago",
+			"name": "astago",
 			"node_coord": [1, 2]
 		},
 
 		{
-			"name": "aventis",
+			"name": "avetis",
 			"node_coord": [2, 2]
 		},
 
 		{
-			"name": "arconis",
+			"name": "arcios",
 			"node_coord": [2, 3]
 		}
 	],
@@ -25,37 +25,37 @@
 		},
 
 		{
-			"from": "astrago:N",
+			"from": "astago:N",
 			"to": "joint_N1"
 		},
 
 		{
-			"from": "astrago:E",
-			"to": "aventis:W"
+			"from": "astago:E",
+			"to": "avetis:W"
 		},
 
 		{
-			"from": "astrago:S",
+			"from": "astago:S",
 			"to": "joint_S1"
 		},
 
 		{
-			"from": "astrago:W",
+			"from": "astago:W",
 			"to": "joint_W2"
 		},
 
 		{
-			"from": "aventis:N",
-			"to": "arconis:S"
+			"from": "avetis:N",
+			"to": "arcios:S"
 		},
 
 		{
-			"from": "arconis:N",
+			"from": "arcios:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"from": "arconis:E",
+			"from": "arcios:E",
 			"to": "joint_E3"
 		}
 	]

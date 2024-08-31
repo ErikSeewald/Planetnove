@@ -1,6 +1,5 @@
 from typing import Optional
 import pygame
-
 from mothership.gui.tank_internal_map.tank_map_renderer import TankMapRenderer
 from mothership.gui.tank_internal_map.tank_map_subgui import TankMapSubGUI
 from mothership.gui.update_event import UpdateEvent
@@ -13,7 +12,6 @@ from mothership.io.communications import Communications
 from planets.code.planet import Planet
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
-
 from util.direction import Direction
 
 
@@ -88,6 +86,8 @@ class GUICore:
             TankMapRenderer.render_map_image(planet, cur_node)
         )
 
+    def remove_tank_internal_planet(self):
+        self.sub_GUIs.get("tank_map").remove_image()
 
 
 
