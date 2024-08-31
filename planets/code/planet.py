@@ -1,5 +1,5 @@
+from __future__ import annotations
 from pygame import Vector2
-
 from planets.code.node import Node
 from planets.code.path import Path
 from util.direction import Direction
@@ -17,9 +17,9 @@ class Planet:
     nodes: dict[str, Node] # Maps node id to Node
     paths: dict[str, Path] # Maps path id to Path
 
-    def __init__(self, nodes: dict[str, Node], known_paths: dict[str, Path]):
+    def __init__(self, nodes: dict[str, Node], paths: dict[str, Path]):
         self.nodes = nodes
-        self.paths = known_paths
+        self.paths = paths
 
     def node_has_path_direction(self, node_id: str, direction: Direction) -> bool:
         path = self.nodes.get(node_id).known_paths.get(direction)
@@ -37,6 +37,19 @@ class Planet:
             raise ValueError(f"Cannot add path with unknown node {path.node_b}")
 
         self.paths[path.name] = path
+
+    def to_dict(self) -> dict:
+        return {
+            "nodes": {name: n.to_dict() for name, n in self.nodes},
+            "paths": {name: p.to_dict() for name, p in self.paths}
+        }
+
+    @staticmethod
+    def from_dict(planet_dict: dict) -> Planet:
+        return Planet(
+            nodes={name: Node.from_dict(n) for name, n in planet_dict['nodes']},
+            paths={name: Path.from_dict(p) for name, p in planet_dict['paths']}
+        )
 
     def __str__(self) -> str:
         return f"Nodes: {self.nodes}\nPaths: {self.paths}"

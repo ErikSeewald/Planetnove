@@ -10,6 +10,7 @@ from mothership.gui.planet_view.tile import DraggableTile
 from mothership.gui.coms_subgui.coms_subgui import ComsSubGUI
 from mothership.gui.sub_gui import SubGUI
 from mothership.io.communications import Communications
+from planets.code.planet import Planet
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
@@ -82,8 +83,11 @@ class GUICore:
         self.coms.send_tank_start_message()
         self.sub_GUIs.get("coms").switch_to_mode_started()
 
-    # TODO: Remove
-    def add_planet_DEBUG(self, planet):
-        self.sub_GUIs.get("tank_map").load_image(TankMapRenderer.render_map_image(planet))
+    def set_tank_internal_planet(self, planet: Planet, cur_node: str):
+        self.sub_GUIs.get("tank_map").update_image(
+            TankMapRenderer.render_map_image(planet, cur_node)
+        )
+
+
 
 

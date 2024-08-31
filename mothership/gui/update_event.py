@@ -35,3 +35,9 @@ class TileGrabbed(UpdateEvent):
 @dataclass
 class TileReleased(UpdateEvent):
     pass
+
+
+@dataclass
+class TankPlanetUpdate(UpdateEvent):
+    planet: Planet
+    cur_node: str

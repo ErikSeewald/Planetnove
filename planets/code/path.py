@@ -1,3 +1,4 @@
+from __future__ import annotations
 from util.direction import Direction
 
 
@@ -30,3 +31,18 @@ class Path:
 
     def __str__(self):
         return self.name
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "node_a": self.node_a,
+            "node_b": self.node_b,
+            "direction_a": self.direction_a.abbreviation(),
+            "direction_b": self.direction_b.abbreviation()
+        }
+
+    @staticmethod
+    def from_dict(path_dict: dict) -> Path:
+        return Path(name=path_dict['name'],
+                    node_a_with_dir=f"{path_dict['node_a']}:{path_dict['direction_a']}",
+                    node_b_with_dir=f"{path_dict['node_b']}:{path_dict['direction_b']}")

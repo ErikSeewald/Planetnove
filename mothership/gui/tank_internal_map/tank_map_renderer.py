@@ -14,13 +14,13 @@ class TankMapRenderer:
 
     WHITE = (255, 255, 255)
     BACKGROUND_COL = (25, 25, 25)
-    NODE_COL = (40, 110, 70)
-    NODE_COL_DARKER = (10, 60, 35)
+    NODE_COL_BRIGHT = (60, 130, 90)
+    NODE_COL_DARK = (10, 60, 35)
 
     COORD_TO_PIXEL = 100
 
     @staticmethod
-    def render_map_image(planet: Planet) -> np.ndarray:
+    def render_map_image(planet: Planet, cur_node: str) -> np.ndarray:
         """
         Assumes pygame is initialized.
         """
@@ -99,7 +99,9 @@ class TankMapRenderer:
             background_height = name_size[1] + coord_size[1] + 10
 
             background_top_left = (pos[0] - 20, pos[1] - 20)
-            pygame.draw.rect(image_surface, TankMapRenderer.NODE_COL_DARKER,
+
+            color = TankMapRenderer.NODE_COL_BRIGHT if node_id == cur_node else TankMapRenderer.NODE_COL_DARK
+            pygame.draw.rect(image_surface, color,
                              (*background_top_left, background_width, background_height))
 
             # Blit text surfaces on top of the bounding box

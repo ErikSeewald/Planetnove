@@ -27,7 +27,7 @@ class TankMapSubGUI(SubGUI):
     def update(self) -> list[UpdateEvent]:
         return list()
 
-    def load_image(self, image: np.ndarray) -> None:
+    def update_image(self, image: np.ndarray) -> None:
         texture_tag = f"frame_{self.cur_frame_index}"
 
         # Normalize image format

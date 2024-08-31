@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pygame import Vector2
 from util.direction import Direction
 
@@ -35,3 +36,18 @@ class Node:
     def make_path_unavailable(self, direction: Direction):
         self.available_paths.remove(direction)
         self.known_paths.pop(direction)
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "coord": {"x": self.coord.x, "y": self.coord.y},
+            "known_paths": {d.name: p for d, p in self.known_paths.items()},
+            "available_paths": {d.name for d in self.available_paths}
+        }
+
+    @staticmethod
+    def from_dict(node_dict: dict) -> Node:
+        node = Node(name=node_dict['name'], coord=Vector2(node_dict['coord']['x'], node_dict['coord']['y']))
+        node.known_paths = {Direction.from_str(d): p for d, p in node_dict['known_paths'].items()}
+        node.available_paths = {Direction.from_str(d) for d in node_dict['available_paths']}
+        return node

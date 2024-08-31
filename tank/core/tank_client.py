@@ -2,6 +2,8 @@ import socket
 import json
 import sys
 from typing import Optional
+
+from planets.code.planet import Planet
 from util.logger import Logger
 from util.direction import Direction
 
@@ -53,7 +55,11 @@ class TankClient:
         try:
             message_str = json.dumps(message)
             self.client_socket.sendall(message_str.encode('utf-8'))
-            self.logger.log(f"Sent message to mothership: {message}")
+
+            if message['type'] == "internal_planet":
+                self.logger.log(f"Sent internal planet to mothership")
+            else:
+                self.logger.log(f"Sent message to mothership: {message}")
         except socket.error as e:
             self.logger.log(f"Failed to send message: {e}")
             sys.exit(1)
@@ -102,5 +108,13 @@ class TankClient:
 
     def get_path_chosen_response(self) -> Optional[dict]:
         return self.get_response_of_type("path_chosen_response")
+
+    def send_internal_planet_update(self, planet: Planet, cur_node: str):
+        message = {
+            "type": "internal_planet",
+            "planet": planet.to_dict(),
+            "cur_node": cur_node
+        }
+        self.send_message(message)
 
 

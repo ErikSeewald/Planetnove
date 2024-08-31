@@ -62,7 +62,7 @@ class TankRobot:
         self.last_departure_direction = Direction.UNKNOWN
         self.next_departure_direction = Direction.UNKNOWN
 
-        self.planet = Planet(nodes=dict(), known_paths=dict())
+        self.planet = Planet(nodes=dict(), paths=dict())
         self.cur_node_id = "None"
         self.cur_node_coord = Vector2(-1, -1)
         self.reached_first_node = False
@@ -159,8 +159,9 @@ class TankRobot:
                 self.logger.log(f"Added path {arrival_path} to the planet map")
                 self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
 
-        print(self.planet)
+        self.client.send_internal_planet_update(self.planet, self.cur_node_id)
         self.choose_path()
+
 
     def choose_path(self, rejected_directions: set[Direction] = None):
         # TODO: Replace with actual path choosing and handle rejected_directions

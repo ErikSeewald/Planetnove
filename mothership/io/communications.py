@@ -5,9 +5,12 @@ import threading
 import time
 from collections import deque
 from typing import Optional, Any
+
+from mothership.gui.update_event import UpdateEvent, TankPlanetUpdate
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 import socket
 
+from planets.code.planet import Planet
 from util.direction import Direction
 from util.logger import Logger
 
@@ -97,19 +100,20 @@ class Communications:
         self.tank_socket = None
         self.tank_address = None
 
-    def update(self):
+    def update(self) -> list[UpdateEvent]:
         # Receive messages asynchronously
         receive_thread = threading.Thread(target=self.update_tank_socket, daemon=True)
         receive_thread.start()
 
         # Process messages synchronously
+        events: list[UpdateEvent] = list()
         while True:
             with self.lock:
                 if self.unprocessed_tank_messages:
                     msg = self.unprocessed_tank_messages.pop()
                 else:
-                    return
-            self.handle_tank_message(msg)
+                    return events
+            events.extend(self.handle_tank_message(msg))
 
     def update_tank_socket(self):
         if self.tank_socket is None:
@@ -136,14 +140,28 @@ class Communications:
         except ConnectionResetError as e:
             self.logger.log(f"Failed to update tank socket: {e}")
 
-    def handle_tank_message(self, message: dict):
-        self.logger.log(f"Processing message from tank: {message}")
+    def handle_tank_message(self, message: dict) -> list[UpdateEvent]:
+        events: list[UpdateEvent] = list()
 
-        if message['type'] == "node_arrival":
-            self.handle_on_arrival(message)
+        if message['type'] == "internal_planet":
+            self.logger.log(f"Processing tank internal planet message")
+            events.extend(self.handle_internal_planet_msg(message))
+        else:
+            self.logger.log(f"Processing message from tank: {message}")
 
-        if message['type'] == "path_chosen":
-            self.handle_path_chosen(message)
+            if message['type'] == "node_arrival":
+                self.handle_on_arrival(message)
+
+            elif message['type'] == "path_chosen":
+                self.handle_path_chosen(message)
+
+        return events
+
+    @staticmethod
+    def handle_internal_planet_msg(message: dict) -> list[UpdateEvent]:
+        return [
+            TankPlanetUpdate(planet=Planet.from_dict(message['planet']), cur_node=message['cur_node'])
+        ]
 
     def handle_on_arrival(self, _message: dict):
         last_message_was_approval = (self.last_msg_to_tank['type'] == "path_chosen_response"
