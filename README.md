@@ -7,7 +7,7 @@ position. To keep the cost of communications low, the tank has to remember the m
 ## Board
 The board representing the planets is made up of 1m x 1m white wooden pieces that can be rearranged into different layouts. Each board has 3 connecting points at each of its 4 edges. These are the only points
 on which a path can connect to another piece. This way, new maps can modularly and dynamically be constructed by simply shifting these puzzle pieces.
-Please note that most of the rendering functions are calibrated to work with node names of length 6.
+Please note that most of the rendering functions are calibrated to work with node names of length 6. The node rendering function of the tank internal map gui will cut off the node name if it is too many pixels wide.
 
 ## Mothership
 Unlike the other actors, the mothership is not a physical agent on the board. It receives messages from and sends commands to its agents from afar.

@@ -14,7 +14,7 @@
 		},
 
 		{
-			"name": "bomvor",
+			"name": "bolvor",
 			"node_coord": [2, 3]
 		},
 
@@ -42,7 +42,7 @@
 
 		{
 			"from": "bunyol:E",
-			"to": "bomvor:W"
+			"to": "bolvor:W"
 		},
 
 		{
@@ -56,12 +56,12 @@
 		},
 
 		{
-			"from": "bomvor:N",
+			"from": "bolvor:N",
 			"to": "joint_N2"
 		},
 
 		{
-			"from": "bomvor:E",
+			"from": "bolvor:E",
 			"to": "bylora:W"
 		},
 

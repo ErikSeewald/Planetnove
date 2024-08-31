@@ -97,10 +97,13 @@ class TankMapRenderer:
             pos = TankMapRenderer._position_adjusted(node.coord, min_x, min_y, height)
 
             # Text surfaces
-            if len(node_id) > 6:
-                node_id = f"{node_id[:5]}-"
-            name_surface = font.render(node_id, True, TankMapRenderer.WHITE)
-            coord_surface = font.render(node.coord.__str__(), True, TankMapRenderer.WHITE)
+            node_text = TankMapRenderer.limit_text_to_width(node_id.lower(),
+                                                            min_width=32, max_width=43, font=font)
+            name_surface = font.render(node_text, True, TankMapRenderer.WHITE)
+
+            coord_text = TankMapRenderer.limit_text_to_width(node.coord.__str__(),
+                                                             min_width=32, max_width=43, font=font)
+            coord_surface = font.render(coord_text, True, TankMapRenderer.WHITE)
 
             # Bounding box
             name_size = name_surface.get_size()
@@ -119,6 +122,19 @@ class TankMapRenderer:
             image_surface.blit(coord_surface, (background_top_left[0] + 5, background_top_left[1] + name_size[1] + 5))
 
         return TankMapRenderer._surface_to_numpy(image_surface)
+
+    @staticmethod
+    def limit_text_to_width(text: str, min_width: int, max_width: int, font: pygame.font) -> str:
+        text_width, _ = font.size(text)
+        while text_width > max_width:
+            text = f"{text[:len(text) - 2]}-"
+            text_width, _ = font.size(text)
+
+        while text_width < min_width:
+            text = f"{text} "
+            text_width, _ = font.size(text)
+
+        return text
 
     @staticmethod
     def _draw_loop_path_text(pos: (int, int), text: str, font: pygame.font, image_surface: pygame.surface):
