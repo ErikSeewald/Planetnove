@@ -40,15 +40,15 @@ class Planet:
 
     def to_dict(self) -> dict:
         return {
-            "nodes": {name: n.to_dict() for name, n in self.nodes},
-            "paths": {name: p.to_dict() for name, p in self.paths}
+            "nodes": {name: n.to_dict() for name, n in self.nodes.items()},
+            "paths": {name: p.to_dict() for name, p in self.paths.items()}
         }
 
     @staticmethod
     def from_dict(planet_dict: dict) -> Planet:
         return Planet(
-            nodes={name: Node.from_dict(n) for name, n in planet_dict['nodes']},
-            paths={name: Path.from_dict(p) for name, p in planet_dict['paths']}
+            nodes={name: Node.from_dict(n) for name, n in planet_dict['nodes'].items()},
+            paths={name: Path.from_dict(p) for name, p in planet_dict['paths'].items()}
         )
 
     def __str__(self) -> str:
