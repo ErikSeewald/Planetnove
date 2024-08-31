@@ -53,8 +53,6 @@ class TankRobot:
         self.logger = logger
 
         self.client = client
-        if not client.connected_to_server:
-            raise ValueError("Failed to initialize TankRobot: TankClient is not connected to the server.")
 
         self.switch_state(self.TankState.INITIALIZING)
 

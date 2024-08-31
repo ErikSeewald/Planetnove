@@ -28,6 +28,11 @@ class DisconnectedTank(UpdateEvent):
 
 
 @dataclass
+class TankConnectionLost(UpdateEvent):
+    tank_ip: str
+
+
+@dataclass
 class TileGrabbed(UpdateEvent):
     pass
 

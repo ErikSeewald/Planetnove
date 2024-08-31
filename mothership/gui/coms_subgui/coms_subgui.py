@@ -87,12 +87,11 @@ class ComsSubGUI(SubGUI):
 
     def _disconnecting_tank_update(self):
         self.tank_header_state = self.TankHeaderState.ADDING_TANK
-        self._update_adding_tank_widgets()
-        dpg.configure_item("disconnect_tank_button", show=False)
-        dpg.configure_item("start_message_button", show=False)
+        self.handle_tank_connection_event()
 
     def _update_adding_tank_widgets(self):
-        tank_added = self.tank_header_state != self.TankHeaderState.ADDING_TANK
+        tank_added = (self.tank_header_state != self.TankHeaderState.ADDING_TANK and
+                      self.tank_header_state != self.TankHeaderState.CONNECTING)
 
         dpg.configure_item("add_tank_button", label="Add tank", show=not tank_added, enabled=not tank_added)
         dpg.configure_item("tank_ip_input", show=not tank_added, enabled=not tank_added)
@@ -114,10 +113,12 @@ class ComsSubGUI(SubGUI):
 
     def _add_tank_callback(self):
         self.tank_header_state = self.TankHeaderState.CONNECTING
+        self._gui_core.tank_connection_event()
+
         dpg.configure_item("add_tank_button", enabled=False, label="Connecting...")
         dpg.configure_item("tank_ip_input", enabled=False)
-        connect_result = self.coms.try_connect_tank(dpg.get_value("tank_ip_input"))
 
+        connect_result = self.coms.try_connect_tank(dpg.get_value("tank_ip_input"))
         if connect_result:
             self.tank_header_state = self.TankHeaderState.PENDING_START_MESSAGE
             self._update_adding_tank_widgets()
@@ -128,6 +129,7 @@ class ComsSubGUI(SubGUI):
             self.tank_header_state = self.TankHeaderState.ADDING_TANK
             dpg.configure_item("add_tank_button", enabled=True, label="Failed to connect. Try again?")
             dpg.configure_item("tank_ip_input", enabled=True)
+        self._gui_core.tank_connection_event()
 
     def _disconnect_tank_callback(self):
         self.tank_disconnect_event_scheduled = True
@@ -135,4 +137,10 @@ class ComsSubGUI(SubGUI):
     def switch_to_mode_started(self):
         self.tank_header_state = self.TankHeaderState.STARTED
         dpg.configure_item("start_message_button", show=False)
+
+    def handle_tank_connection_event(self):
+        self._update_adding_tank_widgets()
+        pending_message = self.tank_header_state == self.TankHeaderState.PENDING_START_MESSAGE
+        dpg.configure_item("disconnect_tank_button", show=pending_message)
+        dpg.configure_item("start_message_button", show=pending_message)
 

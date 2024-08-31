@@ -79,7 +79,6 @@ class PlanetViewSubGUI(SubGUI):
         if self.event_update_needed():
             self._event_update()
 
-        self._update_edit_button()
         return list()
 
     def event_update_needed(self) -> bool:
@@ -91,7 +90,7 @@ class PlanetViewSubGUI(SubGUI):
 
     def _event_update(self):
         self._update_finish_button()
-        self._update_edit_button()
+        self.update_edit_button()
         self._viewer_mode_switch()
 
     def _update_finish_button(self):
@@ -101,7 +100,7 @@ class PlanetViewSubGUI(SubGUI):
             dpg.configure_item("finish_button", enabled=False, show=True,
                                label="Finish (Disabled - tiles must form a single planet)")
 
-    def _update_edit_button(self):
+    def update_edit_button(self):
         if self.planet_view.mode == PlanetView.Mode.EDIT:
             return
 

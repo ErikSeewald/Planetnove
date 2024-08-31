@@ -4,6 +4,10 @@ import inspect
 
 
 class Logger:
+    """
+    Console logger with debug information that remembers logs in a deque.
+    """
+
     logs: deque
 
     def __init__(self):
@@ -11,7 +15,7 @@ class Logger:
 
     def log(self, message: str):
         """
-        Logs the given message along with additional debug information.
+        Logs the given message to the console along with additional debug information.
         The log is also saved in a deque.
         """
 

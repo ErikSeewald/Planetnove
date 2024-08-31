@@ -86,8 +86,13 @@ class GUICore:
             TankMapRenderer.render_map_image(planet, cur_node)
         )
 
-    def remove_tank_internal_planet(self):
+    def remove_tank(self):
         self.sub_GUIs.get("tank_map").remove_image()
+        self.sub_GUIs.get("coms").tank_header_state = ComsSubGUI.TankHeaderState.ADDING_TANK
+        self.tank_connection_event()
 
+    def tank_connection_event(self):
+        self.sub_GUIs.get("planet_view").update_edit_button()
+        self.sub_GUIs.get("coms").handle_tank_connection_event()
 
 

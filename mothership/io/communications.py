@@ -6,7 +6,7 @@ import time
 from collections import deque
 from typing import Optional, Any
 
-from mothership.gui.update_event import UpdateEvent, TankPlanetUpdate
+from mothership.gui.update_event import UpdateEvent, TankPlanetUpdate, TankConnectionLost
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 import socket
 
@@ -36,6 +36,7 @@ class Communications:
     _COMS_CONFIG_PATH: str = "coms_config.json"
 
     tank_disconnect_async_due: bool
+    tank_lost_event_due: bool
 
     def __init__(self, planet_manager: PlanetStateManager, logger: Logger):
         self.logger = logger
@@ -45,6 +46,7 @@ class Communications:
         self.tank_socket = None
         self.tank_address = None
         self.tank_disconnect_async_due = False
+        self.tank_lost_event_due = False
         self.last_msg_to_tank = None
 
         self.unprocessed_tank_messages = deque()
@@ -101,12 +103,19 @@ class Communications:
         self.tank_address = None
 
     def update(self) -> list[UpdateEvent]:
+        events: list[UpdateEvent] = list()
+
+        # If tank closed the connection, return and let the mothership know
+        if self.tank_lost_event_due:
+            events.append(TankConnectionLost(tank_ip=self.tank_address))
+            self.handle_tank_lost_event()
+            return events
+
         # Receive messages asynchronously
         receive_thread = threading.Thread(target=self.update_tank_socket, daemon=True)
         receive_thread.start()
 
         # Process messages synchronously
-        events: list[UpdateEvent] = list()
         while True:
             with self.lock:
                 if self.unprocessed_tank_messages:
@@ -114,6 +123,12 @@ class Communications:
                 else:
                     return events
             events.extend(self.handle_tank_message(msg))
+
+    def handle_tank_lost_event(self):
+        self.tank_socket.close()
+        self.tank_socket = None
+        self.tank_address = None
+        self.tank_lost_event_due = False
 
     def update_tank_socket(self):
         if self.tank_socket is None:
@@ -136,11 +151,6 @@ class Communications:
                 message_buffer.append(data.decode('utf-8'))
                 message = ''.join(message_buffer)
 
-                if message == "ping":
-                    # Handle 'ping' message asynchronously
-                    self.tank_socket.sendall(b"pong")
-                    break
-
                 try:
                     # Attempt to parse message as JSON
                     json_message = json.loads(message)
@@ -152,6 +162,8 @@ class Communications:
 
         except socket.timeout:
             pass
+        except ConnectionResetError:
+            self.tank_lost_event_due = True
 
     def handle_tank_message(self, message: dict) -> list[UpdateEvent]:
         events: list[UpdateEvent] = list()
@@ -162,7 +174,10 @@ class Communications:
         else:
             self.logger.log(f"Processing message from tank: {message}")
 
-            if message['type'] == "node_arrival":
+            if message['type'] == "connection_request":
+                self.send_msg_to_tank({"type": "connection_approved"})
+
+            elif message['type'] == "node_arrival":
                 self.handle_on_arrival(message)
 
             elif message['type'] == "path_chosen":

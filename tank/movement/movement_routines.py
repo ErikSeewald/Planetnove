@@ -22,11 +22,23 @@ class MovementRoutines:
         self.motor = motor
 
     def node_arrival(self) -> RoutineResult:
-        # Roughly center the tank above the node
+        """
+            This routine is to be called immediately after the infrared sensor scans a node.
+            After the routine, the tank should have moved forward to roughly center itself above the node.
+        """
+
         self.motor.move_straight(seconds=0.4)
         return self.RoutineResult.SUCCESS
 
     def node_departure(self, target_direction: RelativeDirection) -> RoutineResult:
+        """
+        Handles the movement routine required to depart from a node before the line follower can be activated.
+        Turns to face the target direction and then moves slightly forward to avoid the infrared sensor picking
+        scanning the same node again.
+
+        :param target_direction: The relative direction to the facing direction to depart in
+        """
+
         if target_direction == RelativeDirection.UNKNOWN:
             return self.RoutineResult.FAILURE
 

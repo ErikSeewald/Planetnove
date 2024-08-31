@@ -56,6 +56,7 @@ def limit_duty_range(duty1: int, duty2: int) -> tuple[int, int]:
     """
     :return: Tuple(duty1, duty2) limited to the hardware specific ranges.
     """
+
     if duty1 > 4095:
         duty1 = 4095
     elif duty1 < -4095:

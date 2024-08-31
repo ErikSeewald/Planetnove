@@ -1,7 +1,8 @@
 import pygame
 from mothership.gui.gui_core import GUICore
 from mothership.gui.planet_view.tile import DraggableTile
-from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, TankPlanetUpdate
+from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
+    TankPlanetUpdate, TankConnectionLost
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
@@ -61,15 +62,25 @@ class Mothership:
                 self.planet_manager.set_tank_entity(tank_entity)
 
             if isinstance(event, DisconnectedTank):
-                self.communications.disconnect_tank()
-                self.planet_manager.remove_tank_entity()
-                self.gui.remove_tank_internal_planet()
+                self.disconnect_tank()
 
     def handle_coms_events(self, events: list[UpdateEvent]):
         for event in events:
 
             if isinstance(event, TankPlanetUpdate):
                 self.gui.set_tank_internal_planet(event.planet, event.cur_node)
+
+            if isinstance(event, TankConnectionLost):
+                self.logger.log(f"Connection to tank-{event.tank_ip} lost")
+                self.handle_tank_disconnected()
+
+    def disconnect_tank(self):
+        self.communications.disconnect_tank()
+        self.handle_tank_disconnected()
+
+    def handle_tank_disconnected(self):
+        self.planet_manager.remove_tank_entity()
+        self.gui.remove_tank()
 
     def set_planet(self, planet: Planet):
         self.planet_manager.set_planet(planet)

@@ -9,47 +9,54 @@ from util.direction import Direction
 
 
 class TankClient:
+    """
+    Communications client of the tank robot.
+    Handles sending and receiving messages to and from the mothership.
+    """
+
     mothership_ip: str
     mothership_port: int
     logger: Logger
-
-    connected_to_server: bool
 
     def __init__(self, mothership_ip: str, mothership_port: int, logger: Logger):
         self.logger = logger
         self.mothership_ip = mothership_ip
         self.mothership_port = mothership_port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connected_to_server = False
 
     def wait_for_server_connection(self):
-        self.connected_to_server = False
-        self.logger.log(f"Attempting to connect to mothership server at {self.mothership_ip}:{self.mothership_port}...")
+        """
+        Loops until a connection with the mothership has been established.
+        """
 
-        while not self.connected_to_server:
+        self.logger.log(f"Attempting to connect to mothership server at {self.mothership_ip}:{self.mothership_port}...")
+        while True:
             try:
                 self.client_socket.connect((self.mothership_ip, self.mothership_port))
 
-                # Check if server closed the connection
                 try:
-                    # Ping server, expect pong response
-                    self.client_socket.sendall(b'ping')
-                    if not self.client_socket.recv(1024).decode('utf-8') == "pong":
-                        self.logger.log("Mothership rejected the connection.")
-                        self.client_socket.close()
-                        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    self.send_message({"type": "connection_request"})
+                    response = json.loads(self.client_socket.recv(1024).decode('utf-8'))
+                    if not response['type'] == "connection_approval":
+                        self._handle_mothership_rejection()
                     else:
                         self.logger.log(f"Connected to mothership at {self.mothership_ip}:{self.mothership_port}")
-                        self.connected_to_server = True
                         return
                 except (socket.error, socket.timeout):
-                    self.logger.log("Mothership rejected the connection. Trying again.")
-                    self.client_socket.close()
-                    self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    self._handle_mothership_rejection()
 
             except socket.error as e:
                 self.logger.log(f"Failed to connect to server: {e}. Trying again.")
                 self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def _handle_mothership_rejection(self):
+        """
+        Handles the event of the mothership rejecting a connection attempt during wait_for_server_connection()
+        """
+
+        self.logger.log("Mothership rejected the connection. Trying again.")
+        self.client_socket.close()
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def send_message(self, message: dict):
         try:
@@ -90,6 +97,7 @@ class TankClient:
         self.client_socket.close()
         print("Connection closed.")
 
+    # NODE ARRIVAL
     def send_node_arrival(self):
         message = {
             "type": "node_arrival"
@@ -99,6 +107,7 @@ class TankClient:
     def get_node_arrival_response(self) -> Optional[dict]:
         return self.get_response_of_type("arrival_response")
 
+    # PATH CHOSEN
     def send_path_chosen(self, direction: Direction):
         message = {
             "type": "path_chosen",
@@ -109,6 +118,7 @@ class TankClient:
     def get_path_chosen_response(self) -> Optional[dict]:
         return self.get_response_of_type("path_chosen_response")
 
+    # INTERNAL PLANET
     def send_internal_planet_update(self, planet: Planet, cur_node: str):
         message = {
             "type": "internal_planet",
@@ -116,5 +126,3 @@ class TankClient:
             "cur_node": cur_node
         }
         self.send_message(message)
-
-
