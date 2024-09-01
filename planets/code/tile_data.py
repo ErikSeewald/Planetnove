@@ -12,6 +12,7 @@ class TilePath:
     They can be nodes (format: <node_name>:<Direction> where Direction is one of ['N', 'E', 'S', 'W']
     or joints (format: <joint_id> (e.g. 'jointN2' for the second joint at the northern side))
     """
+
     name: str
     from_: str
     to_: str
@@ -50,6 +51,7 @@ class TileJoint:
     and absolute tile coordinates (in mm and in the range ([0, 1000], [0, 1000])).
     The way node coordinates map to tile coordinates is described further in the documentation.
     """
+
     name: str
     node_coord: Vector2
     tile_coord: Vector2
@@ -139,7 +141,7 @@ def validate(nodes: list[TileNode], joints: dict[Direction, list[TileJoint]], pa
         path_origins.add(path.from_)
         path_origins.add(path.to_)
 
-    # Validation for from and to in paths
+    # Validation for from_ and to_ in paths
     joint_names = {joint.name for joints_list in joints.values() for joint in joints_list}
     dir_abbreviations = {direction.abbreviation() for direction in Direction.real_directions_ordered()}
     for path in paths:
@@ -188,6 +190,10 @@ node_coord_to_tile_coord: dict[float, float] = {
 
 
 def convert_tile_coord(coord: list[float], parent_id: str) -> Vector2:
+    """
+    Converts the given node coordinate to a tile coordinate in mm.
+    """
+
     x = node_coord_to_tile_coord.get(coord[0])
     y = node_coord_to_tile_coord.get(coord[1])
 

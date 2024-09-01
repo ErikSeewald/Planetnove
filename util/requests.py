@@ -2,6 +2,10 @@ from __future__ import annotations
 
 
 class RequestResponse:
+    """
+    Util class for approving and denying requests with additionally response messages.
+    """
+
     _approved: bool
     msg: str
 
@@ -11,10 +15,18 @@ class RequestResponse:
 
     @staticmethod
     def approve(msg: str) -> RequestResponse:
+        """
+        Returns an approved RequestResponse with the given response message.
+        """
+
         return RequestResponse(True, msg)
 
     @staticmethod
     def deny(msg: str) -> RequestResponse:
+        """
+        Returns a denied RequestResponse with the given response message.
+        """
+
         return RequestResponse(False, msg)
 
     def as_dict(self) -> dict:

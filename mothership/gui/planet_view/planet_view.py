@@ -4,7 +4,8 @@ from enum import Enum
 from typing import Optional
 import pygame
 from pygame.math import Vector2
-from mothership.gui.planet_view import planet_parser, joint_attacher
+from mothership.gui.planet_view import joint_attacher
+from planets.code import planet_parser
 from mothership.gui.planet_view.tile import DraggableTile
 from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, TileGrabbed, TileReleased
 from planets.code.planet import Planet

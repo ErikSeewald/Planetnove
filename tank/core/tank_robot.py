@@ -26,7 +26,6 @@ class TankRobot:
         LINE_FOLLOWING = 1
         AT_NODE = 2
         READY_TO_DEPART = 3
-        ERROR = -1
     state: TankState
 
     facing_direction: Direction
@@ -51,20 +50,22 @@ class TankRobot:
 
     def __init__(self, client: TankClient, logger: Logger):
         self.logger = logger
-
         self.client = client
 
+        # STATE VARIABLES
         self.switch_state(self.TankState.INITIALIZING)
 
         self.facing_direction = Direction.UNKNOWN
         self.last_departure_direction = Direction.UNKNOWN
         self.next_departure_direction = Direction.UNKNOWN
 
+        # EXPLORED PLANET
         self.planet = Planet(nodes=dict(), paths=dict())
         self.cur_node_id = "None"
         self.cur_node_coord = Vector2(-1, -1)
         self.reached_first_node = False
 
+        # CONTROL CLASSES
         #DEBUG self.motor = CalibratedMotor()
         #DEBUG self.infrared = InfraredSensor()
 
@@ -81,6 +82,11 @@ class TankRobot:
         self.logger.log(f"New state: {new_state}")
 
     def core_loop(self):
+        """
+        The core loop of the tank's planet exploration. Handles state updates, calls to subroutines and
+        communications.
+        """
+
         self.switch_state(self.TankState.LINE_FOLLOWING)
 
         while True:
@@ -96,11 +102,12 @@ class TankRobot:
                 self.logger.log("Starting departure")
                 self.depart_from_node()
 
-            if self.state == self.TankState.ERROR:
-                self.logger.log("!!! ERROR STATE !!!")
-                time.sleep(1) # TODO: Handle error
-
     def line_follow_step(self):
+        """
+        A single 'step' of the line following protocol. Runs until the tank has arrived at a new node
+        and updates state variables accordingly.
+        """
+
         """ DEBUG
         follow_result = self.line_follower.follow_to_next_node()
 
@@ -114,30 +121,34 @@ class TankRobot:
         self.switch_state(self.TankState.AT_NODE) # DEBUG
 
     def on_node_arrival(self):
+        """
+        Implements the node arrival protocol. Communicates the arrival to the mothership,
+        adjusts the explored planet based on the response and chooses the next move.
+        By the end of the function, the tank should be ready to depart.
+        """
+
         self.client.send_node_arrival()
 
-        # RESPONSE
+        # GET RESPONSE
         response = None
         while response is None:
             self.logger.log("Waiting for arrival_response...")
             response = self.client.get_node_arrival_response()
 
+        # HANDLE RESPONSE
         self.facing_direction = Direction.from_str(response['facing_direction'])
+        path_dirs = {Direction.from_str(d) for d in response['available_paths']}
 
         prev_node_id = self.cur_node_id
         self.cur_node_id = response['node_id']
-
-        node_coord = response['node_coord']
-        self.cur_node_coord = Vector2(int(node_coord['x']), int(node_coord['y']))
-
-        path_dirs = [Direction.from_str(d) for d in response['available_paths']]
+        self.cur_node_coord = Vector2(response['node_coord']['x'], response['node_coord']['y'])
 
         self.logger.log(f"Facing '{self.facing_direction}' at node '{self.cur_node_id}:{self.cur_node_coord}'")
         self.logger.log(f"Available paths: {path_dirs}")
 
         # ADD NEW NODE TO EXPLORED PLANET
         if self.planet.nodes.get(self.cur_node_id) is None:
-            self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, set(path_dirs))
+            self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, path_dirs)
 
         if not self.reached_first_node:
             self.reached_first_node = True
@@ -147,31 +158,37 @@ class TankRobot:
             node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
             node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
 
-            arrival_path_id = f"{node_a_with_dir}-{node_b_with_dir}"
-            inverse_id = f"{node_b_with_dir}-{node_a_with_dir}"
+            if not self.planet.path_exists(node_a_with_dir, node_b_with_dir):
+                new_path = Path(f"{node_a_with_dir}-{node_b_with_dir}", node_a_with_dir, node_b_with_dir)
+                self.planet.add_path(new_path)
+                self.logger.log(f"Added path {new_path} to the planet map")
 
-            # Only add the path if it does not exist already
-            if self.planet.paths.get(arrival_path_id) is None and self.planet.paths.get(inverse_id) is None:
-                arrival_path = Path(arrival_path_id, node_a_with_dir, node_b_with_dir)
-                self.planet.add_path(arrival_path)
-                self.logger.log(f"Added path {arrival_path} to the planet map")
-                self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, arrival_path.name)
+                # Add path to nodes
+                self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, new_path.name)
+                self.planet.nodes.get(prev_node_id).set_path(self.last_departure_direction, new_path.name)
 
         self.client.send_internal_planet_update(self.planet, self.cur_node_id)
         self.choose_path()
 
-
     def choose_path(self, rejected_directions: set[Direction] = None):
+        """
+        Chooses a new path based on the current state and objective. Then communicates that choice
+        to the mothership and handles the response. If it the choice approved, the tank's state becomes
+        READY_TO_DEPART. If it is denied, the function chooses a different path recursively by updating the optional
+        'rejected_directions' parameter.
+        """
+
         # TODO: Replace with actual path choosing and handle rejected_directions
         depart_dir = Direction.from_str(input("In which direction (N,E,S,W) should I depart? "))
         self.client.send_path_chosen(depart_dir)
 
-        # RESPONSE
+        # GET RESPONSE
         response = None
         while response is None:
             self.logger.log("Waiting for path_chosen_response...")
             response = self.client.get_path_chosen_response()
 
+        # HANDLE RESPONSE
         if response['request_response']['is_approved']:
             self.next_departure_direction = depart_dir
             self.logger.log(f"Next departure direction: {self.next_departure_direction}")
@@ -189,9 +206,7 @@ class TankRobot:
 
         # RELATIVE TARGET DIRECTION
         target_direction = RelativeDirection.from_absolute(self.facing_direction, self.next_departure_direction)
-        if target_direction == RelativeDirection.UNKNOWN:
-            raise ValueError(f"Calculated invalid {target_direction=} from {self.facing_direction=} and "
-                             f"{self.next_departure_direction=}")
+        self.logger.log(f"Next relative target direction: {target_direction}")
 
         """ DEBUG
         self.movement_routines.node_departure(target_direction)

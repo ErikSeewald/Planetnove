@@ -101,7 +101,6 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
             if "joint" in path.from_ and "joint" in path.to_:
                 continue
 
-
             # PATH NODE IDs
             node_a: str = parse_path_node(path.from_, tile_id, tile_data)
             node_b: str = parse_path_node(path.to_, tile_id, tile_data)

@@ -177,6 +177,11 @@ def detach_from_others(tile: DraggableTile, all_tiles: list[DraggableTile]):
 
 
 def all_tiles_form_one_planet(all_tiles: list[DraggableTile]) -> bool:
+    """
+    Returns whether the given list of tiles is fully connected into a single planet and not multiple
+    different planets.
+    """
+
     # Begin with one tile and try to reach all tiles from it -> Success: return True
     id_to_tile: dict[str, DraggableTile] = {t.tile_id: t for t in all_tiles}
     reached_tile_ids: set[str] = set()
@@ -184,7 +189,6 @@ def all_tiles_form_one_planet(all_tiles: list[DraggableTile]) -> bool:
     tile_stack.append(all_tiles[0])
 
     while tile_stack:
-
         if len(reached_tile_ids) == len(id_to_tile):
             return True
 

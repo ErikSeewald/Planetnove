@@ -24,6 +24,10 @@ class Node:
         self.known_paths = {direction: "None" for direction in Direction.real_directions_ordered()}
 
     def set_path(self, direction: Direction, path_id: str):
+        """
+        Sets the path at the given direction to the given path_id in the node's known_paths dictionary.
+        """
+
         if direction is None or direction == Direction.UNKNOWN:
             raise ValueError(f"Node cannot have a path in direction {direction}")
 
@@ -31,9 +35,18 @@ class Node:
         self.available_paths.add(direction)
 
     def make_path_unknown(self, direction: Direction):
+        """
+        Removes the path at the given direction from the node's known_paths dictionary.
+        The direction remains in the set of available paths.
+        """
+
         self.known_paths.pop(direction)
 
     def make_path_unavailable(self, direction: Direction):
+        """
+        Removes the direction from the node's set of available paths and from the known_paths dictionary.
+        """
+
         self.available_paths.remove(direction)
         self.known_paths.pop(direction)
 

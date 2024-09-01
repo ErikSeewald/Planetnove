@@ -59,6 +59,10 @@ class TankClient:
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def send_message(self, message: dict):
+        """
+        Tries to send the given message to the mothership. Calls sys.exit(1) if the message fails to send.
+        """
+
         try:
             message_str = json.dumps(message)
             self.client_socket.sendall(message_str.encode('utf-8'))
@@ -72,6 +76,12 @@ class TankClient:
             sys.exit(1)
 
     def receive_message(self) -> Optional[dict]:
+        """
+        Tries to receive a message from the mothership.
+        Returns None if no message was received.
+        Calls sys.exit(1) if a socket error occurs.
+        """
+
         try:
             response = self.client_socket.recv(1024)
             if response:
@@ -85,6 +95,11 @@ class TankClient:
         return None
 
     def get_response_of_type(self, response_type: str) -> Optional[dict]:
+        """
+        Tries to receive a message from the mothership of the given response type.
+        Returns None if no message or a message of an incorrect type was received.
+        """
+
         response = self.receive_message()
         if response:
             if response["type"] != response_type:
@@ -92,10 +107,6 @@ class TankClient:
             else:
                 return response
         return None
-
-    def close_connection(self):
-        self.client_socket.close()
-        print("Connection closed.")
 
     # NODE ARRIVAL
     def send_node_arrival(self):

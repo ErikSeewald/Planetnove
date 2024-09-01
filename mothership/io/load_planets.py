@@ -24,6 +24,11 @@ class PlanetLoader:
         self.tile_data = list()
 
     def load(self):
+        """
+        Loads the planet data from the class' planet_directory. By the end of the function, the class'
+        svg_tiles, tile_data and base_tile variables are set, assuming that the datafiles are formatted correctly.
+        """
+        
         svg_dir = os.path.join(self.planet_directory, "svg")
         data_dir = os.path.join(self.planet_directory, "data")
 
