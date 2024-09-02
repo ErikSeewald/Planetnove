@@ -1,7 +1,7 @@
 import pygame
 from mothership.gui.gui_core import GUICore
 from mothership.gui.planet_view.tile import DraggableTile
-from mothership.gui.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
+from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
     TankPlanetUpdate, TankConnectionLost
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
@@ -9,8 +9,6 @@ from mothership.planet_state.tank_entity import TankEntity
 from planets.code.planet import Planet
 from planets.code.tile_data import Tile
 import dearpygui.dearpygui as dpg
-
-from util.direction import Direction
 from util.logger import Logger
 
 

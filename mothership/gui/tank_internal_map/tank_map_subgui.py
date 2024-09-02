@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 import numpy as np
 from mothership.gui import theme
 from mothership.gui.sub_gui import SubGUI
-from mothership.gui.update_event import UpdateEvent
+from mothership.update_event import UpdateEvent
 
 
 class TankMapSubGUI(SubGUI):

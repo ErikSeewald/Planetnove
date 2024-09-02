@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 from mothership.gui import theme
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.sub_gui import SubGUI
-from mothership.gui.update_event import TileGrabbed, TileReleased, SwitchedToPlanetMode, UpdateEvent
+from mothership.update_event import TileGrabbed, TileReleased, SwitchedToPlanetMode, UpdateEvent
 from util.direction import Direction
 
 

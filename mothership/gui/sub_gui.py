@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from mothership.gui.update_event import UpdateEvent
+from mothership.update_event import UpdateEvent
+
 
 class SubGUI(ABC):
     """
-    Abstract class representing a sub-window of the dearpygui viewport
+    Abstract base class representing a sub-window of the dearpygui viewport
     """
 
     tag: str # The dpg tag

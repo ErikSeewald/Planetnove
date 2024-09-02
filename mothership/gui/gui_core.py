@@ -2,7 +2,7 @@ from typing import Optional
 import pygame
 from mothership.gui.tank_internal_map.tank_map_renderer import TankMapRenderer
 from mothership.gui.tank_internal_map.tank_map_subgui import TankMapSubGUI
-from mothership.gui.update_event import UpdateEvent
+from mothership.update_event import UpdateEvent
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
 from mothership.gui.planet_view.tile import DraggableTile

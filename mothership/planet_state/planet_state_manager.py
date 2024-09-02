@@ -26,6 +26,12 @@ class PlanetStateManager:
         self.tank = None
 
     def on_tank_arrival(self):
+        """
+        Updates the planet state and tank entity upon the tank's arrival at a new node based on the previously
+        decided path.
+        """
+
+        # Tank entity is already initialized with the necessary variables
         if not self.tank.reached_first_node:
             self.tank.reached_first_node = True
             return
@@ -33,10 +39,6 @@ class PlanetStateManager:
         last_node = self.planet.nodes.get(self.tank.cur_node_id)
         taken_path_id = last_node.known_paths.get(self.tank.departure_direction)
         taken_path = self.planet.paths.get(taken_path_id)
-
-        if taken_path is None:
-            print("Not allowed")
-            return
 
         if self.tank.cur_node_id == taken_path.node_a and self.tank.departure_direction == taken_path.direction_a:
             self.tank.cur_node_id = taken_path.node_b
@@ -46,6 +48,10 @@ class PlanetStateManager:
             self.tank.facing_direction = taken_path.direction_a.invert()
 
     def tank_arrival_response(self) -> dict:
+        """
+        Returns the message to be sent to the tank client upon node arrival.
+        """
+
         node = self.planet.nodes.get(self.tank.cur_node_id)
         return {
             "type": "arrival_response",
@@ -56,6 +62,11 @@ class PlanetStateManager:
         }
 
     def tank_path_chosen_response(self, direction: Direction) -> dict:
+        """
+        Returns the message to the tank approving or denying the tank's chosen departure direction based
+        on the planet state.
+        """
+
         response: RequestResponse
 
         # TODO: Replace with commented out code after debugging
