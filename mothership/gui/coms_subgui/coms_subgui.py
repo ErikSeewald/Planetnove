@@ -100,14 +100,6 @@ class ComsSubGUI(SubGUI):
 
         return events
 
-    def switch_to_mode_started(self):
-        """
-        Switches to 'STARTED' mode and updates the corresponding dpg values.
-        """
-
-        self._set_tank_header_state(self.TankHeaderState.STARTED)
-        self._update_all_tank_header_widgets()
-
     def handle_tank_connection_event(self):
         """
         Handles any events relating to an update in the connection to the tank client.
@@ -142,7 +134,8 @@ class ComsSubGUI(SubGUI):
 
         # PENDING MESSAGE
         pending_message = self.tank_header_state == self.TankHeaderState.PENDING_START_MESSAGE
-        dpg.configure_item("disconnect_tank_button", show=pending_message)
+        started = self.tank_header_state == self.TankHeaderState.STARTED
+        dpg.configure_item("disconnect_tank_button", show=pending_message or started)
         dpg.configure_item("start_message_button", show=pending_message)
 
     def _update_adding_tank_denied_widgets(self):
@@ -191,7 +184,7 @@ class ComsSubGUI(SubGUI):
 
     def _disconnect_tank_callback(self):
         """
-        Callback function for the 'Add Tank' button. Schedules a disconnect event for the next update iteration.
+        Callback function for the 'Disconnect Tank' button. Schedules a disconnect event for the next update iteration.
         """
 
         self.tank_disconnect_event_scheduled = True
@@ -203,5 +196,5 @@ class ComsSubGUI(SubGUI):
         """
 
         self.coms.send_tank_start_message()
-        self.switch_to_mode_started()
-
+        self._set_tank_header_state(self.TankHeaderState.STARTED)
+        self._update_all_tank_header_widgets()

@@ -37,7 +37,7 @@ class TankClient:
                 try:
                     self.send_message({"type": "connection_request"})
                     response = json.loads(self.client_socket.recv(1024).decode('utf-8'))
-                    if not response['type'] == "connection_approval":
+                    if not response['type'] == "connection_approved":
                         self._handle_mothership_rejection()
                     else:
                         self.logger.log(f"Connected to mothership at {self.mothership_ip}:{self.mothership_port}")

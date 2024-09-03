@@ -192,20 +192,23 @@ class Communications:
             # Receive data in chunks until: a) no more data is being received or
             # b) a full JSON message can be constructed. In that case, store the message to be handled later.
             while True:
-                data = self.tank_socket.recv(1024)
-                if not data:
-                    break
-
-                message_buffer.append(data.decode('utf-8'))
-                message = ''.join(message_buffer)
-
                 try:
-                    json_message = json.loads(message)
-                    self.unprocessed_tank_messages.append(json_message)
-                    break
-                except json.JSONDecodeError:
-                    continue # JSON not yet complete -> continue receiving data
+                    data = self.tank_socket.recv(1024)
+                    if not data:
+                        break
 
+                    message_buffer.append(data.decode('utf-8'))
+                    message = ''.join(message_buffer)
+
+                    try:
+                        json_message = json.loads(message)
+                        self.unprocessed_tank_messages.append(json_message)
+                        break
+                    except json.JSONDecodeError:
+                        continue  # JSON not yet complete -> continue receiving data
+                except ConnectionAbortedError:
+                    self.tank_lost_event_due = True
+                    break
         except socket.timeout:
             pass
         except ConnectionResetError:
