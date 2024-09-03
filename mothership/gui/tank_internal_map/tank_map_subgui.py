@@ -7,7 +7,12 @@ from mothership.update_event import UpdateEvent
 
 
 class TankMapSubGUI(SubGUI):
+    """
+    SubGUI responsible for displaying the tank's internal map.
+    """
 
+    # Use a frame buffer to avoid dpg's weird deletion order errors
+    # -> Add new frame on top and delete last frame, that way, deletion always has enough iterations to conclude
     MAX_FRAMES = 3
     frame_tags: list[str]
     cur_frame_index: int
@@ -29,10 +34,18 @@ class TankMapSubGUI(SubGUI):
 
     @staticmethod
     def remove_image():
+        """
+        Removes the currently displayed image.
+        """
+
         if dpg.does_item_exist("image"):
             dpg.delete_item("image")
 
     def update_image(self, image: np.ndarray):
+        """
+        Replaces the displayed image with the given image array.
+        """
+
         texture_tag = f"frame_{self.cur_frame_index}"
 
         # Normalize image format

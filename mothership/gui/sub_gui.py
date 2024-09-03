@@ -16,6 +16,6 @@ class SubGUI(ABC):
     @abstractmethod
     def update(self) -> list[UpdateEvent]:
         """
-        Update the local state of the sub-window.
+        Updates the local state of the SubGUI and returns any update events that occurred.
         """
         pass

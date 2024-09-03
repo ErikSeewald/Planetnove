@@ -8,6 +8,9 @@ from util.direction import Direction
 
 
 class PlanetViewSubGUI(SubGUI):
+    """
+    SubGUI responsible for managing the planet view.
+    """
 
     planet_view: PlanetView
 
@@ -76,35 +79,30 @@ class PlanetViewSubGUI(SubGUI):
         self.update()
 
     def update(self) -> list[UpdateEvent]:
-        if self.event_update_needed():
-            self._event_update()
-
         return list()
 
-    def event_update_needed(self) -> bool:
-        for event in self.planet_view.update_events:
-            if isinstance(event, TileGrabbed) or isinstance(event, TileReleased) \
-                    or isinstance(event, SwitchedToPlanetMode):
-                return True
-        return False
+    def event_update(self):
+        """
+        Function to be called whenever the planet view SubGUI needs to be updated because an event occurred in the
+        planet view.
+        """
 
-    def _event_update(self):
-        self._update_finish_button()
-        self.update_edit_button()
-        self._viewer_mode_switch()
+        self._update_all__widgets()
 
-    def _update_finish_button(self):
+    def _update_all__widgets(self):
+        """
+        Updates all widgets based on the current state of the planet view.
+        """
+
+        # FINISH BUTTON
         if self.planet_view.can_finish_planet():
             dpg.configure_item("finish_button", enabled=True, show=True, label="Finish")
         else:
             dpg.configure_item("finish_button", enabled=False, show=True,
                                label="Finish (Disabled - tiles must form a single planet)")
 
-    def update_edit_button(self):
-        if self.planet_view.mode == PlanetView.Mode.EDIT:
-            return
-
-        if self._gui_core.can_switch_to_edit_mode():
+        # EDIT BUTTON
+        if self.planet_view.mode == PlanetView.Mode.PLANET and self._gui_core.can_switch_to_edit_mode():
             dpg.configure_item("edit_button", enabled=True, show=True, label="Edit planet")
             dpg.configure_item("start_pos_edit_button", enabled=True, label="Edit")
         else:
@@ -112,11 +110,11 @@ class PlanetViewSubGUI(SubGUI):
                                label="Edit planet (Disabled - disconnect tank to enable)")
             dpg.configure_item("start_pos_edit_button", enabled=False, label="Edit (Disabled)")
 
-    def _viewer_mode_switch(self):
+        # MODE HEADERS
         dpg.configure_item("planet_mode_header", show=self.planet_view.mode == PlanetView.Mode.PLANET)
         dpg.configure_item("edit_mode_header", show=self.planet_view.mode == PlanetView.Mode.EDIT)
 
-    def _update_start_pos_widgets(self):
+        # START POS
         dpg.configure_item("start_pos_save_button", show=not self.start_pos_locked)
         dpg.configure_item("start_node_input", show=not self.start_pos_locked)
         dpg.configure_item("start_direction_input", show=not self.start_pos_locked)
@@ -131,7 +129,7 @@ class PlanetViewSubGUI(SubGUI):
 
     def _edit_callback(self):
         self.planet_view.switch_mode(PlanetView.Mode.EDIT)
-        self._event_update()
+        self._update_all__widgets()
 
     def _save_start_pos_callback(self):
         # STARTING NODE
@@ -153,9 +151,8 @@ class PlanetViewSubGUI(SubGUI):
             self.start_direction = direction
 
         self.start_pos_locked = True
-        self._update_start_pos_widgets()
+        self._update_all__widgets()
 
     def _edit_start_pos_callback(self):
         self.start_pos_locked = False
-        self._update_start_pos_widgets()
-
+        self._update_all__widgets()

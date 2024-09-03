@@ -1,7 +1,6 @@
 import numpy as np
 import pygame
 from pygame import Vector2
-
 from planets.code.planet import Planet
 from util.direction import Direction
 
@@ -12,6 +11,7 @@ class TankMapRenderer:
     handled here but instead in the corresponding SubGUI.
     """
 
+    # COLORS
     WHITE = (255, 255, 255)
     GREY = (90, 90, 90)
     BACKGROUND_COL = (25, 25, 25)
@@ -23,13 +23,12 @@ class TankMapRenderer:
     @staticmethod
     def render_map_image(planet: Planet, cur_node: str) -> np.ndarray:
         """
+        Renders an image of the given planet data. The rendered image can have different scaling based
+        on the coordinates of the planet nodes.
         Assumes pygame is initialized.
-        """
 
-        if not planet:
-            image_surface = pygame.Surface((100, 100))
-            image_surface.fill(TankMapRenderer.BACKGROUND_COL)
-            return TankMapRenderer._surface_to_numpy(image_surface)
+        :return: np.ndarray of the rendered image.
+        """
 
         # FONT
         pygame.font.init()
@@ -125,6 +124,12 @@ class TankMapRenderer:
 
     @staticmethod
     def limit_text_to_width(text: str, min_width: int, max_width: int, font: pygame.font) -> str:
+        """
+        Limits the given string to a minimum and maximum width based on the given font.
+        Strings with too much width get abbreviated using '-' while strings with too little width get
+        whitespace appended to them.
+        """
+
         text_width, _ = font.size(text)
         while text_width > max_width:
             text = f"{text[:len(text) - 2]}-"
@@ -138,6 +143,10 @@ class TankMapRenderer:
 
     @staticmethod
     def _draw_loop_path_text(pos: (int, int), text: str, font: pygame.font, image_surface: pygame.surface):
+        """
+        Draws text indicating a looping path at the given position with the given font on the given image surface.
+        """
+
         text_surface = font.render(text, True, TankMapRenderer.WHITE)
         pygame.draw.rect(image_surface, TankMapRenderer.BACKGROUND_COL,
                          (*pos, *text_surface.get_size()))
@@ -145,6 +154,12 @@ class TankMapRenderer:
 
     @staticmethod
     def _offset_path_coord(position: (int, int), direction: Direction, is_unexplored: bool) -> (int, int):
+        """
+        Offsets the coordinate of a path's joint position (from where it attaches to another path's joint)
+        based on which direction it is in. Additionally, it considers whether the path is still unexplored to
+        display unexplored stubs differently.
+        """
+
         extra_offset = 25 if is_unexplored else 0
 
         if direction == Direction.NORTH:
@@ -160,6 +175,12 @@ class TankMapRenderer:
 
     @staticmethod
     def _position_adjusted(coord: Vector2, min_x: int, min_y: int, height: int) -> (int, int):
+        """
+        Adjusts the given node coordinates based on the given minimum x and y coordinates of nodes on the planet
+        as well as the given image height.
+        This way all nodes are positioned relative to the lowest and furthest left node and none exit the screen space.
+        """
+
         node_x = int((coord.x - min_x) * TankMapRenderer.COORD_TO_PIXEL) + 50
         node_y = height - (int((coord.y - min_y) * TankMapRenderer.COORD_TO_PIXEL) + 50)
 

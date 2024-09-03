@@ -1,3 +1,7 @@
+"""
+Module defining the dearpygui theme used for the mothership gui.
+"""
+
 import dearpygui.dearpygui as dpg
 
 

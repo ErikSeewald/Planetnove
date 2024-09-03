@@ -2,7 +2,7 @@ import pygame
 from mothership.gui.gui_core import GUICore
 from mothership.gui.planet_view.tile import DraggableTile
 from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
-    TankPlanetUpdate, TankConnectionLost
+    TankPlanetUpdate, TankConnectionLost, TileGrabbed, TileReleased
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
@@ -15,6 +15,7 @@ from util.logger import Logger
 class Mothership:
     """
     Core class representing the mothership.
+    Handles the main mothership loop, including GUI and communications as well as all update events.
     """
 
     planet_manager: PlanetStateManager
@@ -31,6 +32,12 @@ class Mothership:
         self.clock = pygame.time.Clock()
 
     def loop(self):
+        """
+        The main mothership loop. Runs at 60hz.
+        Updates the GUI and communications submodules.
+        Handles all update events that get propagated upwards from these submodules.
+        """
+
         communication_timer = 0
         communication_interval = 500  # Update communications every 0.5 seconds
 
@@ -40,7 +47,6 @@ class Mothership:
             self.handle_gui_events(gui_events)
 
             # COMMUNICATIONS
-
             communication_timer += self.clock.get_time()
             if communication_timer >= communication_interval:
                 coms_events = self.communications.update()
@@ -50,10 +56,14 @@ class Mothership:
             self.clock.tick(60)
 
     def handle_gui_events(self, events: list[UpdateEvent]):
-        for event in events:
+        """
+        Handles all update events that occurred while updating the GUI.
+        """
 
+        for event in events:
             if isinstance(event, SwitchedToPlanetMode):
                 self.set_planet(event.new_planet)
+                self.gui.handle_planet_view_update()
 
             if isinstance(event, AddedTank):
                 tank_entity = TankEntity(event.tank_ip, event.starting_node_id, event.arrival_from.invert())
@@ -62,23 +72,41 @@ class Mothership:
             if isinstance(event, DisconnectedTank):
                 self.disconnect_tank()
 
-    def handle_coms_events(self, events: list[UpdateEvent]):
-        for event in events:
+            if isinstance(event, TileGrabbed) or isinstance(event, TileReleased):
+                self.gui.handle_planet_view_update()
 
+    def handle_coms_events(self, events: list[UpdateEvent]):
+        """
+        Handles all update events that occurred while updating the communications.
+        """
+
+        for event in events:
             if isinstance(event, TankPlanetUpdate):
-                self.gui.set_tank_internal_planet(event.planet, event.cur_node)
+                self.gui.display_tank_internal_planet(event.planet, event.cur_node)
 
             if isinstance(event, TankConnectionLost):
                 self.logger.log(f"Connection to tank-{event.tank_ip} lost")
                 self.handle_tank_disconnected()
 
     def disconnect_tank(self):
+        """
+        Disconnects the currently connected tank client and updates the state of the corresponding submodules.
+        """
+
         self.communications.disconnect_tank()
         self.handle_tank_disconnected()
 
     def handle_tank_disconnected(self):
+        """
+        Updates the state of all submodules affected by disconnecting the tank client.
+        """
+
         self.planet_manager.remove_tank_entity()
         self.gui.remove_tank()
 
     def set_planet(self, planet: Planet):
+        """
+        Sets the mothership's internal planet variable and updates the corresponding submodules.
+        """
+
         self.planet_manager.set_planet(planet)

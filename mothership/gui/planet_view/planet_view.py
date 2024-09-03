@@ -15,6 +15,7 @@ from planets.code.tile_data import Tile
 class PlanetView:
     """
     Class handling the mothership planet view.
+    Responsible for editing and viewing the planet map.
     """
 
     # PYGAME
@@ -64,6 +65,10 @@ class PlanetView:
         self.planet_mode_switch_scheduled = False
 
     def update(self) -> list[UpdateEvent]:
+        """
+        Updates the planet view and returns a list of update events that occurred.
+        """
+
         self.update_events.clear()
 
         self.mode_update()
@@ -74,6 +79,10 @@ class PlanetView:
         return self.update_events.copy()
 
     def mode_update(self):
+        """
+        Updates the planet views mode to planet mode if a switch is scheduled.
+        """
+
         if self.planet_mode_switch_scheduled:
             self.planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
             self.update_events.append(SwitchedToPlanetMode(new_planet=self.planet))
@@ -81,6 +90,10 @@ class PlanetView:
             self.planet_mode_switch_scheduled = False
 
     def handle_events(self):
+        """
+        Handles all pygame events and stores any update events that occur.
+        """
+
         events: list[pygame.event.Event] = pygame.event.get()
         for event in events:
             # QUIT
@@ -103,6 +116,11 @@ class PlanetView:
             self.handle_events_planet_mode(events)
 
     def handle_events_edit_mode(self, events: list[pygame.event.Event]):
+        """
+        Handles pygame events specific to the edit mode.
+        Stores any update events that occur.
+        """
+
         for event in events:
 
             # KEY EVENTS
@@ -136,6 +154,11 @@ class PlanetView:
                         self.update_events.append(TileReleased())
 
     def handle_events_planet_mode(self, events: list[pygame.event.Event]):
+        """
+        Handles pygame events specific to the planet mode.
+        Stores any update events that occur.
+        """
+
         pass
 
     def drag_screen(self, event):
@@ -167,6 +190,10 @@ class PlanetView:
                 tile.rect = tile.rect.move(dx, dy)
 
     def render(self):
+        """
+        Renders the planet view using pygame.
+        """
+
         # BACKGROUND
         self.screen.fill((25, 25, 25))
 
@@ -180,26 +207,43 @@ class PlanetView:
             self.dragged_tile.draw(self.screen, is_planet_mode)
 
     def finish_planet(self):
+        """
+        Schedules a planet mode switch for the next update, provided that can_finish_planet() is true.
+        """
+
         if not self.can_finish_planet():
             return
 
-        # Schedule instead of doing it here so that we can add it to the update events
+        # Schedule instead of doing it here so that it can be added to the update events
         self.planet_mode_switch_scheduled = True
 
     def can_finish_planet(self) -> bool:
+        """
+        Returns whether edit mode can parse and finish the planet that is currently being edited.
+        """
+
         if self.dragged_tile is not None:
             return False
         if self.mode != self.Mode.EDIT:
             return False
         return joint_attacher.all_tiles_form_one_planet(self.draggable_tiles)
 
-    def switch_mode(self, new_mode: Mode):
+    def switch_mode(self, new_mode: Mode) -> bool:
+        """
+        Switches the mode of the planet view. Never switch the mode manually.
+        Returns whether the switch was successful.
+        """
+
+        if self.mode == new_mode:
+            return True
+
         if self.mode == self.Mode.PLANET:
             self.mode = new_mode
+            return True
 
         elif self.mode == self.Mode.EDIT:
-            if new_mode == self.Mode.PLANET:
-                if self.planet is not None:
-                    self.mode = self.Mode.PLANET
-            else:
-                self.mode = new_mode
+            if new_mode == self.Mode.PLANET and self.planet is not None:
+                self.mode = self.Mode.PLANET
+                return True
+
+        return False
