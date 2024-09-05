@@ -258,7 +258,8 @@ class Communications:
         return [
             TankPlanetUpdate(planet=Planet.from_dict(message['planet']), cur_node=message['cur_node'],
                              target_node=message['target_node'],
-                             target_route=Route.from_dict(message['target_route']))
+                             target_route=Route.from_dict(message['target_route']),
+                             depart_dir=Direction.from_str(message['depart_dir']))
         ]
 
     def handle_on_arrival(self, _message: dict):

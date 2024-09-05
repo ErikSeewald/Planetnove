@@ -138,7 +138,7 @@ class TankClient:
             "planet": planet.to_dict(),
             "cur_node": cur_node,
             "target_node": target_node if target_node is not None else "None",
-            "target_route": target_route.to_dict() if target_route is not None else Route("", "", -1, []).to_dict()
+            "target_route": target_route.to_dict() if target_route is not None else Route("", "", -1, []).to_dict(),
             "depart_dir": depart_dir.abbreviation()
         }
         self.send_message(message)

@@ -16,9 +16,10 @@ class TankMapRenderer:
     WHITE = (255, 255, 255)
     GREY = (90, 90, 90)
     BACKGROUND_COL = (25, 25, 25)
-    NODE_COL_BRIGHT = (20, 130, 70)
+    CUR_NODE_COL = (150, 50, 40)
     NODE_COL_DARK = (10, 60, 35)
-    TARGET_COLOR = (120, 15, 10)
+    TARGET_COLOR = (20, 70, 130)
+    TARGET_PATH_COLOR = (60, 115, 245)
 
     COORD_TO_PIXEL = 100
 
@@ -65,7 +66,7 @@ class TankMapRenderer:
 
                     color = TankMapRenderer.GREY
                     if node_id == cur_node and direction == depart_dir:
-                        color = TankMapRenderer.TARGET_COLOR
+                        color = TankMapRenderer.CUR_NODE_COL
                     pygame.draw.line(image_surface, color, pos, path_pos, width=2)
 
         # PATHS
@@ -78,7 +79,8 @@ class TankMapRenderer:
             node_pos_b = TankMapRenderer._position_adjusted(node_b.coord, min_x, min_y, height)
             path_pos_b = TankMapRenderer._offset_path_coord(node_pos_b, path.direction_b, is_unexplored=False)
 
-            color = TankMapRenderer.WHITE if path_id not in target_route.path_id_list else TankMapRenderer.TARGET_COLOR
+            color = TankMapRenderer.WHITE if path_id not in target_route.path_id_list \
+                else TankMapRenderer.TARGET_PATH_COLOR
             pygame.draw.line(image_surface, color, node_pos_a, path_pos_a, width=2)
             pygame.draw.line(image_surface, color, path_pos_a, path_pos_b, width=2)
             pygame.draw.line(image_surface, color, path_pos_b, node_pos_b, width=2)
@@ -122,7 +124,7 @@ class TankMapRenderer:
 
             color = TankMapRenderer.NODE_COL_DARK
             if node_id == cur_node:
-                color = TankMapRenderer.NODE_COL_BRIGHT
+                color = TankMapRenderer.CUR_NODE_COL
             elif node_id == target_node:
                 color = TankMapRenderer.TARGET_COLOR
 
