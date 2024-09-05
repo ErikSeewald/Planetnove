@@ -19,6 +19,14 @@ class Direction(Enum):
 
         return [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]
 
+    @staticmethod
+    def real_directions() -> set[Direction]:
+        """
+        Returns the set of real directions.
+        {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST}
+        """
+        return set(Direction.real_directions_ordered())
+
     def rotated(self, rot_angle_deg: int) -> Direction:
         """
         :param rot_angle_deg: The angle to rotate in degrees

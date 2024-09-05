@@ -1,5 +1,7 @@
+import sys
 import time
 from enum import Enum
+from typing import Optional
 
 from pygame import Vector2
 
@@ -37,6 +39,7 @@ class TankRobot:
     cur_node_id: str
     cur_node_coord: Vector2
     reached_first_node: bool
+    target_node_id: Optional[str] # None if there is currently no target
 
     # COMPONENT CLASSES
     #DEBUG motor: CalibratedMotor
@@ -178,8 +181,29 @@ class TankRobot:
         'rejected_directions' parameter.
         """
 
-        # TODO: Replace with actual path choosing and handle rejected_directions
-        depart_dir = Direction.from_str(input("In which direction (N,E,S,W) should I depart? "))
+        # CHOOSE PATH
+        cur_node = self.planet.nodes.get(self.cur_node_id)
+        depart_dir = Direction.UNKNOWN
+
+        # Freely exploring
+        if self.target_node_id is None:
+            # Find any available paths that have not yet been explored -> depth first
+            for direction in Direction.real_directions() - rejected_directions:
+                if direction not in cur_node.available_paths:
+                    continue
+                if cur_node.known_paths.get(direction) == "None":
+                    depart_dir = direction
+                    break
+
+            # If there is no more allowed unexplored paths
+            if depart_dir == Direction.UNKNOWN:
+                sys.exit(1)
+                # TODO: Finished message
+
+        # Has target
+        else:
+            pass
+
         self.client.send_path_chosen(depart_dir)
 
         # GET RESPONSE
