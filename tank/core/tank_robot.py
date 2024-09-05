@@ -1,10 +1,4 @@
-import sys
 from enum import Enum
-from typing import Optional
-from pygame import Vector2
-from planets.code.path import Path
-from planets.code.planet import Planet
-from planets.code.route import Route
 from tank.core.explorer import Explorer
 from tank.core.tank_client import TankClient
 #DEBUG from tank.movement.line_following import LineFollower
@@ -136,6 +130,7 @@ class TankRobot:
         rejected_directions: set[Direction] = set()
         while choice_rejected:
             depart_dir = self.explorer.choose_path(rejected_directions)
+            self.client.send_path_chosen(depart_dir)
 
             # GET RESPONSE
             response = None
