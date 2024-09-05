@@ -21,7 +21,7 @@ class TankRobot:
     loop.
     """
 
-    # STATE VARIABLES
+    # STATE
     class TankState(Enum):
         INITIALIZING = 0
         LINE_FOLLOWING = 1
@@ -29,10 +29,6 @@ class TankRobot:
         READY_TO_DEPART = 3
 
     state: TankState
-
-    facing_direction: Direction
-    last_departure_direction: Direction
-    next_departure_direction: Direction
 
     # COMPONENT CLASSES
     #DEBUG motor: CalibratedMotor
@@ -49,12 +45,8 @@ class TankRobot:
         self.logger = logger
         self.client = client
 
-        # STATE VARIABLES
+        # STATE
         self.switch_state(self.TankState.INITIALIZING)
-
-        self.facing_direction = Direction.UNKNOWN
-        self.last_departure_direction = Direction.UNKNOWN
-        self.next_departure_direction = Direction.UNKNOWN
 
         # CONTROL CLASSES
         #DEBUG self.motor = CalibratedMotor()
@@ -62,7 +54,7 @@ class TankRobot:
 
         #DEBUG self.movement_routines = MovementRoutines(self.motor)
         #DEBUG self.line_follower = LineFollower(self.infrared, self.motor, self.movement_routines)
-        self.explorer = Explorer(tank_robot=self, logger=logger)
+        self.explorer = Explorer(logger)
 
     def switch_state(self, new_state: TankState):
         """
@@ -153,8 +145,8 @@ class TankRobot:
 
             # HANDLE RESPONSE
             if response['request_response']['is_approved']:
-                self.next_departure_direction = depart_dir
-                self.logger.log(f"Next departure direction: {self.next_departure_direction}")
+                self.explorer.next_departure_direction = depart_dir
+                self.logger.log(f"Next departure direction: {self.explorer.next_departure_direction}")
                 self.switch_state(self.TankState.READY_TO_DEPART)
                 break
             else:
@@ -175,7 +167,8 @@ class TankRobot:
         """
 
         # RELATIVE TARGET DIRECTION
-        target_direction = RelativeDirection.from_absolute(self.facing_direction, self.next_departure_direction)
+        target_direction = RelativeDirection.from_absolute(self.explorer.facing_direction,
+                                                           self.explorer.next_departure_direction)
         self.logger.log(f"Next relative target direction: {target_direction}")
 
         """ DEBUG
@@ -189,7 +182,7 @@ class TankRobot:
         """
 
         # STATE VARIABLES
-        self.last_departure_direction = self.next_departure_direction
-        self.next_departure_direction = Direction.UNKNOWN
+        self.explorer.last_departure_direction = self.explorer.next_departure_direction
+        self.explorer.next_departure_direction = Direction.UNKNOWN
 
         self.switch_state(self.TankState.LINE_FOLLOWING)

@@ -4,14 +4,17 @@ from pygame import Vector2
 from planets.code.path import Path
 from planets.code.planet import Planet
 from planets.code.route import Route
-from tank.core.tank_robot import TankRobot
 from util.direction import Direction
 from util.logger import Logger
 
 
 class Explorer:
     logger: Logger
-    tank_robot: TankRobot
+
+    # DIRECTIONS
+    facing_direction: Direction
+    last_departure_direction: Direction
+    next_departure_direction: Direction
 
     # EXPLORED PLANET
     planet: Planet
@@ -21,10 +24,15 @@ class Explorer:
     target_node_id: Optional[str]  # None if there is currently no target
     target_route: Optional[Route]
 
-    def __init__(self, tank_robot: TankRobot, logger: Logger):
-        self.tank_robot = tank_robot
+    def __init__(self, logger: Logger):
         self.logger = logger
 
+        # DIRECTIONS
+        self.facing_direction = Direction.UNKNOWN
+        self.last_departure_direction = Direction.UNKNOWN
+        self.next_departure_direction = Direction.UNKNOWN
+
+        # EXPLORED PLANET
         self.planet = Planet(nodes=dict(), paths=dict())
         self.cur_node_id = "None"
         self.cur_node_coord = Vector2(-1, -1)
@@ -33,14 +41,14 @@ class Explorer:
         self.target_route = None
 
     def handle_arrival_response(self, response: dict):
-        self.tank_robot.facing_direction = Direction.from_str(response['facing_direction'])
+        self.facing_direction = Direction.from_str(response['facing_direction'])
         path_dirs = {Direction.from_str(d) for d in response['available_paths']}
 
         prev_node_id = self.cur_node_id
         self.cur_node_id = response['node_id']
         self.cur_node_coord = Vector2(response['node_coord']['x'], response['node_coord']['y'])
 
-        self.logger.log(f"Facing '{self.tank_robot.facing_direction}' at node '{self.cur_node_id}:{self.cur_node_coord}'")
+        self.logger.log(f"Facing '{self.facing_direction}' at node '{self.cur_node_id}:{self.cur_node_coord}'")
         self.logger.log(f"Available paths: {path_dirs}")
 
         # ADD NEW NODE TO EXPLORED PLANET
@@ -51,8 +59,8 @@ class Explorer:
             self.reached_first_node = True
         else:
             # ADD TAKEN PATH TO EXPLORED PLANET
-            arrival_path_dir = self.tank_robot.facing_direction.invert()
-            node_a_with_dir = f"{prev_node_id}:{self.tank_robot.last_departure_direction.abbreviation()}"
+            arrival_path_dir = self.facing_direction.invert()
+            node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
             node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
 
             if not self.planet.path_exists(node_a_with_dir, node_b_with_dir):
@@ -62,7 +70,7 @@ class Explorer:
 
                 # Add path to nodes
                 self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, new_path.name)
-                self.planet.nodes.get(prev_node_id).set_path(self.tank_robot.last_departure_direction, new_path.name)
+                self.planet.nodes.get(prev_node_id).set_path(self.last_departure_direction, new_path.name)
 
     def choose_path(self, rejected_directions: set[Direction]):
         """
