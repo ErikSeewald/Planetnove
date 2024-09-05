@@ -67,6 +67,7 @@ class TankRobot:
         self.cur_node_id = "None"
         self.cur_node_coord = Vector2(-1, -1)
         self.reached_first_node = False
+        self.target_node_id = None
 
         # CONTROL CLASSES
         #DEBUG self.motor = CalibratedMotor()
@@ -171,13 +172,13 @@ class TankRobot:
                 self.planet.nodes.get(prev_node_id).set_path(self.last_departure_direction, new_path.name)
 
         self.client.send_internal_planet_update(self.planet, self.cur_node_id)
-        self.choose_path()
+        self.choose_path(rejected_directions=set())
 
-    def choose_path(self, rejected_directions: set[Direction] = None):
+    def choose_path(self, rejected_directions: set[Direction]):
         """
         Chooses a new path based on the current state and objective. Then communicates that choice
         to the mothership and handles the response. If it the choice approved, the tank's state becomes
-        READY_TO_DEPART. If it is denied, the function chooses a different path recursively by updating the optional
+        READY_TO_DEPART. If it is denied, the function chooses a different path recursively by updating the
         'rejected_directions' parameter.
         """
 
@@ -188,8 +189,8 @@ class TankRobot:
         # Freely exploring
         if self.target_node_id is None:
             # Find any available paths that have not yet been explored -> depth first
-            for direction in Direction.real_directions() - rejected_directions:
-                if direction not in cur_node.available_paths:
+            for direction in Direction.real_directions_ordered():
+                if (direction in rejected_directions) or (direction not in cur_node.available_paths):
                     continue
                 if cur_node.known_paths.get(direction) == "None":
                     depart_dir = direction
@@ -218,9 +219,8 @@ class TankRobot:
             self.logger.log(f"Next departure direction: {self.next_departure_direction}")
             self.switch_state(self.TankState.READY_TO_DEPART)
         else:
-            if rejected_directions is None:
-                rejected_directions = set()
-            self.choose_path(rejected_directions=rejected_directions.add(depart_dir))
+            rejected_directions.add(depart_dir)
+            self.choose_path(rejected_directions)
 
     def depart_from_node(self):
         """
