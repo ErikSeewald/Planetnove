@@ -12,6 +12,8 @@ from mothership.io.communications import Communications
 from planets.code.planet import Planet
 from planets.code.parsing.tile_data import Tile
 import dearpygui.dearpygui as dpg
+
+from planets.code.route import Route
 from util.direction import Direction
 
 
@@ -105,7 +107,8 @@ class GUICore:
         """
 
         self.sub_GUIs.get("tank_map").update_image(
-            TankMapRenderer.render_map_image(event.planet, event.cur_node, event.target_node, event.target_route)
+            TankMapRenderer.render_map_image(event.planet, event.cur_node, event.target_node,
+                                             event.target_route, event.depart_dir)
         )
 
     def remove_tank(self):

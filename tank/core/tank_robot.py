@@ -174,7 +174,6 @@ class TankRobot:
                 self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, new_path.name)
                 self.planet.nodes.get(prev_node_id).set_path(self.last_departure_direction, new_path.name)
 
-        self.client.send_internal_planet_update(self.planet, self.cur_node_id)
         self.choose_path(rejected_directions=set())
 
     def choose_path(self, rejected_directions: set[Direction]):
@@ -206,19 +205,28 @@ class TankRobot:
                 for node_id, route in shortest_routes.items():
                     if route.length < closest_unexplored[0]:
                         if self.planet.nodes.get(node_id).has_unexplored_paths():
-                            closest_unexplored = (node_id, closest_unexplored[0])
+                            closest_unexplored = (closest_unexplored[0], node_id)
 
                 if closest_unexplored[1] != "None":
                     self.target_node_id = closest_unexplored[1]
                     self.target_route = shortest_routes.get(self.target_node_id)
+                    self.choose_path(rejected_directions)
+                    return
                 else:
                     sys.exit(1)
                     # TODO: Finished message or stuck message
 
         # Follow target_route
         else:
-            next_path = self.planet.paths.get(self.target_route.path_id_list.pop())
-            depart_dir = next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
+            if self.cur_node_id == self.target_node_id:
+                self.target_node_id = None
+                self.target_route = None
+                self.choose_path(rejected_directions)
+                return
+
+            else:
+                next_path = self.planet.paths.get(self.target_route.path_id_list.pop())
+                depart_dir = next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
 
         self.client.send_path_chosen(depart_dir)
 
@@ -236,6 +244,14 @@ class TankRobot:
         else:
             rejected_directions.add(depart_dir)
             self.choose_path(rejected_directions)
+            return
+
+        self.client.send_internal_planet_update(self.planet, self.cur_node_id,
+                                                self.target_node_id, self.target_route, depart_dir)
+
+        if self.target_route and self.target_route.path_id_list:
+            # Only remove now so that we send it int the planet update
+            self.target_route.path_id_list.pop()
 
     def depart_from_node(self):
         """

@@ -120,7 +120,7 @@ class Planet:
                 continue  # No route exists
 
             while cur_node != from_id:  # walk backwards to the starting node
-                path_id_list.insert(0, cur_parents[1])
+                path_id_list.append(cur_parents[1])
                 cur_node = cur_parents[0]
                 cur_parents = parents.get(cur_node)
 

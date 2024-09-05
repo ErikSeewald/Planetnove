@@ -18,12 +18,13 @@ class TankMapRenderer:
     BACKGROUND_COL = (25, 25, 25)
     NODE_COL_BRIGHT = (20, 130, 70)
     NODE_COL_DARK = (10, 60, 35)
-    TARGET_COLOR = (60, 10, 35)
+    TARGET_COLOR = (120, 15, 10)
 
     COORD_TO_PIXEL = 100
 
     @staticmethod
-    def render_map_image(planet: Planet, cur_node: str, target_node: str, target_route: Route) -> np.ndarray:
+    def render_map_image(planet: Planet, cur_node: str, target_node: str,
+                         target_route: Route, depart_dir: Direction) -> np.ndarray:
         """
         Renders an image of the given data. The rendered image can have different scaling based
         on the coordinates of the planet nodes.
@@ -61,7 +62,11 @@ class TankMapRenderer:
             for direction in node.available_paths:
                 if node.direction_to_path_id[direction] == "None":
                     path_pos = TankMapRenderer._offset_path_coord(pos, direction, is_unexplored=True)
-                    pygame.draw.line(image_surface, TankMapRenderer.GREY, pos, path_pos, width=2)
+
+                    color = TankMapRenderer.GREY
+                    if node_id == cur_node and direction == depart_dir:
+                        color = TankMapRenderer.TARGET_COLOR
+                    pygame.draw.line(image_surface, color, pos, path_pos, width=2)
 
         # PATHS
         for path_id, path in planet.paths.items():

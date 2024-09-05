@@ -87,3 +87,4 @@ class TankPlanetUpdate(UpdateEvent):
     cur_node: str
     target_node: str
     target_route: Route
+    depart_dir: Direction

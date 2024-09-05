@@ -70,7 +70,7 @@ class PlanetStateManager:
         response: RequestResponse
 
         # TODO: Replace with commented out code after debugging
-        approval = input("Approve? Y/N: ")
+        approval = "Y"  # input("Approve? Y/N: ")
         if approval.upper() == "Y":
             response = RequestResponse.approve("")
         else:

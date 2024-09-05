@@ -131,12 +131,14 @@ class TankClient:
         return self.get_response_of_type("path_chosen_response")
 
     # INTERNAL PLANET
-    def send_internal_planet_update(self, planet: Planet, cur_node: str, target_node: str, target_route: Route):
+    def send_internal_planet_update(self, planet: Planet, cur_node: str, target_node: str,
+                                    target_route: Route, depart_dir: Direction):
         message = {
             "type": "internal_planet",
             "planet": planet.to_dict(),
             "cur_node": cur_node,
-            "target_node": target_node,
-            "target_route": target_route.to_dict()
+            "target_node": target_node if target_node is not None else "None",
+            "target_route": target_route.to_dict() if target_route is not None else Route("", "", -1, []).to_dict()
+            "depart_dir": depart_dir.abbreviation()
         }
         self.send_message(message)
