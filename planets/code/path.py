@@ -9,6 +9,7 @@ class Path:
     """
 
     name: str
+    length: float
 
     # Node IDs
     node_a: str
@@ -17,8 +18,9 @@ class Path:
     direction_a: Direction
     direction_b: Direction
 
-    def __init__(self, name: str, node_a_with_dir: str, node_b_with_dir: str):
+    def __init__(self, name: str, node_a_with_dir: str, node_b_with_dir: str, length=1):
         self.name = name
+        self.length = length
 
         split_a = node_a_with_dir.split(":")
         split_b = node_b_with_dir.split(":")

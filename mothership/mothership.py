@@ -7,7 +7,7 @@ from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
 from planets.code.planet import Planet
-from planets.code.tile_data import Tile
+from planets.code.parsing.tile_data import Tile
 import dearpygui.dearpygui as dpg
 from util.logger import Logger
 
@@ -82,7 +82,7 @@ class Mothership:
 
         for event in events:
             if isinstance(event, TankPlanetUpdate):
-                self.gui.display_tank_internal_planet(event.planet, event.cur_node)
+                self.gui.display_tank_internal_planet(event)
 
             if isinstance(event, TankConnectionLost):
                 self.logger.log(f"Connection to tank-{event.tank_ip} lost")

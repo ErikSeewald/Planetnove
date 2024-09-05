@@ -3,7 +3,7 @@ from mothership.gui.planet_view.tile import DraggableTile
 from planets.code.node import Node
 from planets.code.path import Path
 from planets.code.planet import Planet
-from planets.code.tile_data import Tile
+from planets.code.parsing.tile_data import Tile
 from util.direction import Direction
 
 

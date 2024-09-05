@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 from pygame import Vector2
 from planets.code.planet import Planet
+from planets.code.route import Route
 from util.direction import Direction
 
 
@@ -17,13 +18,14 @@ class TankMapRenderer:
     BACKGROUND_COL = (25, 25, 25)
     NODE_COL_BRIGHT = (20, 130, 70)
     NODE_COL_DARK = (10, 60, 35)
+    TARGET_COLOR = (60, 10, 35)
 
     COORD_TO_PIXEL = 100
 
     @staticmethod
-    def render_map_image(planet: Planet, cur_node: str) -> np.ndarray:
+    def render_map_image(planet: Planet, cur_node: str, target_node: str, target_route: Route) -> np.ndarray:
         """
-        Renders an image of the given planet data. The rendered image can have different scaling based
+        Renders an image of the given data. The rendered image can have different scaling based
         on the coordinates of the planet nodes.
         Assumes pygame is initialized.
 
@@ -57,7 +59,7 @@ class TankMapRenderer:
             pos = TankMapRenderer._position_adjusted(node.coord, min_x, min_y, height)
 
             for direction in node.available_paths:
-                if node.known_paths[direction] == "None":
+                if node.direction_to_path_id[direction] == "None":
                     path_pos = TankMapRenderer._offset_path_coord(pos, direction, is_unexplored=True)
                     pygame.draw.line(image_surface, TankMapRenderer.GREY, pos, path_pos, width=2)
 
@@ -71,9 +73,10 @@ class TankMapRenderer:
             node_pos_b = TankMapRenderer._position_adjusted(node_b.coord, min_x, min_y, height)
             path_pos_b = TankMapRenderer._offset_path_coord(node_pos_b, path.direction_b, is_unexplored=False)
 
-            pygame.draw.line(image_surface, TankMapRenderer.WHITE, node_pos_a, path_pos_a, width=2)
-            pygame.draw.line(image_surface, TankMapRenderer.WHITE, path_pos_a, path_pos_b, width=2)
-            pygame.draw.line(image_surface, TankMapRenderer.WHITE, path_pos_b, node_pos_b, width=2)
+            color = TankMapRenderer.WHITE if path_id not in target_route.path_id_list else TankMapRenderer.TARGET_COLOR
+            pygame.draw.line(image_surface, color, node_pos_a, path_pos_a, width=2)
+            pygame.draw.line(image_surface, color, path_pos_a, path_pos_b, width=2)
+            pygame.draw.line(image_surface, color, path_pos_b, node_pos_b, width=2)
 
             # Special cases for loop-back paths that cannot be drawn well
             if path.node_a == path.node_b:
@@ -112,7 +115,12 @@ class TankMapRenderer:
 
             background_top_left = (pos[0] - 20, pos[1] - 20)
 
-            color = TankMapRenderer.NODE_COL_BRIGHT if node_id == cur_node else TankMapRenderer.NODE_COL_DARK
+            color = TankMapRenderer.NODE_COL_DARK
+            if node_id == cur_node:
+                color = TankMapRenderer.NODE_COL_BRIGHT
+            elif node_id == target_node:
+                color = TankMapRenderer.TARGET_COLOR
+
             pygame.draw.rect(image_surface, color,
                              (*background_top_left, background_width, background_height))
 
@@ -195,4 +203,3 @@ class TankMapRenderer:
         image_data: bytes = pygame.image.tostring(surface, "RGBA")
         image_array: np.ndarray = np.frombuffer(image_data, dtype=np.uint8)
         return image_array.reshape((surface.get_height(), surface.get_width(), 4))
-

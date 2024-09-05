@@ -5,11 +5,11 @@ from typing import Optional
 import pygame
 from pygame.math import Vector2
 from mothership.gui.planet_view import joint_attacher
-from planets.code import planet_parser
+from planets.code.parsing import planet_parser
 from mothership.gui.planet_view.tile import DraggableTile
 from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, TileGrabbed, TileReleased
 from planets.code.planet import Planet
-from planets.code.tile_data import Tile
+from planets.code.parsing.tile_data import Tile
 
 
 class PlanetView:

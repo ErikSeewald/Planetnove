@@ -2,7 +2,7 @@ from typing import Optional
 import pygame
 from mothership.gui.tank_internal_map.tank_map_renderer import TankMapRenderer
 from mothership.gui.tank_internal_map.tank_map_subgui import TankMapSubGUI
-from mothership.update_event import UpdateEvent, TileGrabbed, TileReleased
+from mothership.update_event import UpdateEvent, TankPlanetUpdate
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
 from mothership.gui.planet_view.tile import DraggableTile
@@ -10,7 +10,7 @@ from mothership.gui.coms_subgui.coms_subgui import ComsSubGUI
 from mothership.gui.sub_gui import SubGUI
 from mothership.io.communications import Communications
 from planets.code.planet import Planet
-from planets.code.tile_data import Tile
+from planets.code.parsing.tile_data import Tile
 import dearpygui.dearpygui as dpg
 from util.direction import Direction
 
@@ -98,14 +98,14 @@ class GUICore:
 
         return self.sub_GUIs.get("coms").tank_header_state == ComsSubGUI.TankHeaderState.ADDING_TANK
 
-    def display_tank_internal_planet(self, planet: Planet, cur_node: str):
+    def display_tank_internal_planet(self, event: TankPlanetUpdate):
         """
-        Helper function for updating the TankMapSubGUI and rendering a new image based on the given data
+        Helper function for updating the TankMapSubGUI and rendering a new image based on the given TankPlanetUpdate
         without needing access to the TankMapSubGUI class.
         """
 
         self.sub_GUIs.get("tank_map").update_image(
-            TankMapRenderer.render_map_image(planet, cur_node)
+            TankMapRenderer.render_map_image(event.planet, event.cur_node, event.target_node, event.target_route)
         )
 
     def remove_tank(self):

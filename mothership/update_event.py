@@ -1,6 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 from planets.code.planet import Planet
+from planets.code.route import Route
 from util.direction import Direction
 
 
@@ -84,3 +85,5 @@ class TankPlanetUpdate(UpdateEvent):
 
     planet: Planet
     cur_node: str
+    target_node: str
+    target_route: Route

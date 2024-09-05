@@ -3,7 +3,7 @@ import os
 import glob
 from pygame import Vector2
 from mothership.gui.planet_view.tile import DraggableTile
-from planets.code.tile_data import Tile
+from planets.code.parsing.tile_data import Tile
 
 
 class PlanetLoader:

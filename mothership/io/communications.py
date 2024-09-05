@@ -10,6 +10,7 @@ from mothership.planet_state.planet_state_manager import PlanetStateManager
 import socket
 
 from planets.code.planet import Planet
+from planets.code.route import Route
 from util.direction import Direction
 from util.logger import Logger
 
@@ -235,10 +236,7 @@ class Communications:
 
         # Do not log the entire internal planet message every time
         if message['type'] == "internal_planet":
-            self.logger.log(f"Processing tank internal planet message")
-            events.append(
-                TankPlanetUpdate(planet=Planet.from_dict(message['planet']), cur_node=message['cur_node'])
-            )
+            events.extend(self.handle_tank_internal_planet(message))
 
         else:
             # Log all other kinds of messages
@@ -254,6 +252,14 @@ class Communications:
                 self.handle_path_chosen(message)
 
         return events
+
+    def handle_tank_internal_planet(self, message: dict) -> list[UpdateEvent]:
+        self.logger.log(f"Processing tank internal planet message")
+        return [
+            TankPlanetUpdate(planet=Planet.from_dict(message['planet']), cur_node=message['cur_node'],
+                             target_node=message['target_node'],
+                             target_route=Route.from_dict(message['target_route']))
+        ]
 
     def handle_on_arrival(self, _message: dict):
         """

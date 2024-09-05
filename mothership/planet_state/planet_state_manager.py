@@ -37,7 +37,7 @@ class PlanetStateManager:
             return
 
         last_node = self.planet.nodes.get(self.tank.cur_node_id)
-        taken_path_id = last_node.known_paths.get(self.tank.departure_direction)
+        taken_path_id = last_node.direction_to_path_id.get(self.tank.departure_direction)
         taken_path = self.planet.paths.get(taken_path_id)
 
         if self.tank.cur_node_id == taken_path.node_a and self.tank.departure_direction == taken_path.direction_a:

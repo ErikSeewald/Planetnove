@@ -7,6 +7,7 @@ from pygame import Vector2
 
 from planets.code.path import Path
 from planets.code.planet import Planet
+from planets.code.route import Route
 from tank.core.tank_client import TankClient
 #DEBUG from tank.movement.line_following import LineFollower
 #DEBUG from tank.movement.calibrated_motor import CalibratedMotor
@@ -40,6 +41,7 @@ class TankRobot:
     cur_node_coord: Vector2
     reached_first_node: bool
     target_node_id: Optional[str] # None if there is currently no target
+    target_route: Optional[Route]
 
     # COMPONENT CLASSES
     #DEBUG motor: CalibratedMotor
@@ -68,6 +70,7 @@ class TankRobot:
         self.cur_node_coord = Vector2(-1, -1)
         self.reached_first_node = False
         self.target_node_id = None
+        self.target_route = None
 
         # CONTROL CLASSES
         #DEBUG self.motor = CalibratedMotor()
@@ -186,24 +189,36 @@ class TankRobot:
         cur_node = self.planet.nodes.get(self.cur_node_id)
         depart_dir = Direction.UNKNOWN
 
-        # Freely exploring
-        if self.target_node_id is None:
-            # Find any available paths that have not yet been explored -> depth first
-            for direction in Direction.real_directions_ordered():
-                if (direction in rejected_directions) or (direction not in cur_node.available_paths):
-                    continue
-                if cur_node.known_paths.get(direction) == "None":
-                    depart_dir = direction
-                    break
+        # Freely exploring or target_route to target_node was blocked
+        if self.target_route is None:
+            if cur_node.has_unexplored_paths():
+                for direction in Direction.real_directions_ordered():
+                    if (direction in rejected_directions) or (direction not in cur_node.available_paths):
+                        continue
+                    if cur_node.direction_to_path_id.get(direction) == "None":
+                        depart_dir = direction
+                        break
 
-            # If there is no more allowed unexplored paths
-            if depart_dir == Direction.UNKNOWN:
-                sys.exit(1)
-                # TODO: Finished message
+            else:
+                # Find closest node with unexplored paths
+                shortest_routes = self.planet.shortest_routes_from(self.cur_node_id)
+                closest_unexplored = (float("inf"), "None")
+                for node_id, route in shortest_routes.items():
+                    if route.length < closest_unexplored[0]:
+                        if self.planet.nodes.get(node_id).has_unexplored_paths():
+                            closest_unexplored = (node_id, closest_unexplored[0])
 
-        # Has target
+                if closest_unexplored[1] != "None":
+                    self.target_node_id = closest_unexplored[1]
+                    self.target_route = shortest_routes.get(self.target_node_id)
+                else:
+                    sys.exit(1)
+                    # TODO: Finished message or stuck message
+
+        # Follow target_route
         else:
-            pass
+            next_path = self.planet.paths.get(self.target_route.path_id_list.pop())
+            depart_dir = next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
 
         self.client.send_path_chosen(depart_dir)
 

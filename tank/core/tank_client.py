@@ -4,6 +4,7 @@ import sys
 from typing import Optional
 
 from planets.code.planet import Planet
+from planets.code.route import Route
 from util.logger import Logger
 from util.direction import Direction
 
@@ -130,10 +131,12 @@ class TankClient:
         return self.get_response_of_type("path_chosen_response")
 
     # INTERNAL PLANET
-    def send_internal_planet_update(self, planet: Planet, cur_node: str):
+    def send_internal_planet_update(self, planet: Planet, cur_node: str, target_node: str, target_route: Route):
         message = {
             "type": "internal_planet",
             "planet": planet.to_dict(),
-            "cur_node": cur_node
+            "cur_node": cur_node,
+            "target_node": target_node,
+            "target_route": target_route.to_dict()
         }
         self.send_message(message)
