@@ -246,10 +246,16 @@ class Communications:
                 self.send_msg_to_tank({"type": "connection_approved"})
 
             elif message['type'] == "node_arrival":
-                self.handle_on_arrival(message)
+                self.handle_tank_on_arrival(message)
 
             elif message['type'] == "path_chosen":
-                self.handle_path_chosen(message)
+                self.handle_tank_path_chosen(message)
+
+            elif message['type'] == "finished_exploring":
+                self.handle_tank_finished_exploring(message)
+
+            elif message['type'] == "stuck":
+                self.handle_tank_stuck(message)
 
         return events
 
@@ -262,7 +268,7 @@ class Communications:
                              depart_dir=Direction.from_str(message['depart_dir']))
         ]
 
-    def handle_on_arrival(self, _message: dict):
+    def handle_tank_on_arrival(self, _message: dict):
         """
         Handles an arrival message from the tank client. Either sends a tank arrival response with the necessary
         node information or an error message if the tank was not previously approved for departure.
@@ -278,7 +284,7 @@ class Communications:
             self.send_msg_to_tank(
                 message={"type": "error", "msg": "Last departure was not approved by the mothership"})
 
-    def handle_path_chosen(self, message: dict):
+    def handle_tank_path_chosen(self, message: dict):
         """
         Handles a path chosen message from the tank client.
         Sends a response either approving or denying the tank's choice based on the planet state manager.
@@ -286,6 +292,12 @@ class Communications:
 
         response = self.planet_manager.tank_path_chosen_response(Direction.from_str(message['direction']))
         self.send_msg_to_tank(response)
+
+    def handle_tank_finished_exploring(self, _message: dict):
+        self.logger.log("Tank has finished exploring!")
+
+    def handle_tank_stuck(self, _message: dict):
+        self.logger.log("Tank is stuck!")
 
     def send_tank_start_message(self):
         """

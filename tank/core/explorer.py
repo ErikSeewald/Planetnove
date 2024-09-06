@@ -9,6 +9,10 @@ from util.logger import Logger
 
 
 class Explorer:
+    """
+    Class implementing the tank's exploration protocol. Handles the internal planet and facing directions.
+    """
+
     logger: Logger
 
     # DIRECTIONS
@@ -41,6 +45,11 @@ class Explorer:
         self.target_route = None
 
     def handle_arrival_response(self, response: dict):
+        """
+        Handles the given arrival response from the mothership. Updates the internal planet as well as the
+        direction state variables.
+        """
+
         self.facing_direction = Direction.from_str(response['facing_direction'])
         path_dirs = {Direction.from_str(d) for d in response['available_paths']}
 
@@ -72,12 +81,10 @@ class Explorer:
                 self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, new_path.name)
                 self.planet.nodes.get(prev_node_id).set_path(self.last_departure_direction, new_path.name)
 
-    def choose_path(self, rejected_directions: set[Direction]):
+    def choose_path(self, rejected_directions: set[Direction]) -> Direction:
         """
-        Chooses a new path based on the current state and objective. Then communicates that choice
-        to the mothership and handles the response. If it the choice approved, the tank's state becomes
-        READY_TO_DEPART. If it is denied, the function chooses a different path recursively by updating the
-        'rejected_directions' parameter.
+        Chooses a new path based on the current state, objective and the given rejected directions.
+        If no option is found, Direction.UNKNOWN is returned.
         """
 
         # Freely exploring or target_route to target_node was blocked
@@ -89,6 +96,14 @@ class Explorer:
             return self.choose_path_with_route(rejected_directions)
 
     def choose_path_no_route(self, rejected_directions: set[Direction]) -> Direction:
+        """
+        Implements the path choosing protocol for when the tank is currently not following a route to a target node.
+        This could be because it is freely exploring the planet or because the route it was following has been blocked
+        or denied by the mothership.
+        The function either returns an immediate Direction without changing anything else, returns a Direction
+        while also beginning to follow a route, or returns Direction.UNKNOWN if no more option was found.
+        """
+
         cur_node = self.planet.nodes.get(self.cur_node_id)
 
         if cur_node.has_unexplored_paths():
@@ -110,17 +125,39 @@ class Explorer:
             if closest_unexplored[1] != "None":
                 self.target_node_id = closest_unexplored[1]
                 self.target_route = shortest_routes.get(self.target_node_id)
-                return self.choose_path(rejected_directions)
-            else:
-                sys.exit(1)
-                # TODO: Finished message or stuck message
+                return self.choose_path_with_route(rejected_directions)
+
+        return Direction.UNKNOWN
 
     def choose_path_with_route(self, rejected_directions):
+        """
+        Implements the path choosing protocol for when the tank is currently following a route to a target node.
+        The function either returns the next necessary direction on the route or switches to the no-route protocol
+        if a) the target node was reached or b) the route was blocked in some way.
+        Note that this function does not yet pop the path to be taken off of the route's path list, as that is the
+        responsibility of the tank robot's choose_path() function.
+        """
+
         if self.cur_node_id == self.target_node_id:
             self.target_node_id = None
             self.target_route = None
-            return self.choose_path(rejected_directions)
+            return self.choose_path_no_route(rejected_directions)
 
         else:
             next_path = self.planet.paths.get(self.target_route.path_id_list[-1])  # do not pop it yet
             return next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
+
+    def finished_exploring(self) -> bool:
+        """
+        Returns whether exploration is finished. This is the case if the internal planet holds no more nodes
+        with unexplored paths. Note that if the tank has been blocked from reaching a previously reached but not
+        fully explored node, the path choosing function can return Direction.UNKNOWN without finished_exploring()
+        being true. It is also important to remember that, if the planet has nodes that are unreachable from the
+        node network that the tank is on, the planet is still considered fully explored as long as
+        only the mothership knows of these nodes.
+        """
+
+        for node in self.planet.nodes.values():
+            if node.has_unexplored_paths():
+                return False
+        return True

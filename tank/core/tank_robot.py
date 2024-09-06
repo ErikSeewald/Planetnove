@@ -21,6 +21,7 @@ class TankRobot:
         LINE_FOLLOWING = 1
         AT_NODE = 2
         READY_TO_DEPART = 3
+        FINISHED = 4
 
     state: TankState
 
@@ -68,6 +69,10 @@ class TankRobot:
         self.switch_state(self.TankState.LINE_FOLLOWING)
 
         while True:
+            if self.state == self.TankState.FINISHED:
+                self.logger.log("Finished!")
+                return
+
             if self.state == self.TankState.LINE_FOLLOWING:
                 self.logger.log("Starting line following step")
                 self.line_follow_step()
@@ -121,8 +126,7 @@ class TankRobot:
         """
         Chooses a new path based on the current state and objective. Then communicates that choice
         to the mothership and handles the response. If it the choice approved, the tank's state becomes
-        READY_TO_DEPART. If it is denied, the function chooses a different path recursively by updating the
-        'rejected_directions' parameter.
+        READY_TO_DEPART. If it is denied, the function chooses a different path until no more options are available.
         """
 
         # CHOOSE PATH
@@ -130,9 +134,12 @@ class TankRobot:
         rejected_directions: set[Direction] = set()
         while choice_rejected:
             depart_dir = self.explorer.choose_path(rejected_directions)
-            self.client.send_path_chosen(depart_dir)
+            if depart_dir == Direction.UNKNOWN:
+                self.handle_no_path_found()
+                return
 
             # GET RESPONSE
+            self.client.send_path_chosen(depart_dir)
             response = None
             while response is None:
                 self.logger.log("Waiting for path_chosen_response...")
@@ -152,8 +159,22 @@ class TankRobot:
                                                 self.explorer.target_node_id, self.explorer.target_route, depart_dir)
 
         if self.explorer.target_route and self.explorer.target_route.path_id_list:
-            # Only remove now so that we send it int the planet update
+            # Only remove now so that we send it in the planet update
             self.explorer.target_route.path_id_list.pop()
+
+    def handle_no_path_found(self):
+        """
+        Handles the case of the path choosing function failing to choose a new path.
+        The mothership is alerted of the tank either having finished or being stuck and the TankState is
+        switched to FINISHED.
+        """
+
+        if self.explorer.finished_exploring():
+            self.client.send_finished_exploring()
+        else:
+            self.client.send_stuck()
+
+        self.state = self.TankState.FINISHED
 
     def depart_from_node(self):
         """

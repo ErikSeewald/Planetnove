@@ -142,3 +142,17 @@ class TankClient:
             "depart_dir": depart_dir.abbreviation()
         }
         self.send_message(message)
+
+    # FINISHED EXPLORING
+    def send_finished_exploring(self):
+        message = {
+            "type": "finished_exploring"
+        }
+        self.send_message(message)
+
+    # STUCK
+    def send_stuck(self):
+        message = {
+            "type": "stuck"
+        }
+        self.send_message(message)
