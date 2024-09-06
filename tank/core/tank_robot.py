@@ -180,7 +180,7 @@ class TankRobot:
             self.client.send_stuck()
 
         self.state = self.TankState.FINISHED
-        time.sleep(3)  # Give the mothership time before tank finishes and thereby closes the connection
+        time.sleep(1)  # Give the mothership time before tank finishes and thereby closes the connection
 
     def depart_from_node(self):
         """

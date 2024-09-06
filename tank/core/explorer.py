@@ -113,23 +113,23 @@ class Explorer:
                 if cur_node.direction_to_path_id.get(direction) == "None":
                     return direction
 
-        else:
-            # Find closest node with unexplored paths
-            shortest_routes = self.planet.shortest_routes_from(self.cur_node_id)
-            closest_unexplored = (float("inf"), "None")
-            for node_id, route in shortest_routes.items():
-                if route.length < closest_unexplored[0]:
-                    if self.planet.nodes.get(node_id).has_unexplored_paths():
-                        closest_unexplored = (route.length, node_id)
+        # Find closest node with unexplored paths
+        # (Case: no more unexplored paths or all unexplored paths rejected by mothership)
+        shortest_routes = self.planet.shortest_routes_from(self.cur_node_id)
+        closest_unexplored = (float("inf"), "None")
+        for node_id, route in shortest_routes.items():
+            if node_id != self.cur_node_id and route.length < closest_unexplored[0]:
+                if self.planet.nodes.get(node_id).has_unexplored_paths():
+                    closest_unexplored = (route.length, node_id)
 
-            if closest_unexplored[1] != "None":
-                self.target_node_id = closest_unexplored[1]
-                self.target_route = shortest_routes.get(self.target_node_id)
-                return self.choose_path_with_route(rejected_directions)
+        if closest_unexplored[1] != "None":
+            self.target_node_id = closest_unexplored[1]
+            self.target_route = shortest_routes.get(self.target_node_id)
+            return self.choose_path_with_route(rejected_directions)
 
         return Direction.UNKNOWN
 
-    def choose_path_with_route(self, rejected_directions):
+    def choose_path_with_route(self, rejected_directions: set[Direction]):
         """
         Implements the path choosing protocol for when the tank is currently following a route to a target node.
         The function either returns the next necessary direction on the route or switches to the no-route protocol
@@ -145,7 +145,13 @@ class Explorer:
 
         else:
             next_path = self.planet.paths.get(self.target_route.path_id_list[-1])  # do not pop it yet
-            return next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
+            next_dir = next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
+            if next_dir in rejected_directions:
+                self.target_route = None
+                self.target_node_id = None
+                return self.choose_path_no_route()
+            else:
+                return next_dir
 
     def finished_exploring(self) -> bool:
         """

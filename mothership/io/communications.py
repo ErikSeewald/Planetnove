@@ -83,7 +83,7 @@ class Communications:
     def update(self) -> list[UpdateEvent]:
         """
         Updates all communications and handles the received messages. Note that this function
-        spawns an asynchronous thread for receiving communications with a timeout of 0.4 seconds.
+        spawns an asynchronous thread for receiving communications with a timeout of 0.5 seconds.
         The update function should only be called ever 0.5. While the message receiving is
         asynchronous, each time this function is called the accumulated messages get handled synchronously.
 
@@ -131,7 +131,7 @@ class Communications:
         if tank_address[0] == expected_ip:
             self.tank_socket = tank_socket
             self.tank_address = tank_address
-            self.tank_socket.settimeout(0.4)
+            self.tank_socket.settimeout(0.5)
             time.sleep(0.5)  # Give connection some time to be fully set up on both ends, weird errors otherwise
             self.logger.log(f"Accepted connection from {tank_address}")
             return True
