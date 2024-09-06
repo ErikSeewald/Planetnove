@@ -120,7 +120,7 @@ class Explorer:
             for node_id, route in shortest_routes.items():
                 if route.length < closest_unexplored[0]:
                     if self.planet.nodes.get(node_id).has_unexplored_paths():
-                        closest_unexplored = (closest_unexplored[0], node_id)
+                        closest_unexplored = (route.length, node_id)
 
             if closest_unexplored[1] != "None":
                 self.target_node_id = closest_unexplored[1]

@@ -1,3 +1,4 @@
+import time
 from enum import Enum
 from tank.core.explorer import Explorer
 from tank.core.tank_client import TankClient
@@ -130,6 +131,7 @@ class TankRobot:
         """
 
         # CHOOSE PATH
+        depart_dir = Direction.UNKNOWN
         choice_rejected = True
         rejected_directions: set[Direction] = set()
         while choice_rejected:
@@ -165,16 +167,20 @@ class TankRobot:
     def handle_no_path_found(self):
         """
         Handles the case of the path choosing function failing to choose a new path.
-        The mothership is alerted of the tank either having finished or being stuck and the TankState is
-        switched to FINISHED.
+        The mothership is alerted of the tank either having finished or being stuck, a final planet update is sent
+        and the TankState is switched to FINISHED.
         """
 
+        self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
+                                                self.explorer.target_node_id, self.explorer.target_route,
+                                                Direction.UNKNOWN)
         if self.explorer.finished_exploring():
             self.client.send_finished_exploring()
         else:
             self.client.send_stuck()
 
         self.state = self.TankState.FINISHED
+        time.sleep(3)  # Give the mothership time before tank finishes and thereby closes the connection
 
     def depart_from_node(self):
         """
