@@ -257,6 +257,9 @@ class Communications:
             elif message['type'] == "stuck":
                 self.handle_tank_stuck(message)
 
+            elif message['type'] == "path_blocked":
+                self.handle_tank_path_blocked(message)
+
         return events
 
     def handle_tank_internal_planet(self, message: dict) -> list[UpdateEvent]:
@@ -298,6 +301,9 @@ class Communications:
 
     def handle_tank_stuck(self, _message: dict):
         self.logger.log("Tank is stuck!")
+
+    def handle_tank_path_blocked(self, _message: dict):
+        self.planet_manager.handle_tank_path_blocked()
 
     def send_tank_start_message(self):
         """

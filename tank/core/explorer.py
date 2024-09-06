@@ -28,6 +28,9 @@ class Explorer:
     target_node_id: Optional[str]  # None if there is currently no target
     target_route: Optional[Route]
 
+    # STATE
+    returned_from_path_blocked: bool  # Set by tank_robot after handling line follower
+
     def __init__(self, logger: Logger):
         self.logger = logger
 
@@ -43,6 +46,9 @@ class Explorer:
         self.reached_first_node = False
         self.target_node_id = None
         self.target_route = None
+
+        # STATE
+        self.returned_from_path_blocked = False
 
     def handle_arrival_response(self, response: dict):
         """
@@ -67,7 +73,13 @@ class Explorer:
         if not self.reached_first_node:
             self.reached_first_node = True
         else:
-            # ADD TAKEN PATH TO EXPLORED PLANET
+            # IF PATH BLOCKED, REFLECT THAT ON THE EXPLORED PLANET
+            if self.returned_from_path_blocked:
+                self.returned_from_path_blocked = False
+                self.planet.block_path_in_direction(self.cur_node_id, self.last_departure_direction)
+                return
+
+            # ELSE: ADD TAKEN PATH TO EXPLORED PLANET
             arrival_path_dir = self.facing_direction.invert()
             node_a_with_dir = f"{prev_node_id}:{self.last_departure_direction.abbreviation()}"
             node_b_with_dir = f"{self.cur_node_id}:{arrival_path_dir.abbreviation()}"
@@ -120,7 +132,10 @@ class Explorer:
         for node_id, route in shortest_routes.items():
             if node_id != self.cur_node_id and route.length < closest_unexplored[0]:
                 if self.planet.nodes.get(node_id).has_unexplored_paths():
-                    closest_unexplored = (route.length, node_id)
+                    next_path = self.planet.paths.get(route.path_id_list[-1])  # do not pop it yet
+                    next_dir = next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
+                    if next_dir not in rejected_directions:
+                        closest_unexplored = (route.length, node_id)
 
         if closest_unexplored[1] != "None":
             self.target_node_id = closest_unexplored[1]
@@ -149,7 +164,7 @@ class Explorer:
             if next_dir in rejected_directions:
                 self.target_route = None
                 self.target_node_id = None
-                return self.choose_path_no_route()
+                return self.choose_path_no_route(rejected_directions)
             else:
                 return next_dir
 

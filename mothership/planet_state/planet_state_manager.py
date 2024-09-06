@@ -36,6 +36,13 @@ class PlanetStateManager:
             self.tank.reached_first_node = True
             return
 
+        # Returned from blocked path
+        if self.tank.returned_from_path_blocked:
+            self.tank.returned_from_path_blocked = False
+            self.tank.facing_direction = self.tank.facing_direction.invert()
+            return
+
+        # Else:
         last_node = self.planet.nodes.get(self.tank.cur_node_id)
         taken_path_id = last_node.direction_to_path_id.get(self.tank.departure_direction)
         taken_path = self.planet.paths.get(taken_path_id)
@@ -69,21 +76,20 @@ class PlanetStateManager:
 
         response: RequestResponse
 
-        # TODO: Replace with commented out code after debugging
-        approval = input("Approve? Y/N: ")
-        if approval.upper() == "Y":
-            response = RequestResponse.approve("")
-        else:
-            response = RequestResponse.deny("User denied you. Sorry :/")
-
-        """
         # VALID DIRECTION
-        if self.planet.node_has_path_direction(self.tank.cur_node_id, direction):
+        node = self.planet.nodes.get(self.tank.cur_node_id)
+        if node.direction_to_path_id.get(direction) != "None":
             self.tank.departure_direction = direction
             response = RequestResponse.approve("")
         else:
             response = RequestResponse.deny(f"Node {self.tank.cur_node_id} has no valid path in direction {direction}")
-        """
+
+        # TODO: Remove this DEBUG stuff
+        approval = response.is_approved() and input("Approve? Y/N: ").upper() == "Y"
+        if approval:
+            response = RequestResponse.approve("")
+        else:
+            response = RequestResponse.deny("User denied you. Sorry :/")
 
         if response.is_approved():
             self.tank.departure_direction = direction
@@ -92,3 +98,13 @@ class PlanetStateManager:
             "type": "path_chosen_response",
             "request_response": response.as_dict()
         }
+
+    def handle_tank_path_blocked(self):
+        """
+        Handles the case where the tank notifies the mothership of the path it has taken being blocked and needing
+        to return to the starting node. Updates state variables so that on_tank_arrival() can function normally.
+        """
+
+        self.tank.returned_from_path_blocked = True
+        self.planet.block_path_in_direction(self.tank.cur_node_id, self.tank.departure_direction)
+

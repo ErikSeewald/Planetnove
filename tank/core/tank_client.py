@@ -156,3 +156,10 @@ class TankClient:
             "type": "stuck"
         }
         self.send_message(message)
+
+    # PATH BLOCKED
+    def send_path_blocked(self):
+        message = {
+            "type": "path_blocked"
+        }
+        self.send_message(message)

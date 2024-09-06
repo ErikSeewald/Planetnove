@@ -34,7 +34,7 @@ class Ultrasonic:
 
         return time.time() - t0
 
-    def get_distance(self) -> float:
+    def get_distance_cm(self) -> float:
         """
         :return: Measured distance in centimeters
         """

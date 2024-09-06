@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pygame
 from pygame import Vector2
@@ -16,8 +18,8 @@ class TankMapRenderer:
     WHITE = (255, 255, 255)
     GREY = (90, 90, 90)
     BACKGROUND_COL = (25, 25, 25)
-    CUR_NODE_COL = (150, 50, 40)
-    NODE_COL_DARK = (10, 60, 35)
+    NODE_COL_RED = (150, 50, 40)
+    NODE_COL_GREEN = (10, 60, 35)
     TARGET_COLOR = (20, 70, 130)
     TARGET_PATH_COLOR = (60, 115, 245)
 
@@ -66,7 +68,7 @@ class TankMapRenderer:
 
                     color = TankMapRenderer.GREY
                     if node_id == cur_node and direction == depart_dir:
-                        color = TankMapRenderer.CUR_NODE_COL
+                        color = TankMapRenderer.NODE_COL_RED
                     pygame.draw.line(image_surface, color, pos, path_pos, width=2)
 
         # PATHS
@@ -101,6 +103,19 @@ class TankMapRenderer:
                     pos = (path_pos_b[0] - 15, path_pos_b[1] - 5)
                     TankMapRenderer._draw_loop_path_text(pos, text, font, image_surface)
 
+            # Special case for blocked paths: Draw X in the center
+            if math.isinf(path.length):
+                # Calculate midpoint
+                mid_pos_x = (path_pos_a[0] + path_pos_b[0]) // 2
+                mid_pos_y = (path_pos_a[1] + path_pos_b[1]) // 2
+
+                # Draw X
+                offset = 10
+                pygame.draw.line(image_surface, TankMapRenderer.NODE_COL_RED, (mid_pos_x - offset, mid_pos_y - offset),
+                                 (mid_pos_x + offset, mid_pos_y + offset), width=3)
+                pygame.draw.line(image_surface, TankMapRenderer.NODE_COL_RED, (mid_pos_x - offset, mid_pos_y + offset),
+                                 (mid_pos_x + offset, mid_pos_y - offset), width=3)
+
         # NODES
         for node_id, node in planet.nodes.items():
             pos = TankMapRenderer._position_adjusted(node.coord, min_x, min_y, height)
@@ -122,9 +137,9 @@ class TankMapRenderer:
 
             background_top_left = (pos[0] - 20, pos[1] - 20)
 
-            color = TankMapRenderer.NODE_COL_DARK
+            color = TankMapRenderer.NODE_COL_GREEN
             if node_id == cur_node:
-                color = TankMapRenderer.CUR_NODE_COL
+                color = TankMapRenderer.NODE_COL_RED
             elif node_id == target_node:
                 color = TankMapRenderer.TARGET_COLOR
 

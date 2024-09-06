@@ -54,3 +54,12 @@ class MovementRoutines:
         # Move towards path to avoid tracking node again
         self.motor.move_straight(seconds=0.4)
         return self.RoutineResult.SUCCESS
+
+    def turn_around_avoid_obstacle(self) -> RoutineResult:
+        """
+        Handles the movement routine upon encountering an obstacle and needing to turn around completely.
+        """
+
+        self.motor.rotate_right(seconds=1.6)
+        return self.RoutineResult.SUCCESS
+

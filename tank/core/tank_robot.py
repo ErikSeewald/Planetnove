@@ -29,6 +29,7 @@ class TankRobot:
     # COMPONENT CLASSES
     #DEBUG motor: CalibratedMotor
     #DEBUG infrared: InfraredSensor
+    #DEBUG ultrasonic: Ultrasonic
 
     # CONTROL CLASSES
     #DEBUG movement_routines: MovementRoutines
@@ -47,9 +48,10 @@ class TankRobot:
         # CONTROL CLASSES
         #DEBUG self.motor = CalibratedMotor()
         #DEBUG self.infrared = InfraredSensor()
+        #DEBUG self.ultrasonic = Ultrasonic()
 
         #DEBUG self.movement_routines = MovementRoutines(self.motor)
-        #DEBUG self.line_follower = LineFollower(self.infrared, self.motor, self.movement_routines)
+        #DEBUG self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor, self.movement_routines)
         self.explorer = Explorer(logger)
 
     def switch_state(self, new_state: TankState):
@@ -97,6 +99,11 @@ class TankRobot:
 
         if follow_result == LineFollower.FollowResult.ARRIVED_AT_NODE:
             self.switch_state(self.TankState.AT_NODE)
+            
+        elif follow_result == LineFollower.FollowResult.PATH_BLOCKED:
+            self.switch_state(self.TankState.AT_NODE)
+            self.client.send_path_blocked()
+            self.explore.returned_from_path_blocked = True
 
         elif follow_result == LineFollower.FollowResult.TIMED_OUT:
             self.logger.log("Error: Line following step timed out")
@@ -111,11 +118,10 @@ class TankRobot:
         By the end of the function, the tank should be ready to depart.
         """
 
-        self.client.send_node_arrival()
-
         # GET RESPONSE
         response = None
         while response is None:
+            self.client.send_node_arrival()
             self.logger.log("Waiting for arrival_response...")
             response = self.client.get_node_arrival_response()
 
@@ -141,9 +147,9 @@ class TankRobot:
                 return
 
             # GET RESPONSE
-            self.client.send_path_chosen(depart_dir)
             response = None
             while response is None:
+                self.client.send_path_chosen(depart_dir)
                 self.logger.log("Waiting for path_chosen_response...")
                 response = self.client.get_path_chosen_response()
 

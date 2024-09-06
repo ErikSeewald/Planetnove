@@ -1,7 +1,6 @@
 from __future__ import annotations
 import heapq as heap
-
-from mypyc.transform.exceptions import adjust_error_kinds
+import math
 from pygame import Vector2
 from planets.code.node import Node
 from planets.code.path import Path
@@ -47,6 +46,40 @@ class Planet:
             raise ValueError(f"Cannot add path with unknown node {path.node_b}")
 
         self.paths[path.name] = path
+
+    def block_path_in_direction(self, node_id: str, direction: Direction):
+        """
+        Blocks the path path in the given direction of the node represented by the given node_id by removing
+        it from both available_paths and direction_to_path_id and, if the path object already exists
+        on the planet, setting it's length to float("inf"). If the path does not yet exist as an object,
+        a loopback path is added to the planet at that node with infinite length.
+        Raises a ValueError if the given node_id does not exist or the direction is invalid.
+        """
+
+        node = self.nodes.get(node_id)
+        if node is None:
+            raise ValueError(f"Cannot block a path for a node that does not exist: {node_id}")
+
+        if direction not in node.available_paths:
+            raise ValueError(f"Cannot block a path in a direction that is already unavailable: {direction}")
+
+        # Remove from node
+        node.available_paths.remove(direction)
+        node.direction_to_path_id[direction] = "None"
+
+        # Edit path object on planet to have inf length
+        node_with_dir = f"{node_id}:{direction}"
+        path_found = False
+        for path_id, path in self.paths.items():
+            if node_with_dir in path_id:
+                path.length = float("inf")
+                path_found = True
+                break
+
+        # Add path as loopback path with inf length
+        if not path_found:
+            path_id = f"{node_with_dir}-{node_with_dir}"
+            self.paths[path_id] = Path(path_id, node_with_dir, node_with_dir, length=float("inf"))
 
     def path_exists(self, node_a_with_dir: str, node_b_with_dir: str):
         """
@@ -116,7 +149,7 @@ class Planet:
             path_id_list: list[str] = list()
             cur_node = node_id
             cur_parents = parents.get(cur_node)
-            if cur_parents is None:
+            if cur_parents is None or math.isinf(weights[node_id]):
                 continue  # No route exists
 
             while cur_node != from_id:  # walk backwards to the starting node

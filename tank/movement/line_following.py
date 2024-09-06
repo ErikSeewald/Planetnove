@@ -4,6 +4,8 @@ from tank.sensors.infrared import InfraredSensor, SensorBitmap
 from tank.movement.calibrated_motor import CalibratedMotor
 import time
 
+from tank.sensors.ultrasonic import Ultrasonic
+
 
 class LineFollower:
     """
@@ -18,6 +20,7 @@ class LineFollower:
         Enum representing the result of a line following step
         """
         ARRIVED_AT_NODE = 1
+        PATH_BLOCKED = 2
         TIMED_OUT = -1
 
     # STRATEGY
@@ -37,8 +40,9 @@ class LineFollower:
         SensorBitmap.ALL: StrategyState.NODE_ARRIVAL,
     }
 
-    # SENSORS
+    # COMPONENT CLASSES
     infrared: InfraredSensor
+    ultrasonic: Ultrasonic
     motor: CalibratedMotor
 
     # CONTROL CLASSES
@@ -47,8 +51,10 @@ class LineFollower:
     # ATTRIBUTES
     SECONDS_UNTIL_TIMEOUT: float = 600 # Maximum time for a line following step
 
-    def __init__(self, sensor: InfraredSensor, motor: CalibratedMotor, movement_routines: MovementRoutines):
+    def __init__(self, sensor: InfraredSensor, ultrasonic: Ultrasonic,
+                 motor: CalibratedMotor, movement_routines: MovementRoutines):
         self.infrared = sensor
+        self.ultrasonic = ultrasonic
         self.motor = motor
         self.movement_routines = movement_routines
         self.switch_strategy(self.StrategyState.IDLE)
@@ -79,7 +85,6 @@ class LineFollower:
     def follow_to_next_node(self) -> FollowResult:
         """
         Main line following loop that runs until the next node is reached or the loop times out.
-        :return: FollowResult
         """
 
         # Only set strategy to forward if the current one is IDLE.
@@ -87,9 +92,20 @@ class LineFollower:
         if self.strategy == self.StrategyState.IDLE:
             self.switch_strategy(self.StrategyState.GO_FORWARD)
 
+        return self.follow_to_node_with_result(target_result=self.FollowResult.ARRIVED_AT_NODE)
+
+    def follow_to_node_with_result(self, target_result: FollowResult):
+        """
+        Tries to follow the line to a node and returns the given target_result if a node is reached successfully.
+        Returns FollowResult.TIMED_OUT otherwise.
+        """
+
         start_time = time.time()
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
             time.sleep(0.1)
+
+            if self.ultrasonic.get_distance_cm() < 10:
+                return self.handle_obstacle_encounter()
 
             bitmap = self.infrared.update()
             self.update_strategy(bitmap)
@@ -107,6 +123,18 @@ class LineFollower:
             elif self.strategy == self.StrategyState.NODE_ARRIVAL:
                 self.movement_routines.node_arrival()
                 self.switch_strategy(self.StrategyState.IDLE)
-                return self.FollowResult.ARRIVED_AT_NODE
+                return target_result
 
         return self.FollowResult.TIMED_OUT
+
+    def handle_obstacle_encounter(self) -> FollowResult:
+        """
+        Handles the case of the line follower encountering an obstacle and needing to turn back around to return
+        to the starting node.
+        """
+
+        self.movement_routines.turn_around_avoid_obstacle()
+        self.switch_strategy(self.StrategyState.GO_FORWARD)
+        return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)
+
+
