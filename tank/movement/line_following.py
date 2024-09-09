@@ -109,7 +109,7 @@ class LineFollower:
             time.sleep(0.1)
 
             distance = self.ultrasonic.get_distance_cm()
-            if 0 < distance < 10: # Check greater than 0 to ignore failed readings
+            if distance < 12:
                 self.logger.log(f"Encountered obstacle (distance: {distance})")
                 return self.handle_obstacle_encounter()
 
@@ -142,4 +142,3 @@ class LineFollower:
         self.movement_routines.turn_around_avoid_obstacle()
         self.switch_strategy(self.StrategyState.GO_FORWARD)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)
-

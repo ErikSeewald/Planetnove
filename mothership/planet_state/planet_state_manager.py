@@ -39,7 +39,7 @@ class PlanetStateManager:
         # Returned from blocked path
         if self.tank.returned_from_path_blocked:
             self.tank.returned_from_path_blocked = False
-            self.tank.facing_direction = self.tank.facing_direction.invert()
+            self.tank.facing_direction = self.tank.departure_direction.invert()
             return
 
         # Else:

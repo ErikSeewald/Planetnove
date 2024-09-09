@@ -100,7 +100,7 @@ class Explorer:
         """
 
         # Freely exploring or target_route to target_node was blocked
-        if self.target_route is None:
+        if self.target_route is None or len(self.target_route.path_id_list) == 0:
             return self.choose_path_no_route(rejected_directions)
 
         # Follow target_route

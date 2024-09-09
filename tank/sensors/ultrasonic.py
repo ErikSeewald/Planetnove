@@ -49,4 +49,5 @@ class Ultrasonic:
             distances_cm[i] = pulse_time * 340.0 / 2.0 * 100  # distance with speed of sound 340m/s
 
         distances_cm = sorted(distances_cm)
-        return distances_cm[2] # Return median measurement
+        median = distances_cm[2]
+        return median if median > 0 else float("inf")

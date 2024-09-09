@@ -18,7 +18,7 @@ class Path:
     direction_a: Direction
     direction_b: Direction
 
-    def __init__(self, name: str, node_a_with_dir: str, node_b_with_dir: str, length=1):
+    def __init__(self, name: str, node_a_with_dir: str, node_b_with_dir: str, length: float = 1):
         self.name = name
         self.length = length
 
@@ -40,11 +40,13 @@ class Path:
             "node_a": self.node_a,
             "node_b": self.node_b,
             "direction_a": self.direction_a.abbreviation(),
-            "direction_b": self.direction_b.abbreviation()
+            "direction_b": self.direction_b.abbreviation(),
+            "length": self.length
         }
 
     @staticmethod
     def from_dict(path_dict: dict) -> Path:
         return Path(name=path_dict['name'],
                     node_a_with_dir=f"{path_dict['node_a']}:{path_dict['direction_a']}",
-                    node_b_with_dir=f"{path_dict['node_b']}:{path_dict['direction_b']}")
+                    node_b_with_dir=f"{path_dict['node_b']}:{path_dict['direction_b']}",
+                    length=float(path_dict['length']))

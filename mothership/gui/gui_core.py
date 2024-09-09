@@ -118,6 +118,8 @@ class GUICore:
 
         self.sub_GUIs.get("tank_map").remove_image()
         self.sub_GUIs.get("coms").tank_header_state = ComsSubGUI.TankHeaderState.ADDING_TANK
+
+        self.planet_view.reset_planet() # Rebuild planet to remove any changes made by tank coms
         self.tank_connection_event()
 
     def tank_connection_event(self):

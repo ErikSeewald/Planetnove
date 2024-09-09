@@ -217,6 +217,13 @@ class PlanetView:
         # Schedule instead of doing it here so that it can be added to the update events
         self.planet_mode_switch_scheduled = True
 
+    def reset_planet(self):
+        """
+        Resets all changes made to the planet by rebuilding it.
+        """
+
+        self.planet_mode_switch_scheduled = True
+
     def can_finish_planet(self) -> bool:
         """
         Returns whether edit mode can parse and finish the planet that is currently being edited.
