@@ -2,10 +2,10 @@ import time
 from enum import Enum
 from tank.core.explorer import Explorer
 from tank.core.tank_client import TankClient
-#DEBUG from tank.movement.line_following import LineFollower
-#DEBUG from tank.movement.calibrated_motor import CalibratedMotor
-#DEBUG from tank.movement.movement_routines import MovementRoutines
-#DEBUG from tank.sensors.infrared import InfraredSensor
+from tank.movement.line_following import LineFollower
+from tank.movement.calibrated_motor import CalibratedMotor
+from tank.movement.movement_routines import MovementRoutines
+from tank.sensors.infrared import InfraredSensor
 from util.direction import Direction, RelativeDirection
 from util.logger import Logger
 
@@ -27,13 +27,13 @@ class TankRobot:
     state: TankState
 
     # COMPONENT CLASSES
-    #DEBUG motor: CalibratedMotor
-    #DEBUG infrared: InfraredSensor
-    #DEBUG ultrasonic: Ultrasonic
+    motor: CalibratedMotor
+    infrared: InfraredSensor
+    ultrasonic: Ultrasonic
 
     # CONTROL CLASSES
-    #DEBUG movement_routines: MovementRoutines
-    #DEBUG line_follower: LineFollower
+    movement_routines: MovementRoutines
+    line_follower: LineFollower
     explorer: Explorer
     client: TankClient
     logger: Logger
@@ -46,12 +46,12 @@ class TankRobot:
         self.switch_state(self.TankState.INITIALIZING)
 
         # CONTROL CLASSES
-        #DEBUG self.motor = CalibratedMotor()
-        #DEBUG self.infrared = InfraredSensor()
-        #DEBUG self.ultrasonic = Ultrasonic()
+        self.motor = CalibratedMotor()
+        self.infrared = InfraredSensor()
+        self.ultrasonic = Ultrasonic()
 
-        #DEBUG self.movement_routines = MovementRoutines(self.motor)
-        #DEBUG self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor, self.movement_routines)
+        self.movement_routines = MovementRoutines(self.motor)
+        self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor, self.movement_routines)
         self.explorer = Explorer(logger)
 
     def switch_state(self, new_state: TankState):
@@ -94,7 +94,6 @@ class TankRobot:
         and updates state variables accordingly.
         """
 
-        """ DEBUG
         follow_result = self.line_follower.follow_to_next_node()
 
         if follow_result == LineFollower.FollowResult.ARRIVED_AT_NODE:
@@ -108,8 +107,6 @@ class TankRobot:
         elif follow_result == LineFollower.FollowResult.TIMED_OUT:
             self.logger.log("Error: Line following step timed out")
             self.switch_state(self.TankState.ERROR)
-        """
-        self.switch_state(self.TankState.AT_NODE) # DEBUG
 
     def on_node_arrival(self):
         """
@@ -199,7 +196,6 @@ class TankRobot:
                                                            self.explorer.next_departure_direction)
         self.logger.log(f"Next relative target direction: {target_direction}")
 
-        """ DEBUG
         self.movement_routines.node_departure(target_direction)
 
         # LINE FOLLOWING STRATEGY
@@ -207,7 +203,6 @@ class TankRobot:
             self.line_follower.switch_strategy(LineFollower.StrategyState.ROTATE_RIGHT)
         elif target_direction == RelativeDirection.LEFT:
             self.line_follower.switch_strategy(LineFollower.StrategyState.ROTATE_LEFT)
-        """
 
         # STATE VARIABLES
         self.explorer.last_departure_direction = self.explorer.next_departure_direction
