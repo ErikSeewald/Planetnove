@@ -104,11 +104,14 @@ class TankRobot:
             
         elif follow_result == LineFollower.FollowResult.PATH_BLOCKED:
             self.switch_state(self.TankState.AT_NODE)
-            self.client.send_path_blocked()
             self.explorer.returned_from_path_blocked = True
 
-            # Give mothership time to process path blocked before sending node arrival
-            time.sleep(0.25)
+            # Do not proceed to node arrival until mothership has acknowledged the blocked path
+            response = None
+            while response is None:
+                self.client.send_path_blocked()
+                self.logger.log("Waiting for path_blocked_response...")
+                response = self.client.get_path_blocked_response()
 
         elif follow_result == LineFollower.FollowResult.TIMED_OUT:
             self.logger.log("Error: Line following step timed out")

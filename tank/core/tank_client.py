@@ -163,3 +163,6 @@ class TankClient:
             "type": "path_blocked"
         }
         self.send_message(message)
+
+    def get_path_blocked_response(self):
+        return self.get_response_of_type("path_blocked_response")

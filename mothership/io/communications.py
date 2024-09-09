@@ -304,6 +304,7 @@ class Communications:
 
     def handle_tank_path_blocked(self, _message: dict):
         self.planet_manager.handle_tank_path_blocked()
+        self.send_msg_to_tank({"type": "path_blocked_response"})
 
     def send_tank_start_message(self):
         """
