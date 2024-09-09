@@ -68,7 +68,7 @@ class Planet:
         node.direction_to_path_id[direction] = "None"
 
         # Edit path object on planet to have inf length
-        node_with_dir = f"{node_id}:{direction}"
+        node_with_dir = f"{node_id}:{direction.abbreviation()}"
         path_found = False
         for path_id, path in self.paths.items():
             if node_with_dir in path_id:

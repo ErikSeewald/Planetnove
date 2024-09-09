@@ -1,3 +1,4 @@
+import sys
 import time
 from enum import Enum
 from tank.core.explorer import Explorer
@@ -6,6 +7,7 @@ from tank.movement.line_following import LineFollower
 from tank.movement.calibrated_motor import CalibratedMotor
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor
+from tank.sensors.ultrasonic import Ultrasonic
 from util.direction import Direction, RelativeDirection
 from util.logger import Logger
 
@@ -51,7 +53,8 @@ class TankRobot:
         self.ultrasonic = Ultrasonic()
 
         self.movement_routines = MovementRoutines(self.motor)
-        self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor, self.movement_routines)
+        self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor,
+                                          self.movement_routines, self.logger)
         self.explorer = Explorer(logger)
 
     def switch_state(self, new_state: TankState):
@@ -102,11 +105,14 @@ class TankRobot:
         elif follow_result == LineFollower.FollowResult.PATH_BLOCKED:
             self.switch_state(self.TankState.AT_NODE)
             self.client.send_path_blocked()
-            self.explore.returned_from_path_blocked = True
+            self.explorer.returned_from_path_blocked = True
+
+            # Give mothership time to process path blocked before sending node arrival
+            time.sleep(0.25)
 
         elif follow_result == LineFollower.FollowResult.TIMED_OUT:
             self.logger.log("Error: Line following step timed out")
-            self.switch_state(self.TankState.ERROR)
+            sys.exit(1)
 
     def on_node_arrival(self):
         """

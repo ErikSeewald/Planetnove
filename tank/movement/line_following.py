@@ -5,6 +5,7 @@ from tank.movement.calibrated_motor import CalibratedMotor
 import time
 
 from tank.sensors.ultrasonic import Ultrasonic
+from util.logger import Logger
 
 
 class LineFollower:
@@ -13,6 +14,8 @@ class LineFollower:
     Responsible for line following, node and obstacle detection and rotation adjustments.
     Does not make pathing decisions.
     """
+
+    logger: Logger
 
     # FOLLOW RESULT
     class FollowResult(Enum):
@@ -52,7 +55,8 @@ class LineFollower:
     SECONDS_UNTIL_TIMEOUT: float = 600 # Maximum time for a line following step
 
     def __init__(self, sensor: InfraredSensor, ultrasonic: Ultrasonic,
-                 motor: CalibratedMotor, movement_routines: MovementRoutines):
+                 motor: CalibratedMotor, movement_routines: MovementRoutines, logger: Logger):
+        self.logger = logger
         self.infrared = sensor
         self.ultrasonic = ultrasonic
         self.motor = motor
@@ -104,7 +108,9 @@ class LineFollower:
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
             time.sleep(0.1)
 
-            if self.ultrasonic.get_distance_cm() < 10:
+            distance = self.ultrasonic.get_distance_cm()
+            if 0 < distance < 10: # Check greater than 0 to ignore failed readings
+                self.logger.log(f"Encountered obstacle (distance: {distance})")
                 return self.handle_obstacle_encounter()
 
             bitmap = self.infrared.update()
@@ -136,5 +142,4 @@ class LineFollower:
         self.movement_routines.turn_around_avoid_obstacle()
         self.switch_strategy(self.StrategyState.GO_FORWARD)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)
-
 
