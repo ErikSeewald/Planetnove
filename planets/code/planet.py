@@ -49,9 +49,9 @@ class Planet:
 
     def block_path_in_direction(self, node_id: str, direction: Direction):
         """
-        Blocks the path path in the given direction of the node represented by the given node_id by removing
+        Blocks the path in the given direction of the node represented by the given node_id by removing
         it from both available_paths and direction_to_path_id and, if the path object already exists
-        on the planet, setting it's length to float("inf"). If the path does not yet exist as an object,
+        on the planet, setting its length to float("inf"). If the path does not yet exist as an object,
         a loopback path is added to the planet at that node with infinite length.
         Raises a ValueError if the given node_id does not exist or the direction is invalid.
         """
@@ -76,7 +76,7 @@ class Planet:
                 path_found = True
                 break
 
-        # Add path as loopback path with inf length
+        # Add looping path with inf length
         if not path_found:
             path_id = f"{node_with_dir}-{node_with_dir}"
             self.paths[path_id] = Path(path_id, node_with_dir, node_with_dir, length=float("inf"))

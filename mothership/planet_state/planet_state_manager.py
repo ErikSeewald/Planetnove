@@ -85,6 +85,7 @@ class PlanetStateManager:
             response = RequestResponse.deny(f"Node {self.tank.cur_node_id} has no valid path in direction {direction}")
 
         # TODO: Remove this DEBUG stuff
+        """
         approval = response.is_approved() and input("Approve? Y/N: ").upper() == "Y"
         if approval:
             response = RequestResponse.approve("")
@@ -93,6 +94,7 @@ class PlanetStateManager:
 
         if response.is_approved():
             self.tank.departure_direction = direction
+        """
 
         return {
             "type": "path_chosen_response",

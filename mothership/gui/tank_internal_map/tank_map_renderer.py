@@ -87,8 +87,21 @@ class TankMapRenderer:
             pygame.draw.line(image_surface, color, path_pos_a, path_pos_b, width=2)
             pygame.draw.line(image_surface, color, path_pos_b, node_pos_b, width=2)
 
-            # Special cases for loop-back paths that cannot be drawn well
-            if path.node_a == path.node_b:
+            # Special case for blocked paths: Draw X in the center
+            if math.isinf(path.length):
+                # Calculate midpoint
+                mid_pos_x = (path_pos_a[0] + path_pos_b[0]) // 2
+                mid_pos_y = (path_pos_a[1] + path_pos_b[1]) // 2
+
+                # Draw X
+                offset = 10
+                pygame.draw.line(image_surface, TankMapRenderer.NODE_COL_RED, (mid_pos_x - offset, mid_pos_y - offset),
+                                 (mid_pos_x + offset, mid_pos_y + offset), width=3)
+                pygame.draw.line(image_surface, TankMapRenderer.NODE_COL_RED, (mid_pos_x - offset, mid_pos_y + offset),
+                                 (mid_pos_x + offset, mid_pos_y - offset), width=3)
+
+            # Special cases for non-inf loop-back paths that cannot be drawn well
+            elif path.node_a == path.node_b:
                 if path.direction_a == path.direction_b:
                     abbr = path.direction_a.abbreviation()
                     pos = (path_pos_a[0] - 15, path_pos_a[1] - 5)
@@ -102,19 +115,6 @@ class TankMapRenderer:
                     text = f"{path.direction_b.abbreviation()}->{path.direction_a.abbreviation()}"
                     pos = (path_pos_b[0] - 15, path_pos_b[1] - 5)
                     TankMapRenderer._draw_loop_path_text(pos, text, font, image_surface)
-
-            # Special case for blocked paths: Draw X in the center
-            if math.isinf(path.length):
-                # Calculate midpoint
-                mid_pos_x = (path_pos_a[0] + path_pos_b[0]) // 2
-                mid_pos_y = (path_pos_a[1] + path_pos_b[1]) // 2
-
-                # Draw X
-                offset = 10
-                pygame.draw.line(image_surface, TankMapRenderer.NODE_COL_RED, (mid_pos_x - offset, mid_pos_y - offset),
-                                 (mid_pos_x + offset, mid_pos_y + offset), width=3)
-                pygame.draw.line(image_surface, TankMapRenderer.NODE_COL_RED, (mid_pos_x - offset, mid_pos_y + offset),
-                                 (mid_pos_x + offset, mid_pos_y - offset), width=3)
 
         # NODES
         for node_id, node in planet.nodes.items():

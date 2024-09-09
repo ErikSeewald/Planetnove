@@ -280,7 +280,10 @@ class Communications:
         last_message_was_approval = (self.last_msg_to_tank['type'] == "path_chosen_response"
                                      and self.last_msg_to_tank['request_response']['is_approved'])
 
-        if last_message_was_approval or not self.planet_manager.tank.reached_first_node:
+        last_message_was_path_blocked = self.last_msg_to_tank['type'] == "path_blocked_response"
+
+        if (last_message_was_approval or last_message_was_path_blocked or
+                not self.planet_manager.tank.reached_first_node):
             self.planet_manager.on_tank_arrival()
             self.send_msg_to_tank(self.planet_manager.tank_arrival_response())
         else:
