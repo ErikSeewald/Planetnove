@@ -109,7 +109,7 @@ class LineFollower:
             time.sleep(0.1)
 
             distance = self.ultrasonic.get_distance_cm()
-            if distance < 12:
+            if distance < 8:
                 self.logger.log(f"Encountered obstacle (distance: {distance})")
                 return self.handle_obstacle_encounter()
 
