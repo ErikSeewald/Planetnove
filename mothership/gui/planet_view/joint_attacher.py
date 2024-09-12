@@ -14,6 +14,11 @@ def try_attach(tile: DraggableTile, all_tiles: list[DraggableTile]):
     :param all_tiles: The list of all potential attachment partners.
     """
 
+    # Skip calculation if the given tile is also the only tile
+    if len(all_tiles) == 1 and tile == all_tiles[0]:
+        tile.snapped_in_place = True
+        return
+
     # Check every tile for joint connections
     for tile_b in all_tiles:
         if tile_b == tile:
@@ -181,6 +186,10 @@ def all_tiles_form_one_planet(all_tiles: list[DraggableTile]) -> bool:
     Returns whether the given list of tiles is fully connected into a single planet and not multiple
     different planets.
     """
+
+    # Skip calculation if there is only one tile
+    if len(all_tiles) == 1 and all_tiles[0].snapped_in_place:
+        return True
 
     # Begin with one tile and try to reach all tiles from it -> Success: return True
     id_to_tile: dict[str, DraggableTile] = {t.tile_id: t for t in all_tiles}

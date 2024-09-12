@@ -6,9 +6,9 @@ from mothership.gui.planet_view.tile import DraggableTile
 from planets.code.parsing.tile_data import Tile
 
 
-class PlanetLoader:
+class TileLoader:
     """
-    Class responsible for loading and holding the planet data (i.e. the svg files and data files).
+    Class responsible for loading and holding the tile data (i.e. the svg files and data files).
     Has some error handling but largely assumes that all files are formatted correctly.
     """
 
@@ -25,7 +25,7 @@ class PlanetLoader:
 
     def load(self):
         """
-        Loads the planet data from the class' planet_directory. By the end of the function, the class'
+        Loads the tile data from the class' planet_directory. By the end of the function, the class'
         svg_tiles, tile_data and base_tile variables are set, assuming that the datafiles are formatted correctly.
         """
         
@@ -51,12 +51,21 @@ class PlanetLoader:
         if svg_bases != blank_bases:
             raise FileNotFoundError("svg tile and svg blank tile files do not match")
 
+        # Ignoring tiles
+        tile_ignore = ""
+        ignore_path = os.path.join(self.planet_directory, "tile_ignore.txt")
+        if os.path.isfile(ignore_path):
+            with open(ignore_path, 'r') as f:
+                tile_ignore = f.read()
+
         # TILES
         for file in tile_files:
             tile_id = os.path.splitext(os.path.basename(file))[0]
-            print(f"Loading svg for: {tile_id}...")
-            blank_file = os.path.join(svg_dir, tile_id + "_blank.svg")
-            self.svg_tiles.append(DraggableTile(tile_id, file, blank_file, Vector2(500, 500), scale=0.4))
+
+            if tile_id not in tile_ignore:
+                print(f"Loading svg for: {tile_id}...")
+                blank_file = os.path.join(svg_dir, tile_id + "_blank.svg")
+                self.svg_tiles.append(DraggableTile(tile_id, file, blank_file, Vector2(500, 500), scale=0.4))
 
         # BASE_TILE
         print("Loading data for: base_tile...")
@@ -71,5 +80,6 @@ class PlanetLoader:
             data = open(file, "r").read()
             tile_id = os.path.splitext(os.path.basename(file))[0]
 
-            print(f"Loading data for: {tile_id}...", flush=True)
-            self.tile_data.append(Tile.from_json_dict(json.loads(data), self.base_tile, tile_id))
+            if tile_id not in tile_ignore:
+                print(f"Loading data for: {tile_id}...", flush=True)
+                self.tile_data.append(Tile.from_json_dict(json.loads(data), self.base_tile, tile_id))

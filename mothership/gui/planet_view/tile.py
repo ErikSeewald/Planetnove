@@ -56,7 +56,6 @@ class DraggableTile:
         self.rect = self.detailed_image.get_rect(topleft=(pos.x, pos.y))
         self.rotation_deg = 0
         self.is_dragging = False
-        self.snapped_pos = False
 
     def set_blank_mode(self, mode: bool):
         """

@@ -52,7 +52,7 @@ class TankRobot:
         self.infrared = InfraredSensor()
         self.ultrasonic = Ultrasonic()
 
-        self.movement_routines = MovementRoutines(self.motor)
+        self.movement_routines = MovementRoutines(self.motor, self.infrared)
         self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor,
                                           self.movement_routines, self.logger)
         self.explorer = Explorer(logger)

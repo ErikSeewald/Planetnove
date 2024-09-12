@@ -1,11 +1,11 @@
 import os
-from mothership.io.load_planets import PlanetLoader
+from mothership.io.load_tiles import TileLoader
 from mothership.mothership import Mothership
 
 
 def init():
     # PLANET TILES
-    planet_loader = PlanetLoader(os.path.join(os.getcwd(), "planets"))
+    planet_loader = TileLoader(os.path.join(os.getcwd(), "planets"))
     planet_loader.load()
 
     # MOTHERSHIP
