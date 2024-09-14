@@ -106,10 +106,9 @@ class LineFollower:
 
         start_time = time.time()
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
-            time.sleep(0.1)
 
             distance = self.ultrasonic.get_distance_cm()
-            if distance < 8:
+            if distance < 10:
                 self.logger.log(f"Encountered obstacle (distance: {distance})")
                 return self.handle_obstacle_encounter()
 
@@ -118,10 +117,10 @@ class LineFollower:
 
             # STRATEGIES
             if self.strategy == self.StrategyState.ROTATE_LEFT:
-                self.motor.rotate_left(seconds=0.05)
+                self.motor.rotate_left(seconds=0.1)
 
             elif self.strategy == self.StrategyState.ROTATE_RIGHT:
-                self.motor.rotate_right(seconds=0.05)
+                self.motor.rotate_right(seconds=0.1)
 
             elif self.strategy == self.StrategyState.GO_FORWARD:
                 self.motor.move_straight(seconds=0.1)

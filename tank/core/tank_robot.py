@@ -1,6 +1,8 @@
 import sys
 import time
 from enum import Enum
+
+from tank.arm.servo import Servo
 from tank.core.explorer import Explorer
 from tank.core.tank_client import TankClient
 from tank.movement.line_following import LineFollower
@@ -32,6 +34,7 @@ class TankRobot:
     motor: CalibratedMotor
     infrared: InfraredSensor
     ultrasonic: Ultrasonic
+    arm: Servo
 
     # CONTROL CLASSES
     movement_routines: MovementRoutines
@@ -47,11 +50,14 @@ class TankRobot:
         # STATE
         self.switch_state(self.TankState.INITIALIZING)
 
-        # CONTROL CLASSES
+        # COMPONENT CLASSES
         self.motor = CalibratedMotor()
         self.infrared = InfraredSensor()
         self.ultrasonic = Ultrasonic()
+        self.arm = Servo()
+        self.arm.setServoPwm(channel=1, angle=180)
 
+        # CONTROL CLASSES
         self.movement_routines = MovementRoutines(self.motor, self.infrared)
         self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor,
                                           self.movement_routines, self.logger)
@@ -218,3 +224,12 @@ class TankRobot:
         self.explorer.next_departure_direction = Direction.UNKNOWN
 
         self.switch_state(self.TankState.LINE_FOLLOWING)
+
+
+    def stop_all(self):
+        """
+        Stops all components (e.g. the motors) from running.
+        """
+
+        self.motor.stop_motors()
+        self.arm.release_all_servos()

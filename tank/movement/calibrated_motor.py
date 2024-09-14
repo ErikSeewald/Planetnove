@@ -17,7 +17,7 @@ class CalibratedMotor:
         self.PWM = PWM()
 
         # These values can be different for each tank.
-        self.calibrate_straight(1400, 1000)
+        self.calibrate_straight(1300, 900)
 
     def calibrate_straight(self, speed_left: int, speed_right: int):
         """
@@ -66,4 +66,11 @@ class CalibratedMotor:
 
         self.PWM.setMotors(-1500 * rotation_speed, 1500 * rotation_speed)
         time.sleep(seconds)
+        self.PWM.setMotors(0, 0)
+
+    def stop_motors(self):
+        """
+        Sets both motor duties to zero.
+        """
+
         self.PWM.setMotors(0, 0)

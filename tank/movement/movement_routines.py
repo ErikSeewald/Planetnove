@@ -49,40 +49,12 @@ class MovementRoutines:
         if target_direction == RelativeDirection.AHEAD:
             pass
         elif target_direction == RelativeDirection.RIGHT:
-            self.motor.rotate_right(seconds=0.25)
-
-            while True:
-                time.sleep(0.1)
-                self.motor.move_straight(seconds=0.1)
-                self.motor.rotate_right(seconds=0.05)
-                if self.infrared.update() != SensorBitmap.NONE:
-                    break
+            self.motor.rotate_right(seconds=1)
         elif target_direction == RelativeDirection.LEFT:
-            self.motor.rotate_left(seconds=0.25)
-
-            while True:
-                time.sleep(0.1)
-                self.motor.move_straight(seconds=0.1)
-                self.motor.rotate_left(seconds=0.05)
-                if self.infrared.update() != SensorBitmap.NONE:
-                    break
-
+            self.motor.rotate_left(seconds=1)
         elif target_direction == RelativeDirection.BEHIND:
-            self.motor.rotate_right(seconds=0.25)
+            self.motor.rotate_right(seconds=1.8)
 
-            once: bool = False
-            while True:
-                time.sleep(0.1)
-                self.motor.move_straight(seconds=0.1)
-                self.motor.rotate_right(seconds=0.05)
-                if self.infrared.update() != SensorBitmap.NONE:
-                    if once:
-                        break
-                    once = True
-                    self.motor.rotate_right(seconds=0.25)
-
-
-        # Move towards path to avoid tracking node again
         self.motor.move_straight(seconds=0.4)
         return self.RoutineResult.SUCCESS
 

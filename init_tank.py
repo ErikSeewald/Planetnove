@@ -33,8 +33,13 @@ def init():
 
     # TANK ROBOT
     tank = TankRobot(tank_client, logger)
-    tank.core_loop()
 
+    try:
+        tank.core_loop()
+    except KeyboardInterrupt:
+        pass
+
+    tank.stop_all()
 
 if __name__ == "__main__":
     init()
