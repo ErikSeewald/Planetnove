@@ -52,8 +52,8 @@ class TankMapRenderer:
 
         # Calculate width and height needed for the image, including a margin on either side
         min_size = 400
-        width = max(min_size, int((max_x - min_x) * TankMapRenderer.COORD_TO_PIXEL) + 100)
-        height = max(min_size, int((max_y - min_y) * TankMapRenderer.COORD_TO_PIXEL) + 100)
+        width = max(min_size, int((max_x - min_x) * TankMapRenderer.COORD_TO_PIXEL) + 200)
+        height = max(min_size, int((max_y - min_y) * TankMapRenderer.COORD_TO_PIXEL) + 200)
 
         image_surface: pygame.Surface = pygame.Surface((width, height))
         image_surface.fill(TankMapRenderer.BACKGROUND_COL)
@@ -211,8 +211,8 @@ class TankMapRenderer:
         This way all nodes are positioned relative to the lowest and furthest left node and none exit the screen space.
         """
 
-        node_x = int((coord.x - min_x) * TankMapRenderer.COORD_TO_PIXEL) + 50
-        node_y = height - (int((coord.y - min_y) * TankMapRenderer.COORD_TO_PIXEL) + 50)
+        node_x = int((coord.x - min_x) * TankMapRenderer.COORD_TO_PIXEL) + 100
+        node_y = height - (int((coord.y - min_y) * TankMapRenderer.COORD_TO_PIXEL) + 100)
 
         return node_x, node_y
 

@@ -233,6 +233,8 @@ class Communications:
         """
 
         events: list[UpdateEvent] = list()
+        if self.tank_socket is None:
+            return events
 
         # Do not log the entire internal planet message every time
         if message['type'] == "internal_planet":

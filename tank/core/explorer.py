@@ -66,6 +66,9 @@ class Explorer:
         self.logger.log(f"Facing '{self.facing_direction}' at node '{self.cur_node_id}:{self.cur_node_coord}'")
         self.logger.log(f"Available paths: {path_dirs}")
 
+        if self.cur_node_id == self.target_node_id:
+            self.target_node_id = None
+
         # ADD NEW NODE TO EXPLORED PLANET
         if self.planet.nodes.get(self.cur_node_id) is None:
             self.planet.add_node_with_unknown_paths(self.cur_node_id, self.cur_node_coord, path_dirs)

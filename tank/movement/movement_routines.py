@@ -55,7 +55,7 @@ class MovementRoutines:
         elif target_direction == RelativeDirection.BEHIND:
             self.motor.rotate_right(seconds=1.8)
 
-        self.motor.move_straight(seconds=0.4)
+        self.motor.move_straight(seconds=0.3)
         return self.RoutineResult.SUCCESS
 
     def turn_around_avoid_obstacle(self) -> RoutineResult:

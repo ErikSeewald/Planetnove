@@ -1,6 +1,3 @@
 Write down the names of any tiles you would like to be ignored (i.e. not loaded into the planet gui).
 For example, write 'tile_<id>' anywhere within this file to ignore the tile with that specific id.
 This uses a simple string lookup so you cannot comment out any lines.
-
-tile_a
-tile_c

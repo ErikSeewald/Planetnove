@@ -186,6 +186,7 @@ class TankRobot:
         and the TankState is switched to FINISHED.
         """
 
+        time.sleep(0.3) # Give the mothership time before tank finishes and thereby closes the connection
         self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
                                                 self.explorer.target_node_id, self.explorer.target_route,
                                                 Direction.UNKNOWN)
@@ -195,7 +196,7 @@ class TankRobot:
             self.client.send_stuck()
 
         self.state = self.TankState.FINISHED
-        time.sleep(1)  # Give the mothership time before tank finishes and thereby closes the connection
+        time.sleep(1)
 
     def depart_from_node(self):
         """
