@@ -64,6 +64,7 @@ Once a path is considered blocked it can not be unblocked for the remainder of t
 There are a few rules for blocking:
 - An obstacle can only be places at positions where there is at least 20cm of (at least slightly) straight path between it and the nodes on either side.
 - An obstacle can ignore the distance rule if it is placed directly on a node.
+- An obstacle cannot occur before the tank encounters its first node.
 
 
 <img src="/docs/img/blocking_examples.png" alt="Blocking examples" width="1700">
