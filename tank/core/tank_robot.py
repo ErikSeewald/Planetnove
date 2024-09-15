@@ -34,7 +34,6 @@ class TankRobot:
     motor: CalibratedMotor
     infrared: InfraredSensor
     ultrasonic: Ultrasonic
-    arm: Servo
 
     # CONTROL CLASSES
     movement_routines: MovementRoutines
@@ -54,8 +53,6 @@ class TankRobot:
         self.motor = CalibratedMotor()
         self.infrared = InfraredSensor()
         self.ultrasonic = Ultrasonic()
-        self.arm = Servo()
-        self.arm.setServoPwm(channel=1, angle=180)
 
         # CONTROL CLASSES
         self.movement_routines = MovementRoutines(self.motor, self.infrared)
@@ -231,5 +228,5 @@ class TankRobot:
         Stops all components (e.g. the motors) from running.
         """
 
+        self.logger.log("Stopping all motors")
         self.motor.stop_motors()
-        self.arm.release_all_servos()

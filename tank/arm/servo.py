@@ -32,11 +32,6 @@ class Servo:
         elif channel == 2:
             self.PwmServo.set_PWM_dutycycle(self.channel3, pwm_angle)
 
-    def release_all_servos(self):
-        self.PwmServo.set_PWM_dutycycle(self.channel1, 0)
-        self.PwmServo.set_PWM_dutycycle(self.channel1, 0)
-        self.PwmServo.set_PWM_dutycycle(self.channel1, 0)
-
 def limit_angle_range(channel: int, init_angle: float) -> int:
     """
     :return: Initial angle limited to the channel specific range.
