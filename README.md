@@ -37,6 +37,11 @@ The mothership is hosted on the main device running Planetnove, usually a PC or 
 Though the game is based on the mothership 'triangulating' the robots new position after reaching a node, behind the scenes it actually knows the entire layout of the map from the start. The mothership simply
 sends back information about the node connected to the path the tank robot last departed from.
 
+#### GUI
+The mothership GUI can be used to handle communications with other entities and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'R' while holding the tile and attached to each other by dropping them near other tiles.
+Once all tiles are snapped into place, the main GUI will enable the 'Finish planet' button. Once the planet is finished, all tiles are locked and cannot be moved until the 'Edit' button is pressed. While the planet is finished, the starting node and direction of the tank can be
+set. Specifically, the name of the node and the direction of the path from which the tank will arrive at the starting node need to be set so that the tank's facing direction and location can be tracked.
+
 #### Coms config
 You need to create a file called 'coms_config.json' at put it at the root level of the repository. The file should contain the following:
 ```
