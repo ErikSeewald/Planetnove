@@ -28,7 +28,7 @@ A path is 2cm thick and can only ever connect two end points, i.e., it needs one
 Provided with the repository are the following four example tiles:
 <div align="center"><img src="/docs/img/example_tiles.png" alt="Example tiles" width="500"></div>
 
-To create new tiles, the files tile_\<id>.json, tile_\<id>.svd and tile_\<id>_blank.svg need to be created and placed into /planets/data and /planets/svg respectively. 
+To create new tiles, the files tile_\<id>.json, tile_\<id>.svg and tile_\<id>_blank.svg need to be created and placed into /planets/data and /planets/svg respectively. 
 Please note that most of the rendering functions are calibrated to work with node names of length 6. The node rendering function of the tank internal map gui will cut off the node name if it is too many pixels wide.
 
 ## Mothership
