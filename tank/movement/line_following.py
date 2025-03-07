@@ -1,4 +1,6 @@
 from enum import Enum
+
+from tank.movement.PID_controller import PIDController
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor, SensorBitmap
 from tank.movement.calibrated_motor import CalibratedMotor
@@ -16,6 +18,8 @@ class LineFollower:
     """
 
     logger: Logger
+    pid = PIDController
+    base_speed = 1.0
 
     # FOLLOW RESULT
     class FollowResult(Enum):
@@ -29,17 +33,13 @@ class LineFollower:
     # STRATEGY
     class StrategyState(Enum):
         IDLE = 0
-        GO_FORWARD = 1
-        GO_BACKWARD = -1
-        ROTATE_LEFT = 2
-        ROTATE_RIGHT = -2
+        PID_FORWARD = 1
+        PID_BACKWARD = 2
         NODE_ARRIVAL = 3
+
     strategy: StrategyState
 
     bitmap_to_strategy: dict[SensorBitmap, StrategyState] = {
-        SensorBitmap.LEFT: StrategyState.ROTATE_LEFT,
-        SensorBitmap.RIGHT: StrategyState.ROTATE_RIGHT,
-        SensorBitmap.MIDDLE: StrategyState.GO_FORWARD,
         SensorBitmap.ALL: StrategyState.NODE_ARRIVAL,
     }
 
@@ -61,6 +61,7 @@ class LineFollower:
         self.ultrasonic = ultrasonic
         self.motor = motor
         self.movement_routines = movement_routines
+        self.pid = PIDController(kp=1.0, ki=0.0, kd=0.1)
         self.switch_strategy(self.StrategyState.IDLE)
 
     def update_strategy(self, bitmap: SensorBitmap):
@@ -75,7 +76,7 @@ class LineFollower:
         else:
             # For example, starting with SensorBitmap.LEFT and turning left to get to SensorBitmap.MIDDLE can result
             # in temporary SensorBitmap.NONE state where the black tape is inbetween the left and middle sensor.
-            # In that case, continue to use StrategyState.LEFT.
+            # In that case, continue to use StrategyState.PID_FORWARD.
             pass
 
     def switch_strategy(self, new_strategy: StrategyState):
@@ -94,7 +95,7 @@ class LineFollower:
         # Only set strategy to forward if the current one is IDLE.
         # Otherwise it would also overwrite strategies set by other functions
         if self.strategy == self.StrategyState.IDLE:
-            self.switch_strategy(self.StrategyState.GO_FORWARD)
+            self.switch_strategy(self.StrategyState.PID_FORWARD)
 
         return self.follow_to_node_with_result(target_result=self.FollowResult.ARRIVED_AT_NODE)
 
@@ -108,7 +109,7 @@ class LineFollower:
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
 
             distance = self.ultrasonic.get_distance_cm()
-            if distance < 8:
+            if distance < 12:
                 self.logger.log(f"Encountered obstacle (distance: {distance})")
                 return self.handle_obstacle_encounter()
 
@@ -116,20 +117,28 @@ class LineFollower:
             self.update_strategy(bitmap)
 
             # STRATEGIES
-            if self.strategy == self.StrategyState.ROTATE_LEFT:
-                self.motor.rotate_left(seconds=0.1)
-
-            elif self.strategy == self.StrategyState.ROTATE_RIGHT:
-                self.motor.rotate_right(seconds=0.1)
-
-            elif self.strategy == self.StrategyState.GO_FORWARD:
-                self.motor.move_straight(seconds=0.1)
-
-            elif self.strategy == self.StrategyState.NODE_ARRIVAL:
+            if self.strategy == self.StrategyState.NODE_ARRIVAL:
                 self.movement_routines.node_arrival()
                 self.switch_strategy(self.StrategyState.IDLE)
                 return target_result
 
+            if self.strategy == self.StrategyState.PID_FORWARD \
+                    or self.strategy == self.StrategyState.PID_BACKWARD:
+                # PID CONTROLLER
+                correction = self.pid.compute_correction(bitmap)
+
+                # MOTOR SPEEDS
+                speed = self.base_speed if self.strategy == self.StrategyState.PID_FORWARD else -self.base_speed
+                left_speed = speed - correction
+                right_speed = speed + correction
+
+                self.motor.PWM.setMotors(self.motor.c_left * left_speed,
+                                         self.motor.c_right * right_speed)
+
+                # TODO: Maybe not needed
+                time.sleep(0.01)
+
+        self.motor.PWM.stop()
         return self.FollowResult.TIMED_OUT
 
     def handle_obstacle_encounter(self) -> FollowResult:
@@ -139,5 +148,5 @@ class LineFollower:
         """
 
         self.movement_routines.turn_around_avoid_obstacle()
-        self.switch_strategy(self.StrategyState.GO_FORWARD)
+        self.switch_strategy(self.StrategyState.PID_FORWARD)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)
