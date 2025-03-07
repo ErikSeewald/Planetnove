@@ -186,10 +186,11 @@ class TankRobot:
         and the TankState is switched to FINISHED.
         """
 
-        time.sleep(0.3) # Give the mothership time before tank finishes and thereby closes the connection
         self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
                                                 self.explorer.target_node_id, self.explorer.target_route,
                                                 Direction.UNKNOWN)
+
+        time.sleep(1) # Give the mothership time before tank finishes and thereby closes the connection
         if self.explorer.finished_exploring():
             self.client.send_finished_exploring()
         else:
