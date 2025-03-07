@@ -1,6 +1,5 @@
 import pigpio
 
-
 class PWM:
     """
     Slight modification of the original uncalibrated Motor class provided by Freenove.
@@ -12,6 +11,7 @@ class PWM:
         self.pwm2 = 23
         self.pwm3 = 5
         self.pwm4 = 6
+
         self.PwmServo = pigpio.pi()
         self.PwmServo.set_mode(self.pwm1, pigpio.OUTPUT)
         self.PwmServo.set_mode(self.pwm2, pigpio.OUTPUT)

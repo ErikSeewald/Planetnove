@@ -19,7 +19,7 @@ class LineFollower:
 
     logger: Logger
     pid = PIDController
-    base_speed = 1.0
+    base_speed = 0.8
 
     # FOLLOW RESULT
     class FollowResult(Enum):
@@ -33,8 +33,7 @@ class LineFollower:
     # STRATEGY
     class StrategyState(Enum):
         IDLE = 0
-        PID_FORWARD = 1
-        PID_BACKWARD = 2
+        PID_FOLLOW = 1
         NODE_ARRIVAL = 3
 
     strategy: StrategyState
@@ -93,9 +92,9 @@ class LineFollower:
         """
 
         # Only set strategy to forward if the current one is IDLE.
-        # Otherwise it would also overwrite strategies set by other functions
+        # Otherwise, it would also overwrite strategies set by other functions
         if self.strategy == self.StrategyState.IDLE:
-            self.switch_strategy(self.StrategyState.PID_FORWARD)
+            self.switch_strategy(self.StrategyState.PID_FOLLOW)
 
         return self.follow_to_node_with_result(target_result=self.FollowResult.ARRIVED_AT_NODE)
 
@@ -122,21 +121,16 @@ class LineFollower:
                 self.switch_strategy(self.StrategyState.IDLE)
                 return target_result
 
-            if self.strategy == self.StrategyState.PID_FORWARD \
-                    or self.strategy == self.StrategyState.PID_BACKWARD:
+            if self.strategy == self.StrategyState.PID_FOLLOW:
                 # PID CONTROLLER
                 correction = self.pid.compute_correction(bitmap)
 
                 # MOTOR SPEEDS
-                speed = self.base_speed if self.strategy == self.StrategyState.PID_FORWARD else -self.base_speed
-                left_speed = speed - correction
-                right_speed = speed + correction
+                left_speed = self.base_speed - correction
+                right_speed = self.base_speed + correction
 
                 self.motor.PWM.setMotors(self.motor.c_left * left_speed,
                                          self.motor.c_right * right_speed)
-
-                # TODO: Maybe not needed
-                time.sleep(0.01)
 
         self.motor.PWM.stop()
         return self.FollowResult.TIMED_OUT
@@ -148,5 +142,5 @@ class LineFollower:
         """
 
         self.movement_routines.turn_around_avoid_obstacle()
-        self.switch_strategy(self.StrategyState.PID_FORWARD)
+        self.switch_strategy(self.StrategyState.PID_FOLLOW)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)

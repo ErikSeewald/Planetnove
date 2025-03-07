@@ -5,13 +5,13 @@ from tank.sensors.infrared import SensorBitmap
 class PIDController:
     bitmap_to_error: dict[SensorBitmap, float] = {
         SensorBitmap.NONE: float("inf"),
-        SensorBitmap.RIGHT: 1.0,
-        SensorBitmap.MIDDLE: 0,
-        SensorBitmap.MIDDLE_RIGHT: 0.5,
-        SensorBitmap.LEFT: -1.0,
+        SensorBitmap.RIGHT: -0.5,
+        SensorBitmap.MIDDLE: 0.0,
+        SensorBitmap.MIDDLE_RIGHT: 0.0,
+        SensorBitmap.LEFT: 0.5,
         SensorBitmap.LEFT_RIGHT: -float("inf"),
-        SensorBitmap.LEFT_MIDDLE: -0.5,
-        SensorBitmap.ALL: 0
+        SensorBitmap.LEFT_MIDDLE: 0.0,
+        SensorBitmap.ALL: 0.0
     }
 
     def __init__(self, kp: float, ki: float, kd: float):
@@ -29,9 +29,12 @@ class PIDController:
             delta_time = 1e-3
 
         error = self.bitmap_to_error[bitmap]
+        if abs(error) > 1:
+            error = self.last_error
+
         self.integral += error * delta_time
         derivative = (error - self.last_error) / delta_time
-        output = self.kp * error + self.ki * self.integral + self.kd * derivative
+        correction = self.kp * error + self.ki * self.integral + self.kd * derivative
         self.last_error = error
         self.last_time = current_time
-        return output
+        return correction

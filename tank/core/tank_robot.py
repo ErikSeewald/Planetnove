@@ -212,12 +212,6 @@ class TankRobot:
 
         self.movement_routines.node_departure(target_direction)
 
-        # LINE FOLLOWING STRATEGY
-        if target_direction == RelativeDirection.RIGHT:
-            self.line_follower.switch_strategy(LineFollower.StrategyState.ROTATE_RIGHT)
-        elif target_direction == RelativeDirection.LEFT:
-            self.line_follower.switch_strategy(LineFollower.StrategyState.ROTATE_LEFT)
-
         # STATE VARIABLES
         self.explorer.last_departure_direction = self.explorer.next_departure_direction
         self.explorer.next_departure_direction = Direction.UNKNOWN
