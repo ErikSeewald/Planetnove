@@ -38,20 +38,14 @@ class Mothership:
         Handles all update events that get propagated upwards from these submodules.
         """
 
-        communication_timer = 0
-        communication_interval = 500  # Update communications every 0.5 seconds
-
         while dpg.is_dearpygui_running():
             # GUI
             gui_events = self.gui.update()
             self.handle_gui_events(gui_events)
 
             # COMMUNICATIONS
-            communication_timer += self.clock.get_time()
-            if communication_timer >= communication_interval:
-                coms_events = self.communications.update()
-                self.handle_coms_events(coms_events)
-                communication_timer = 0
+            coms_events = self.communications.update()
+            self.handle_coms_events(coms_events)
 
             self.clock.tick(60)
 

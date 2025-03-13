@@ -182,19 +182,19 @@ class TankRobot:
         The mothership is alerted of the tank either having finished or being stuck, a final planet update is sent
         and the TankState is switched to FINISHED.
         """
-
-        self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
-                                                self.explorer.target_node_id, self.explorer.target_route,
-                                                Direction.UNKNOWN)
-
-        time.sleep(1)  # Give the mothership time before tank finishes and thereby closes the connection
         if self.explorer.finished_exploring():
             self.client.send_finished_exploring()
         else:
             self.client.send_stuck()
 
+        # Send internal planet afterwards. Due to it being such a large
+        # message, if the smaller finish message is sent after this one it could mix into
+        # the chunks of internal planet message that are currently being processed
+        # by the mothership and cause an unparsable message.
+        self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
+                                                self.explorer.target_node_id, self.explorer.target_route,
+                                                Direction.UNKNOWN)
         self.state = self.TankState.FINISHED
-        time.sleep(1)
 
     def depart_from_node(self):
         """

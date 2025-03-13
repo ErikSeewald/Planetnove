@@ -30,7 +30,6 @@ def init():
                 break
             else:
                 logger.log(f"Received a message that was not a start signal: {msg}")
-        time.sleep(1)
 
     # TANK ROBOT
     tank = TankRobot(tank_client, logger)

@@ -27,6 +27,7 @@ class Explorer:
     reached_first_node: bool
     target_node_id: Optional[str]  # None if there is currently no target
     target_route: Optional[Route]
+    route_pop_due: bool
 
     # STATE
     returned_from_path_blocked: bool  # Set by tank_robot after handling line follower
@@ -46,6 +47,7 @@ class Explorer:
         self.reached_first_node = False
         self.target_node_id = None
         self.target_route = None
+        self.route_pop_due = False
 
         # STATE
         self.returned_from_path_blocked = False
@@ -66,8 +68,19 @@ class Explorer:
         self.logger.log(f"Facing '{self.facing_direction}' at node '{self.cur_node_id}:{self.cur_node_coord}'")
         self.logger.log(f"Available paths: {path_dirs}")
 
-        if self.cur_node_id == self.target_node_id:
-            self.target_node_id = None
+        # ROUTE HANDLING
+        if self.target_route:
+            # Remove last taken path from the route. This only happens here so
+            # that functions following choose_path() but before arriving at the
+            # next route still see it in the list.
+            if self.route_pop_due:
+                self.target_route.path_id_list.pop()
+                self.route_pop_due = False
+
+            if self.cur_node_id == self.target_node_id or self.returned_from_path_blocked:
+                self.target_node_id = None
+                self.target_route = None
+                self.logger.log("Stopped following route")
 
         # ADD NEW NODE TO EXPLORED PLANET
         if self.planet.nodes.get(self.cur_node_id) is None:
@@ -133,7 +146,6 @@ class Explorer:
 
         # Find closest node with unexplored paths
         # (Case: no more unexplored paths or all unexplored paths rejected by mothership)
-
         # First, temporarily block the paths at the rejected directions so that
         # shortest_routes_from() does not consider them as an option.
         old_lengths: dict[str, float] = dict()
@@ -157,9 +169,10 @@ class Explorer:
                 if self.planet.nodes.get(node_id).has_unexplored_paths():
                     closest_unexplored = (route.length, node_id)
 
-        if closest_unexplored[1] != "None":
+        if closest_unexplored[0] < float("inf") and closest_unexplored[1] != "None":
             self.target_node_id = closest_unexplored[1]
             self.target_route = shortest_routes.get(self.target_node_id)
+            self.logger.log(f"Begin route to: {self.target_node_id}")
             return self.choose_path_with_route(rejected_directions)
 
         return Direction.UNKNOWN
@@ -171,24 +184,15 @@ class Explorer:
         if a) the target node was reached or b) the route was blocked in some way.
         """
 
-        # Remove last taken path from the route. This only happens at the start
-        # of the next choose_path iteration so that functions following
-        # this one but before arriving at the next route still see it in the list.
-        if len(self.target_route.path_id_list) > 0:
-            self.target_route.path_id_list.pop()
-
-        if self.cur_node_id == self.target_node_id:
-            self.target_node_id = None
-            self.target_route = None
-            return self.choose_path_no_route(rejected_directions)
-
-        next_path = self.planet.paths.get(self.target_route.path_id_list[-1])  # do not pop it yet
+        next_path = self.planet.paths.get(self.target_route.path_id_list[-1]) # do not pop yet
         next_dir = next_path.direction_a if self.cur_node_id == next_path.node_a else next_path.direction_b
         if next_dir in rejected_directions:
             self.target_route = None
             self.target_node_id = None
+            self.logger.log("Stopped following route")
             return self.choose_path_no_route(rejected_directions)
         else:
+            self.route_pop_due = True
             return next_dir
 
     def node_departure(self):

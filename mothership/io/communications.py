@@ -89,8 +89,8 @@ class Communications:
         """
         Updates all communications and handles the received messages. Note that this function
         relies on an asynchronous thread for receiving communications that is started by __init__.
-        The update function should only be called every 0.5 seconds. While the message receiving is
-        asynchronous, each time this function is called the accumulated messages get handled synchronously.
+        While the message receiving is asynchronous, each time this function is called the accumulated messages
+        get handled synchronously.
 
         :returns: Update events that occurred during communications
         """
@@ -135,8 +135,7 @@ class Communications:
             self.tank_socket = tank_socket
             self.tank_address = tank_address
             self.tank_socket.settimeout(None)  # Async thread can handle lack of timeout
-            time.sleep(0.5)  # Give connection some time to be fully set up on both ends, weird errors otherwise
-
+            time.sleep(0.1)  # Give tank time to set up connection
             self.socket_ready_event.set()
             self.logger.log(f"Accepted connection from {tank_address}")
             return True
