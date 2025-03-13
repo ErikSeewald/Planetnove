@@ -1,9 +1,9 @@
 from pygame import Vector2
-from mothership.gui.planet_view.tile import DraggableTile
+from planets.code.tiles.tile import DraggableTile
 from planets.code.node import Node
 from planets.code.path import Path
 from planets.code.planet import Planet
-from planets.code.parsing.tile_data import Tile
+from planets.code.tiles.tile_data import Tile
 from util.direction import Direction
 
 
@@ -61,7 +61,7 @@ def parse_nodes(tile_data: dict[str, tuple[DraggableTile, Tile]]) -> dict[str, N
             coord.y += coord_offset[1]
 
             # Paths get added to the nodes in the parse_paths() function
-            nodes[node.name] = Node(name=node.name, coord=coord)
+            nodes[node.name] = Node(node_id=node.name, coord=coord)
 
     return nodes
 
@@ -111,24 +111,24 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
             split_a = node_a.split(":")
             drag_tile_a = tile[0]
             direction_a = Direction.rotated(Direction.from_str(split_a[1]), drag_tile_a.rotation_deg)
-            node_a_rotated = f"{split_a[0]}:{direction_a.abbreviation().upper()}"
+            id_dir_key_a = Node.id_direction_key(split_a[0], direction_a)
 
             split_b = node_b.split(":")
             drag_tile_b = tile_data.get(get_tile_id(split_b[0], tile_data))[0]
             direction_b = Direction.rotated(Direction.from_str(split_b[1]), drag_tile_b.rotation_deg)
-            node_b_rotated = f"{split_b[0]}:{direction_b.abbreviation().upper()}"
-
-            # PATH ID (Include ':Direction' of path points for unique id)
-            path_id = f"{node_a_rotated}-{node_b_rotated}"
+            id_dir_key_b = Node.id_direction_key(split_b[0], direction_b)
 
             # Only add path if it has not already been added from the other direction
-            if paths.get(f"{node_b_rotated}-{node_a_rotated}") is not None:
+            inverse_path_id = Path.id_from_node_keys(id_dir_key_b, id_dir_key_a)
+            if paths.get(inverse_path_id) is not None:
                 continue
-            paths[path_id] = Path(name=path_id, node_a_with_dir=node_a_rotated, node_b_with_dir=node_b_rotated)
+
+            path = Path(id_dir_key_a, id_dir_key_b)
+            paths[path.id] = path
 
             # ADD PATH TO NODES
-            nodes.get(split_a[0]).set_path(direction_a, path_id)
-            nodes.get(split_b[0]).set_path(direction_b, path_id)
+            nodes.get(split_a[0]).set_path(direction_a, path.id)
+            nodes.get(split_b[0]).set_path(direction_b, path.id)
 
     return paths
 

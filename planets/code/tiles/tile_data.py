@@ -143,7 +143,7 @@ def validate(nodes: list[TileNode], joints: dict[Direction, list[TileJoint]], pa
 
     # Validation for from_ and to_ in paths
     joint_names = {joint.name for joints_list in joints.values() for joint in joints_list}
-    dir_abbreviations = {direction.abbreviation() for direction in Direction.real_directions_ordered()}
+    dir_abbreviations = {direction.abbreviation() for direction in Direction.valid_directions_ordered()}
     for path in paths:
         validate_path_point(path, path.from_, node_names, joint_names, dir_abbreviations)
         validate_path_point(path, path.from_, node_names, joint_names, dir_abbreviations)

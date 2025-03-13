@@ -11,7 +11,7 @@ class DraggableTile:
     Keeps track of rotation and joint connections to other tiles.
     """
 
-    tile_id: str # e.g. 'tile_a'
+    tile_id: str  # e.g. 'tile_a'
 
     # DISPLAY
     blank_image: pygame.Surface
