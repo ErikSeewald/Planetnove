@@ -4,7 +4,7 @@ import time
 
 class Ultrasonic:
     """
-    Slight modification of the original ultrasonic provided by Freenove.
+    Slight modification of the original ultrasonic code provided by Freenove.
     """
 
     def __init__(self):

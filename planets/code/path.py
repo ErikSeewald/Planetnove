@@ -1,14 +1,15 @@
 from __future__ import annotations
 from util.direction import Direction
+from planets.code.node import Node
 
 
 class Path:
     """
     Class representing a single path on the planet, abstracted away from it's original role as a 'TilePath'.
-    Unlike 'TilePath', a path can only connect nodes together, not joints.
+    Unlike 'TilePath', a path only connects nodes together, not joints.
     """
 
-    name: str
+    id: str
     length: float
 
     # Node IDs
@@ -18,12 +19,12 @@ class Path:
     direction_a: Direction
     direction_b: Direction
 
-    def __init__(self, name: str, node_a_with_dir: str, node_b_with_dir: str, length: float = 1):
-        self.name = name
+    def __init__(self, id_dir_key_a: str, id_dir_key_b: str, length: float = 1):
+        self.id = Path.id_from_node_keys(id_dir_key_a, id_dir_key_b)
         self.length = length
 
-        split_a = node_a_with_dir.split(":")
-        split_b = node_b_with_dir.split(":")
+        split_a = id_dir_key_a.split(":")
+        split_b = id_dir_key_b.split(":")
 
         self.node_a = split_a[0]
         self.node_b = split_b[0]
@@ -31,12 +32,29 @@ class Path:
         self.direction_a = Direction.from_str(split_a[1])
         self.direction_b = Direction.from_str(split_b[1])
 
+    def contains_id_dir_key(self, id_dir_key: str) -> bool:
+        """
+        Returns whether the path_id contains the given id_dir_key as a node.
+        Use this method instead of manual string checking in case the id implementation
+        ends up changing.
+        """
+
+        return id_dir_key in self.id
+
+    @staticmethod
+    def id_from_node_keys(id_dir_key_a: str, id_dir_key_b: str) -> str:
+        """
+        Returns the <id_dir_key_a>-<id_dir_key_b> path id for the given parameters.
+        """
+
+        return f"{id_dir_key_a}-{id_dir_key_b}"
+
     def __str__(self):
-        return self.name
+        return self.id
 
     def to_dict(self) -> dict:
         return {
-            "name": self.name,
+            # self.id can be excluded as it is fully dependant on the nodes and directions
             "node_a": self.node_a,
             "node_b": self.node_b,
             "direction_a": self.direction_a.abbreviation(),
@@ -46,7 +64,12 @@ class Path:
 
     @staticmethod
     def from_dict(path_dict: dict) -> Path:
-        return Path(name=path_dict['name'],
-                    node_a_with_dir=f"{path_dict['node_a']}:{path_dict['direction_a']}",
-                    node_b_with_dir=f"{path_dict['node_b']}:{path_dict['direction_b']}",
-                    length=float(path_dict['length']))
+        return Path(
+            id_dir_key_a=Node.id_direction_key(
+                path_dict['node_a'], Direction.from_str(path_dict['direction_a'])
+            ),
+            id_dir_key_b=Node.id_direction_key(
+                path_dict['node_b'], Direction.from_str(path_dict['direction_b'])
+            ),
+            length=float(path_dict['length'])
+        )

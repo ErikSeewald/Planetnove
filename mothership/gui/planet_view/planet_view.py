@@ -5,11 +5,11 @@ from typing import Optional
 import pygame
 from pygame.math import Vector2
 from mothership.gui.planet_view import joint_attacher
-from planets.code.parsing import planet_parser
-from mothership.gui.planet_view.tile import DraggableTile
+from planets.code.tiles import planet_parser
+from mothership.gui.planet_view.draggable_tile import DraggableTile
 from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, TileGrabbed, TileReleased
 from planets.code.planet import Planet
-from planets.code.parsing.tile_data import Tile
+from planets.code.tiles.tile_data import Tile
 
 
 class PlanetView:
@@ -36,6 +36,7 @@ class PlanetView:
     class Mode(Enum):
         EDIT = 1
         PLANET = 2
+
     mode: Mode
 
     # EVENTS
@@ -91,7 +92,7 @@ class PlanetView:
 
     def handle_events(self):
         """
-        Handles all pygame events and stores any update events that occur.
+        Handles all pygame events and stores update events that occur.
         """
 
         events: list[pygame.event.Event] = pygame.event.get()
@@ -118,7 +119,7 @@ class PlanetView:
     def handle_events_edit_mode(self, events: list[pygame.event.Event]):
         """
         Handles pygame events specific to the edit mode.
-        Stores any update events that occur.
+        Adds new update events that occur to the given events list.
         """
 
         for event in events:
@@ -156,7 +157,7 @@ class PlanetView:
     def handle_events_planet_mode(self, events: list[pygame.event.Event]):
         """
         Handles pygame events specific to the planet mode.
-        Stores any update events that occur.
+        Adds new update events that occur to the given events list.
         """
 
         pass

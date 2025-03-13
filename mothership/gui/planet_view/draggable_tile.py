@@ -2,6 +2,8 @@ import pygame
 from pygame.math import Vector2
 import cairosvg
 import io
+
+from planets.code.tiles.tile_data import TileMeasure
 from util.direction import Direction
 
 
@@ -19,7 +21,8 @@ class DraggableTile:
     blank_mode: bool
 
     # CONNECTING
-    joints: dict[Direction, list[str]] # Direction: list of 'None' or joint id (e.g. 'tile_b_joint_W2')
+    joints: dict[Direction, list[str]]  # Direction: list of 'None' or joint id (e.g. 'tile_b_joint_W2')
+    num_attached_joints: int
     snapped_in_place: bool
 
     # While rotate_right() is -90 degrees in screen space, it is +90 for rotation_deg so that it matches
@@ -32,15 +35,16 @@ class DraggableTile:
     offset_x: float
     offset_y: float
 
-    def __init__(self, tile_id: str, svg_file: str, svg_blank_file: str, pos: Vector2, scale: float = 1.0):
-
+    def __init__(self, tile_id: str, svg_file: str, svg_blank_file: str, pos: Vector2 = Vector2(500, 500),
+                 scale: float = 0.4):
         self.tile_id = tile_id
         self.joints = {direction: ["None"] * 3
                        for direction in [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]}
+        self.num_attached_joints = 0
         self.snapped_in_place = False
 
         # Assumes that the user has created the tile svg with the correct resolution :)
-        original_size = 1000
+        original_size = TileMeasure.tile_size_mm
         scaled_width = int(original_size * scale)
         scaled_height = int(original_size * scale)
 
@@ -62,6 +66,7 @@ class DraggableTile:
         Sets the tiles blank mode.
         blank_mode = True -> Hide details
         """
+
         self.blank_mode = mode
 
     def snap_to_pos(self, x: float, y: float):
@@ -102,7 +107,7 @@ class DraggableTile:
         :param joint_num: Which of the three joints at this direction (range [1-3])
         """
 
-        return self.joints.get(joint_dir)[joint_num-1] == "None"
+        return self.joints.get(joint_dir)[joint_num - 1] == "None"
 
     def attach_joint(self, joint_dir: Direction, joint_num: int, attach: str):
         """
@@ -112,7 +117,8 @@ class DraggableTile:
         :param attach: The joint id (e.g. 'tile_b_joint_N2') of the foreign joint to attach
         """
 
-        self.joints.get(joint_dir)[joint_num-1] = attach
+        self.joints.get(joint_dir)[joint_num - 1] = attach
+        self.num_attached_joints += 1
 
     def detach_joint(self, joint_dir: Direction, joint_num: int):
         """
@@ -121,7 +127,11 @@ class DraggableTile:
         :param joint_num: Which of the three joints at this direction to detach (range [1-3])
         """
 
-        self.joints.get(joint_dir)[joint_num-1] = "None"
+        self.joints.get(joint_dir)[joint_num - 1] = "None"
+
+        self.num_attached_joints -= 1
+        if self.num_attached_joints < 1:
+            self.snapped_in_place = False
 
     def draw(self, screen: pygame.Surface, is_planet_mode: bool):
         """

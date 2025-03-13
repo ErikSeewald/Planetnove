@@ -1,13 +1,13 @@
 import pygame
 from mothership.gui.gui_core import GUICore
-from mothership.gui.planet_view.tile import DraggableTile
+from mothership.gui.planet_view.draggable_tile import DraggableTile
 from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
     TankPlanetUpdate, TankConnectionLost, TileGrabbed, TileReleased
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
 from planets.code.planet import Planet
-from planets.code.parsing.tile_data import Tile
+from planets.code.tiles.tile_data import Tile
 import dearpygui.dearpygui as dpg
 from util.logger import Logger
 
@@ -50,8 +50,8 @@ class Mothership:
             communication_timer += self.clock.get_time()
             if communication_timer >= communication_interval:
                 coms_events = self.communications.update()
-                communication_timer = 0
                 self.handle_coms_events(coms_events)
+                communication_timer = 0
 
             self.clock.tick(60)
 

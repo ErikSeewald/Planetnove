@@ -7,7 +7,7 @@ class SubGUI(ABC):
     Abstract base class representing a sub-window of the dearpygui viewport
     """
 
-    tag: str # The dpg tag
+    tag: str  # The dpg tag
 
     def __init__(self, tag: str, gui_core) -> None:
         self.tag = tag

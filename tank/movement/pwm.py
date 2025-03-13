@@ -1,5 +1,6 @@
 import pigpio
 
+
 class PWM:
     """
     Slight modification of the original uncalibrated Motor class provided by Freenove.

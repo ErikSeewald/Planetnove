@@ -17,7 +17,7 @@ from util.logger import Logger
 
 class Communications:
     """
-    Class managing the mother ship's communications with entities like the tank robot.
+    Class managing the mothership's communications with entities like the tank robot.
     """
 
     _COMS_CONFIG_PATH: str = "coms_config.json"
@@ -35,6 +35,7 @@ class Communications:
     # Threading
     unprocessed_tank_messages = deque[dict]
     lock: threading.Lock
+    socket_ready_event: threading.Event  # Used for unblocking the asynchronous thread
 
     # Does the asynchronous tank disconnect function need to be run next iteration?
     tank_disconnect_async_due: bool
@@ -55,13 +56,17 @@ class Communications:
         # Tank
         self.tank_socket = None
         self.tank_address = None
-        self.tank_disconnect_async_due = False
+        self.last_msg_to_tank = None
 
         # Threading
         self.unprocessed_tank_messages = deque()
         self.lock = threading.Lock()
+        self.socket_ready_event = threading.Event()
+        self.tank_disconnect_async_due = False
         self.tank_lost_event_due = False
-        self.last_msg_to_tank = None
+
+        receive_thread = threading.Thread(target=self.update_tank_socket, daemon=True)
+        receive_thread.start()
 
     def _load_coms_config(self):
         """
@@ -83,8 +88,8 @@ class Communications:
     def update(self) -> list[UpdateEvent]:
         """
         Updates all communications and handles the received messages. Note that this function
-        spawns an asynchronous thread for receiving communications with a timeout of 0.5 seconds.
-        The update function should only be called ever 0.5. While the message receiving is
+        relies on an asynchronous thread for receiving communications that is started by __init__.
+        The update function should only be called every 0.5 seconds. While the message receiving is
         asynchronous, each time this function is called the accumulated messages get handled synchronously.
 
         :returns: Update events that occurred during communications
@@ -98,18 +103,16 @@ class Communications:
             self.handle_tank_lost_event()
             return events
 
-        # Receive messages asynchronously
-        receive_thread = threading.Thread(target=self.update_tank_socket, daemon=True)
-        receive_thread.start()
-
         # Process messages synchronously
-        while True:
-            with self.lock:
-                if self.unprocessed_tank_messages:
-                    msg = self.unprocessed_tank_messages.pop()
-                else:
-                    return events
+        # -> Lock once and take all new messages received until this point out, then let the
+        # asynchronous thread fill the list up again until the next update()
+        with self.lock:
+            unprocessed_messages = list(self.unprocessed_tank_messages)
+            self.unprocessed_tank_messages.clear()
+
+        for msg in unprocessed_messages:
             events.extend(self.handle_tank_message(msg))
+        return events
 
     # --- TANK SOCKET HANDLING ---
     def try_connect_tank(self, expected_ip: str) -> bool:
@@ -131,8 +134,10 @@ class Communications:
         if tank_address[0] == expected_ip:
             self.tank_socket = tank_socket
             self.tank_address = tank_address
-            self.tank_socket.settimeout(0.5)
+            self.tank_socket.settimeout(None)  # Async thread can handle lack of timeout
             time.sleep(0.5)  # Give connection some time to be fully set up on both ends, weird errors otherwise
+
+            self.socket_ready_event.set()
             self.logger.log(f"Accepted connection from {tank_address}")
             return True
         else:
@@ -153,13 +158,9 @@ class Communications:
         Disconnects the tank socket. Only to be called by the asynchronous socket update function.
         """
 
-        if self.tank_socket is None:
-            return
-
         self.tank_socket.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
-        self.tank_socket.close()
-        self.tank_socket = None
-        self.tank_address = None
+        self.handle_tank_lost_event()
+        self.tank_disconnect_async_due = False
 
     def handle_tank_lost_event(self):
         """
@@ -170,50 +171,55 @@ class Communications:
         self.tank_socket = None
         self.tank_address = None
         self.tank_lost_event_due = False
+        self.unprocessed_tank_messages.clear()
 
     def update_tank_socket(self):
         """
-        Asynchronously called function that updates the tank socket and stores the received messages
+        Asynchronous loop that updates the tank socket and stores the received messages
         to be later handled in the synchronous update function.
         """
 
-        if self.tank_socket is None:
-            return
+        while True:
 
-        if self.tank_disconnect_async_due:
-            self._async_tank_disconnect()
-            self.tank_disconnect_async_due = False
-            return
+            # Blocked waiting for valid socket
+            self.socket_ready_event.wait()
+            if self.tank_socket is None:
+                self.socket_ready_event.clear()
+                continue
 
-        # Try to receive messages. Accept timeouts as the tank not sending any data but look out for
-        # ConnectionResetErrors and possible schedule a tank lost event.
-        try:
-            message_buffer = []
+            if self.tank_disconnect_async_due:
+                self._async_tank_disconnect()
+                continue
 
-            # Receive data in chunks until: a) no more data is being received or
-            # b) a full JSON message can be constructed. In that case, store the message to be handled later.
-            while True:
-                try:
-                    data = self.tank_socket.recv(1024)
-                    if not data:
-                        break
+            # Try to receive messages. Check for Errors and possibly schedule a tank lost event
+            try:
+                message_buffer = []
 
-                    message_buffer.append(data.decode('utf-8'))
-                    message = ''.join(message_buffer)
-
+                # Receive data in chunks until: a) no more data is being received or
+                # b) a full JSON message can be constructed. In that case, store the message to be handled later.
+                while True:
                     try:
-                        json_message = json.loads(message)
-                        self.unprocessed_tank_messages.append(json_message)
+                        # For timeout=None: Async thread waits indefinitely (blocked) until data is received
+                        data = self.tank_socket.recv(1024)
+                        if not data:
+                            break
+
+                        message_buffer.append(data.decode('utf-8'))
+                        message = ''.join(message_buffer)
+
+                        try:
+                            json_message = json.loads(message)
+                            self.unprocessed_tank_messages.append(json_message)
+                            break
+                        except json.JSONDecodeError:
+                            continue  # JSON not yet complete -> continue receiving data
+                    except ConnectionAbortedError:
+                        self.tank_lost_event_due = True
                         break
-                    except json.JSONDecodeError:
-                        continue  # JSON not yet complete -> continue receiving data
-                except ConnectionAbortedError:
-                    self.tank_lost_event_due = True
-                    break
-        except socket.timeout:
-            pass
-        except ConnectionResetError:
-            self.tank_lost_event_due = True
+                    except OSError:
+                        break
+            except ConnectionResetError:
+                self.tank_lost_event_due = True
 
     def send_msg_to_tank(self, message: dict):
         """
@@ -317,7 +323,4 @@ class Communications:
         idle and waiting for messages.
         """
 
-        message = {
-            "type": "start"
-        }
-        self.send_msg_to_tank(message)
+        self.send_msg_to_tank({"type": "start"})

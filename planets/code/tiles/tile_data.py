@@ -3,6 +3,11 @@ from dataclasses import dataclass, field
 from pygame import Vector2
 from util.direction import Direction
 
+"""
+A set of dataclasses representing the draggable tiles from the mothership GUI in a format decoupled from
+GUI visualization. Used for parsing connected tiles into planets.
+"""
+
 
 @dataclass
 class TilePath:
@@ -29,7 +34,7 @@ class TileNode:
     Dataclass representing a node on the tile. Each node needs a unique name.
     It has node coordinates in the range ([0,4], [0,4])
     and absolute tile coordinates (in mm and in the range ([0, 1000], [0, 1000])).
-    The way node coordinates map to tile coordinates is described further in the documentation.
+    The way node coordinates map to tile coordinates is described further in the docs.
     """
 
     name: str
@@ -49,7 +54,7 @@ class TileJoint:
     (e.g. 'jointN2' for the second joint at the northern side)).
     It has node coordinates in the range ([0,4], [0,4])
     and absolute tile coordinates (in mm and in the range ([0, 1000], [0, 1000])).
-    The way node coordinates map to tile coordinates is described further in the documentation.
+    The way node coordinates map to tile coordinates is described further in the docs.
     """
 
     name: str
@@ -78,7 +83,7 @@ class Tile:
         Dataclass representing a tile (1000x1000mm). Each tile needs a unique tile id.
         It also has lists of the dataclasses 'TileNode' and 'TilePath' as well as
         a dict mapping directions to a list of the dataclass 'TileJoint'.
-        More information on tiles can be found in the documentation.
+        More information on tiles can be found in the docs.
     """
 
     tile_id: str
@@ -98,7 +103,7 @@ class Tile:
     @staticmethod
     def from_json_dict(data: dict, base_tile: Tile, tile_id: str) -> Tile:
         """
-        Creates a tile from the given json data dict with the unique given tile id.
+        Creates a tile from the given json data dict with the given unique tile id.
         The tile inherits the joint positions of the given base_tile.
         """
 
@@ -114,7 +119,8 @@ class Tile:
 def validate(nodes: list[TileNode], joints: dict[Direction, list[TileJoint]], paths: list[TilePath]):
     """
     Validates the given nodes, joints and paths for reference and formatting consistency.
-    Raises an error if the validation fails.
+
+    :raises ValueError: If the validation fails
     """
 
     # No duplicate nodes
@@ -137,7 +143,7 @@ def validate(nodes: list[TileNode], joints: dict[Direction, list[TileJoint]], pa
         if path.to_ in path_origins:
             raise ValueError(f"There can not be multiple paths connected to {path.to_}")
 
-        # Only add after testing to ignore paths that loop back to the same node exit
+        # Only add after testing to accept paths that loop back to the same node exit
         path_origins.add(path.from_)
         path_origins.add(path.to_)
 
@@ -153,7 +159,8 @@ def validate_path_point(path: TilePath, point_id: str,
                         node_names: set[str], joint_names: set[str], dir_abbreviations: set[str]):
     """
     Validates a single path point (from or to) in the given path for reference and formatting consistency.
-    Raises an error if the validation fails.
+
+    :raises ValueError: If the validation fails
     """
 
     split = point_id.split(':')
@@ -167,7 +174,8 @@ def validate_path_point(path: TilePath, point_id: str,
 def validate_node_coord(coord: list[float], parent_id: str) -> Vector2:
     """
     Takes the given float list coordinate and, if valid, converts it to a Vector2 and returns it.
-    Raises a ValueError otherwise
+
+    :raises ValueError: If the validation fails
     """
 
     if coord[0] < 0 or coord[0] > 4 or coord[1] < 0 or coord[1] > 4:
@@ -184,18 +192,23 @@ def validate_node_coord(coord: list[float], parent_id: str) -> Vector2:
     return Vector2(coord[0], coord[1])
 
 
-node_coord_to_tile_coord: dict[float, float] = {
-    0: 0, 1: 120, 2: 500, 3: 880, 4: 1000
-}
+class TileMeasure:
+    tile_size_mm = 1000
+
+    node_coord_to_tile_coord: dict[float, float] = {
+        0: 0, 1: 120, 2: 500, 3: 880, 4: 1000
+    }
 
 
 def convert_tile_coord(coord: list[float], parent_id: str) -> Vector2:
     """
     Converts the given node coordinate to a tile coordinate in mm.
+
+    :raises ValueError: If the conversion fails
     """
 
-    x = node_coord_to_tile_coord.get(coord[0])
-    y = node_coord_to_tile_coord.get(coord[1])
+    x = TileMeasure.node_coord_to_tile_coord.get(coord[0])
+    y = TileMeasure.node_coord_to_tile_coord.get(coord[1])
 
     if x is None or y is None:
         raise ValueError(f"{parent_id}: Cannot parse node coord {coord} to tile coord")

@@ -12,13 +12,12 @@ from util.logger import Logger
 
 class LineFollower:
     """
-    Class handling the robots main line following. Relies on the motor and sensor classes.
+    Class handling the robots line following. Relies on the motor and sensor classes.
     Responsible for line following, node and obstacle detection and rotation adjustments.
     Does not make pathing decisions.
     """
 
     logger: Logger
-    pid = PIDController
     base_speed = 0.8
 
     # FOLLOW RESULT
@@ -30,16 +29,16 @@ class LineFollower:
         PATH_BLOCKED = 2
         TIMED_OUT = -1
 
-    # STRATEGY
-    class StrategyState(Enum):
+    # STATE
+    class State(Enum):
         IDLE = 0
         PID_FOLLOW = 1
         NODE_ARRIVAL = 3
 
-    strategy: StrategyState
+    state: State
 
-    bitmap_to_strategy: dict[SensorBitmap, StrategyState] = {
-        SensorBitmap.ALL: StrategyState.NODE_ARRIVAL,
+    bitmap_to_state: dict[SensorBitmap, State] = {
+        SensorBitmap.ALL: State.NODE_ARRIVAL,
     }
 
     # COMPONENT CLASSES
@@ -60,42 +59,36 @@ class LineFollower:
         self.ultrasonic = ultrasonic
         self.motor = motor
         self.movement_routines = movement_routines
-        self.pid = PIDController(kp=1.0, ki=0.0, kd=0.1)
-        self.switch_strategy(self.StrategyState.IDLE)
+        self.switch_state(self.State.IDLE)
 
-    def update_strategy(self, bitmap: SensorBitmap):
+    def update_state(self, bitmap: SensorBitmap):
         """
-        Updates the line following strategy based on the current state and the given SensorBitmap.
+        Updates the line following state based on the current state and the given SensorBitmap.
         """
 
-        new_strat = self.bitmap_to_strategy.get(bitmap)
+        new_strat = self.bitmap_to_state.get(bitmap)
 
         if new_strat is not None:
-            self.switch_strategy(new_strat)
-        else:
-            # For example, starting with SensorBitmap.LEFT and turning left to get to SensorBitmap.MIDDLE can result
-            # in temporary SensorBitmap.NONE state where the black tape is inbetween the left and middle sensor.
-            # In that case, continue to use StrategyState.PID_FORWARD.
-            pass
+            self.switch_state(new_strat)
 
-    def switch_strategy(self, new_strategy: StrategyState):
+    def switch_state(self, new_state: State):
         """
-        Switches the line following strategy.
-        Never change the strategy outside of this function.
+        Switches the line following state and handles logging.
+        Never change the state outside of this function.
         """
 
-        self.strategy = new_strategy
+        self.state = new_state
+        self.logger.log(f"New LineFollower state: {new_state}")
 
     def follow_to_next_node(self) -> FollowResult:
         """
-        Main line following loop that runs until the next node is reached or the loop times out.
+        Main line following loop that runs until the the tank:
+        A) has arrived at a new node
+        B) has returned to the starting node after encountering an obstacle
+        C) has timed out
         """
 
-        # Only set strategy to forward if the current one is IDLE.
-        # Otherwise, it would also overwrite strategies set by other functions
-        if self.strategy == self.StrategyState.IDLE:
-            self.switch_strategy(self.StrategyState.PID_FOLLOW)
-
+        self.switch_state(self.State.PID_FOLLOW)
         return self.follow_to_node_with_result(target_result=self.FollowResult.ARRIVED_AT_NODE)
 
     def follow_to_node_with_result(self, target_result: FollowResult):
@@ -106,34 +99,44 @@ class LineFollower:
 
         start_time = time.time()
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
-
             distance = self.ultrasonic.get_distance_cm()
             if distance < 12:
                 self.logger.log(f"Encountered obstacle (distance: {distance})")
                 return self.handle_obstacle_encounter()
 
             bitmap = self.infrared.update()
-            self.update_strategy(bitmap)
+            self.update_state(bitmap)
 
-            # STRATEGIES
-            if self.strategy == self.StrategyState.NODE_ARRIVAL:
+            if self.state == self.State.NODE_ARRIVAL:
                 self.movement_routines.node_arrival()
-                self.switch_strategy(self.StrategyState.IDLE)
+                self.switch_state(self.State.IDLE)
                 return target_result
 
-            if self.strategy == self.StrategyState.PID_FOLLOW:
-                # PID CONTROLLER
-                correction = self.pid.compute_correction(bitmap)
-
-                # MOTOR SPEEDS
-                left_speed = self.base_speed - correction
-                right_speed = self.base_speed + correction
-
-                self.motor.PWM.setMotors(self.motor.c_left * left_speed,
-                                         self.motor.c_right * right_speed)
+            if self.state == self.State.PID_FOLLOW:
+                self.update_motors_PID(bitmap)
 
         self.motor.PWM.stop()
         return self.FollowResult.TIMED_OUT
+
+    def update_motors_PID(self, bitmap: SensorBitmap):
+        """
+        Updates the motors using a PID controller based on the given SensorBitmap.
+        """
+
+        # Use new PIDController each time to reset old values
+        pid = PIDController(kp=0.75, ki=0.2, kd=0.1)
+        correction = pid.compute_correction(bitmap)
+
+        # MOTOR SPEEDS
+        left_speed = self.base_speed - correction
+        if left_speed < self.base_speed / 3:
+            left_speed = -1.5 * self.base_speed
+
+        right_speed = self.base_speed + correction
+        if right_speed < self.base_speed / 3:
+            right_speed = -1.5 * self.base_speed
+
+        self.motor.setMotors(left_speed, right_speed)
 
     def handle_obstacle_encounter(self) -> FollowResult:
         """
@@ -142,5 +145,5 @@ class LineFollower:
         """
 
         self.movement_routines.turn_around_avoid_obstacle()
-        self.switch_strategy(self.StrategyState.PID_FOLLOW)
+        self.switch_state(self.State.PID_FOLLOW)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)

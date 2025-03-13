@@ -1,8 +1,6 @@
 import sys
 import time
 from enum import Enum
-
-from tank.arm.servo import Servo
 from tank.core.explorer import Explorer
 from tank.core.tank_client import TankClient
 from tank.movement.line_following import LineFollower
@@ -96,15 +94,17 @@ class TankRobot:
 
     def line_follow_step(self):
         """
-        A single 'step' of the line following protocol. Runs until the tank has arrived at a new node
-        and updates state variables accordingly.
+        A single 'step' of the line following protocol. Runs until the tank:
+        A) has arrived at a new node
+        B) has returned to the starting node after encountering an obstacle
+        C) has timed out
         """
 
         follow_result = self.line_follower.follow_to_next_node()
 
         if follow_result == LineFollower.FollowResult.ARRIVED_AT_NODE:
             self.switch_state(self.TankState.AT_NODE)
-            
+
         elif follow_result == LineFollower.FollowResult.PATH_BLOCKED:
             self.switch_state(self.TankState.AT_NODE)
             self.explorer.returned_from_path_blocked = True
@@ -141,14 +141,16 @@ class TankRobot:
     def choose_path(self):
         """
         Chooses a new path based on the current state and objective. Then communicates that choice
-        to the mothership and handles the response. If it the choice approved, the tank's state becomes
-        READY_TO_DEPART. If it is denied, the function chooses a different path until no more options are available.
+        to the mothership and handles the response. If the choice is approved, the tank's state becomes
+        READY_TO_DEPART. If it is denied, the function chooses a different path.
+        Communicates to the mothership accordingly if all chosen paths are denied or the planet is fully explored.
         """
 
         # CHOOSE PATH
         depart_dir = Direction.UNKNOWN
-        choice_rejected = True
         rejected_directions: set[Direction] = set()
+
+        choice_rejected = True
         while choice_rejected:
             depart_dir = self.explorer.choose_path(rejected_directions)
             if depart_dir == Direction.UNKNOWN:
@@ -166,18 +168,13 @@ class TankRobot:
             if response['request_response']['is_approved']:
                 self.explorer.next_departure_direction = depart_dir
                 self.logger.log(f"Next departure direction: {self.explorer.next_departure_direction}")
-                self.switch_state(self.TankState.READY_TO_DEPART)
-                break
+                choice_rejected = False
             else:
                 rejected_directions.add(depart_dir)
 
-        # INTERNAL PLANET UPDATE
         self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
                                                 self.explorer.target_node_id, self.explorer.target_route, depart_dir)
-
-        if self.explorer.target_route and self.explorer.target_route.path_id_list:
-            # Only remove now so that we send it in the planet update
-            self.explorer.target_route.path_id_list.pop()
+        self.switch_state(self.TankState.READY_TO_DEPART)
 
     def handle_no_path_found(self):
         """
@@ -190,7 +187,7 @@ class TankRobot:
                                                 self.explorer.target_node_id, self.explorer.target_route,
                                                 Direction.UNKNOWN)
 
-        time.sleep(1) # Give the mothership time before tank finishes and thereby closes the connection
+        time.sleep(1)  # Give the mothership time before tank finishes and thereby closes the connection
         if self.explorer.finished_exploring():
             self.client.send_finished_exploring()
         else:
@@ -202,22 +199,16 @@ class TankRobot:
     def depart_from_node(self):
         """
         Handles node departure. Calls the departure movement routine with the correct relative direction to the
-        facing direction and updates corresponding line following strategy and state variables.
+        facing direction and updates corresponding state variables.
         """
 
-        # RELATIVE TARGET DIRECTION
         target_direction = RelativeDirection.from_absolute(self.explorer.facing_direction,
                                                            self.explorer.next_departure_direction)
         self.logger.log(f"Next relative target direction: {target_direction}")
 
         self.movement_routines.node_departure(target_direction)
-
-        # STATE VARIABLES
-        self.explorer.last_departure_direction = self.explorer.next_departure_direction
-        self.explorer.next_departure_direction = Direction.UNKNOWN
-
+        self.explorer.node_departure()
         self.switch_state(self.TankState.LINE_FOLLOWING)
-
 
     def stop_all(self):
         """

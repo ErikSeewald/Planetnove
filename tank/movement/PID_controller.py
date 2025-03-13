@@ -3,12 +3,16 @@ from tank.sensors.infrared import SensorBitmap
 
 
 class PIDController:
+    """
+    Line following PID controller used to map sensor input to a wheel speed correction.
+    """
+
     bitmap_to_error: dict[SensorBitmap, float] = {
         SensorBitmap.NONE: float("inf"),
-        SensorBitmap.RIGHT: -0.5,
+        SensorBitmap.RIGHT: -1.0,
         SensorBitmap.MIDDLE: 0.0,
         SensorBitmap.MIDDLE_RIGHT: 0.0,
-        SensorBitmap.LEFT: 0.5,
+        SensorBitmap.LEFT: 1.0,
         SensorBitmap.LEFT_RIGHT: -float("inf"),
         SensorBitmap.LEFT_MIDDLE: 0.0,
         SensorBitmap.ALL: 0.0
@@ -23,6 +27,10 @@ class PIDController:
         self.last_time = time.time()
 
     def compute_correction(self, bitmap: SensorBitmap) -> float:
+        """
+        Returns the correction to be applied to wheel speed based on the SensorBitmap input.
+        """
+
         current_time = time.time()
         delta_time = current_time - self.last_time
         if delta_time <= 0:

@@ -28,18 +28,19 @@ def init():
             if msg['type'] == "start":
                 logger.log("Received start signal")
                 break
-            else: logger.log(f"Received a message that was not a start signal: {msg}")
+            else:
+                logger.log(f"Received a message that was not a start signal: {msg}")
         time.sleep(1)
 
     # TANK ROBOT
     tank = TankRobot(tank_client, logger)
-
     try:
         tank.core_loop()
     except KeyboardInterrupt:
-        pass
+        logger.log("Shutting down...")
 
     tank.stop_all()
+
 
 if __name__ == "__main__":
     init()

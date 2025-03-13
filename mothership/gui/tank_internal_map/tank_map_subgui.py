@@ -12,7 +12,7 @@ class TankMapSubGUI(SubGUI):
     """
 
     # Use a frame buffer to avoid dpg's weird deletion order errors
-    # -> Add new frame on top and delete last frame, that way, deletion always has enough iterations to conclude
+    # -> Add new frame on top and delete last frame, that way, deletion always has enough iterations to finish
     MAX_FRAMES = 3
     frame_tags: list[str]
     cur_frame_index: int
@@ -43,7 +43,7 @@ class TankMapSubGUI(SubGUI):
 
     def update_image(self, image: np.ndarray):
         """
-        Replaces the displayed image with the given image array.
+        Replaces the displayed image with the given nd.array.
         """
 
         texture_tag = f"frame_{self.cur_frame_index}"

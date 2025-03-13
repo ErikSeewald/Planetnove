@@ -84,6 +84,9 @@ class TankClient:
         """
 
         try:
+            # Currently the mothership never sends responses longer than 1024.
+            # If that changes, this code will need to be updated to match that of the
+            # asynchronous mothership communications thread
             response = self.client_socket.recv(1024)
             if response:
                 response_message = json.loads(response.decode('utf-8'))
@@ -111,10 +114,7 @@ class TankClient:
 
     # NODE ARRIVAL
     def send_node_arrival(self):
-        message = {
-            "type": "node_arrival"
-        }
-        self.send_message(message)
+        self.send_message({"type": "node_arrival"})
 
     def get_node_arrival_response(self) -> Optional[dict]:
         return self.get_response_of_type("arrival_response")
@@ -145,24 +145,15 @@ class TankClient:
 
     # FINISHED EXPLORING
     def send_finished_exploring(self):
-        message = {
-            "type": "finished_exploring"
-        }
-        self.send_message(message)
+        self.send_message({"type": "finished_exploring"})
 
     # STUCK
     def send_stuck(self):
-        message = {
-            "type": "stuck"
-        }
-        self.send_message(message)
+        self.send_message({"type": "stuck"})
 
     # PATH BLOCKED
     def send_path_blocked(self):
-        message = {
-            "type": "path_blocked"
-        }
-        self.send_message(message)
+        self.send_message({"type": "path_blocked"})
 
     def get_path_blocked_response(self):
         return self.get_response_of_type("path_blocked_response")

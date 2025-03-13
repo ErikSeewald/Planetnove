@@ -1,7 +1,7 @@
 from collections import deque
 
 from pygame import Vector2
-from mothership.gui.planet_view.tile import DraggableTile
+from mothership.gui.planet_view.draggable_tile import DraggableTile
 from util.direction import Direction
 
 
@@ -54,14 +54,14 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
             # JOINTS OF TILE B
             for joint_num_b in [2, 1, 3]:
                 if not tile_b.is_joint_free(local_dir_b, joint_num_b):
-                    continue # Skip joints that already have other joints attached
+                    continue
 
                 joint_pos_b = get_joint_pos(tile_b, global_dir_b, joint_num_b)
 
                 # JOINTS OF TILE A
                 for joint_num_a in [2, 1, 3]:
                     if not tile_a.is_joint_free(local_dir_a, joint_num_a):
-                        continue  # Skip joints that already have other joints attached
+                        continue
 
                     joint_pos_a = get_joint_pos(tile_a, global_dir_a, joint_num_a)
                     distance = joint_pos_a.distance_to(joint_pos_b)
@@ -77,8 +77,14 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
                         if would_overlap(tile_a, tile_b, all_tiles, snap_offset):
                             break
 
-                        if not tile_a.snapped_in_place: # Avoid cascading snapping
+                        if not tile_a.snapped_in_place:
+                            # tile_b is the first tile that tile_a snaps to -> snap_to_pos()
                             tile_a.snap_to_pos(tile_a.rect.x + snap_offset.x, tile_a.rect.y + snap_offset.y)
+                            tile_b.snapped_in_place = True
+                        elif distance < 1:
+                            # tile_b is not the first tile that tile_a is snapping to but the distance is close
+                            # enough that snapped_in_place can be set to true without snap_to_pos()
+                            # -> no cascading snapping
                             tile_b.snapped_in_place = True
 
                         # Attach
@@ -112,7 +118,7 @@ def would_overlap(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: list[
         if tile != tile_a and tile_a_moved.colliderect(tile):
             return True
 
-        # Extra condition snapped_in_places only here, otherwise tile_a-tile_b collision can not be detected if
+        # Extra condition for snapped_in_place only here, otherwise tile_a-tile_b collision can not be detected if
         # they are both not snapped into place yet.
         elif tile != tile_b and tile.snapped_in_place and tile_b.rect.colliderect(tile):
             return True
@@ -135,18 +141,18 @@ def get_joint_pos(tile: DraggableTile, direction: Direction, joint_num: int) -> 
     if tile.rotation_deg == 0 and direction.value % 180 == 90 or \
             tile.rotation_deg == 180 and direction.value % 180 == 0 or \
             tile.rotation_deg == 270:
-        joint_num_adjusted = 4 - joint_num # inverse ordering
+        joint_num_adjusted = 4 - joint_num  # inverse ordering
     else:
         joint_num_adjusted = joint_num
 
     # JOINT OFFSET
     joint_offset: float
     if joint_num_adjusted == 1:
-        joint_offset = tile_size * 12/100
+        joint_offset = tile_size * 12 / 100
     elif joint_num_adjusted == 2:
         joint_offset = tile_size / 2
     else:
-        joint_offset = tile_size - tile_size * 12/100
+        joint_offset = tile_size - tile_size * 12 / 100
 
     # DIRECTION BASED COORDINATES
     if direction == Direction.NORTH:

@@ -6,15 +6,15 @@ position. To keep the cost of communications low, the tank has to remember the m
 Once the tank has explored the entire planet, i.e., has explored all paths of all nodes that it encountered, it informs the mothership.
 
 There are a few additional cases that can happen:
-- The mothership rejects the tank's request for departue in a direction. In that case the tank will need to choose another direction and send another request. (Note: The motherships rejection of a direction at a node is temporary. If the tank returns to the same node
+- The mothership rejects the tank's request for departure in a direction. In that case the tank will need to choose another direction and send another request. (Note: The motherships rejection of a direction at a node is temporary. If the tank returns to the same node
 later it can ask about taking that direction again.)
 - The tank encounters an obstacle on the path. More information in the section on [Path blocking](#path-blocking).
 - The tank is stuck and unable to finish exploring the planet. This can happen if all routes to unexplored nodes lead through paths that have been blocked or if the mothership rejects all departure directions that the tank could take to get to the unexplored nodes.
 In that case, the tank informs the mothership that it is stuck and finishes.
 
 ## Board
-The board representing the planets is made up of 1m x 1m white wooden pieces that can be rearranged into different layouts. Each board has 3 connecting joints at each of its 4 edges. These are the only points
-on which a path can connect to another piece. This way, new maps can modularly and dynamically be constructed by simply shifting these puzzle pieces.
+The board representing the planet is made up of 1m x 1m white wooden pieces that can be rearranged into different layouts. Each board has three connecting joints at each of its four edges. These are the only points
+on which a path can connect to another piece. This way, new maps can be constructed modularly and dynamically by simply shifting these puzzle pieces.
 
 <div align="center"><img src="/docs/img/base_tile_joints.png" alt="Base tile with joint positions" width="250"></div>
 
@@ -52,11 +52,7 @@ You need to create a file called 'coms_config.json' at put it at the root level 
 ```
 
 ## Tank
-The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). It's components include infrared sensors for line following,
-an ultrasound sensor, a camera, LEDs and a crane arm for picking up objects.
-
-Known issues:
-- The ultrasound sensor is very low to the ground. I recommend ignoring all readings beyond 10cm and using a very flat surface as the spread of the ultrasound sensor's 'cone' of view will cause small uneven parts of the floor to be read as obstacles at further distances.
+The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). Planetnove does not make use of it's crane arm.Instead, it is recommended to use that space to mount the infrared sensor higher above the floor to avoid picking up small but passable bumps as obstacles.
 
 ## Hexapod
 The hexapod does not yet have an active role in Planetnove. It is hosted on raspberry pi 4 on the [Freenove Big Hexapod Robot](https://github.com/Freenove/Freenove_Big_Hexapod_Robot_Kit_for_Raspberry_Pi).
@@ -64,10 +60,10 @@ The hexapod does not yet have an active role in Planetnove. It is hosted on rasp
 ## Path blocking
 Throughout the run, you can block paths using obstacles detectable by the tank's ultrasound sensors. If the tank encounters an obstacle, it will then have to turn around and notify the mothership of the blocked path. 
 *After* the mothership has confirmed receiving the blocked path message, the tank can send a new arrival message for the node it just returned to from the blocked path. 
-Once a path is considered blocked it can not be unblocked for the remainder of the run.
+Once a path is considered blocked it cannot be unblocked for the remainder of the run.
 
 There are a few rules for blocking:
-- An obstacle can only be places at positions where there is at least 20cm of (at least slightly) straight path between it and the nodes on either side.
+- An obstacle can only be places at positions where there is at least 30cm of mostly straight path between it and the nodes on either side.
 - An obstacle can ignore the distance rule if it is placed directly on a node.
 - An obstacle cannot occur before the tank encounters its first node.
 

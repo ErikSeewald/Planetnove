@@ -11,9 +11,9 @@ class Direction(Enum):
     UNKNOWN = -1
 
     @staticmethod
-    def real_directions_ordered() -> list[Direction]:
+    def valid_directions_ordered() -> list[Direction]:
         """
-        Returns the list of real directions, ordered by their degree value.
+        Returns the list of valid directions in ascending ordered of their degree value.
         [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]
         """
 

@@ -8,7 +8,7 @@ class Node:
     Class representing a single node on the planet, abstracted away from it's original role as a 'TileNode'.
     """
 
-    name: str
+    id: str
     coord: Vector2
     direction_to_path_id: dict[Direction, str]
 
@@ -16,16 +16,17 @@ class Node:
     # anything in direction_to_path_id if the node it leads to is still unknown
     available_paths: set[Direction]
 
-    def __init__(self, name: str, coord: Vector2):
-        self.name = name
+    def __init__(self, node_id: str, coord: Vector2):
+        self.id = node_id
         self.coord = coord
-
         self.available_paths = set()
-        self.direction_to_path_id = {direction: "None" for direction in Direction.real_directions_ordered()}
+        self.direction_to_path_id = {direction: "None" for direction in Direction.valid_directions_ordered()}
 
     def set_path(self, direction: Direction, path_id: str):
         """
         Sets the path at the given direction to the given path_id in direction_to_path_id.
+
+        :raises ValueError: If an invalid direction is given
         """
 
         if direction is None or direction == Direction.UNKNOWN:
@@ -60,9 +61,17 @@ class Node:
                 return True
         return False
 
+    @staticmethod
+    def id_direction_key(node_id: str, direction: Direction):
+        """
+        Returns the <node_id>:<Direction> key in string form for the given id and direction.
+        """
+
+        return f"{node_id}:{direction.abbreviation()}"
+
     def to_dict(self) -> dict:
         return {
-            "name": self.name,
+            "id": self.id,
             "coord": {"x": self.coord.x, "y": self.coord.y},
             "direction_to_path_id": {d.name: p for d, p in self.direction_to_path_id.items()},
             "available_paths": [d.name for d in self.available_paths]
@@ -70,7 +79,7 @@ class Node:
 
     @staticmethod
     def from_dict(node_dict: dict) -> Node:
-        node = Node(name=node_dict['name'], coord=Vector2(node_dict['coord']['x'], node_dict['coord']['y']))
+        node = Node(node_id=node_dict['id'], coord=Vector2(node_dict['coord']['x'], node_dict['coord']['y']))
         node.direction_to_path_id = {Direction.from_str(d): p for d, p in node_dict['direction_to_path_id'].items()}
         node.available_paths = {Direction.from_str(d) for d in node_dict['available_paths']}
         return node

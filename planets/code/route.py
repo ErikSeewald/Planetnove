@@ -4,14 +4,14 @@ from __future__ import annotations
 class Route:
     """
     Class representing a route between nodes on the planet.
-    It can span over multiple paths (which only ever connect two neighboring nodes).
+    It can span multiple paths (which themselves only ever connect two neighboring nodes).
     """
 
     from_id: str
     to_id: str
     length: float
 
-    path_id_list: list[str]
+    path_id_list: list[str]  # Ordered list of path ids on the route
 
     def __init__(self, from_id: str, to_id: str, length: float, path_id_list: list[str]):
         self.from_id = from_id

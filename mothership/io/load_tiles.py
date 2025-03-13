@@ -2,8 +2,8 @@ import json
 import os
 import glob
 from pygame import Vector2
-from mothership.gui.planet_view.tile import DraggableTile
-from planets.code.parsing.tile_data import Tile
+from mothership.gui.planet_view.draggable_tile import DraggableTile
+from planets.code.tiles.tile_data import Tile
 
 
 class TileLoader:
@@ -27,8 +27,10 @@ class TileLoader:
         """
         Loads the tile data from the class' planet_directory. By the end of the function, the class'
         svg_tiles, tile_data and base_tile variables are set, assuming that the datafiles are formatted correctly.
+
+        :raises FileNotFoundError: If not all necessary files were found
         """
-        
+
         svg_dir = os.path.join(self.planet_directory, "svg")
         data_dir = os.path.join(self.planet_directory, "data")
 
@@ -58,14 +60,14 @@ class TileLoader:
             with open(ignore_path, 'r') as f:
                 tile_ignore = f.read()
 
-        # TILES
+        # DRAGGABLE TILES
         for file in tile_files:
             tile_id = os.path.splitext(os.path.basename(file))[0]
 
             if tile_id not in tile_ignore:
                 print(f"Loading svg for: {tile_id}...")
                 blank_file = os.path.join(svg_dir, tile_id + "_blank.svg")
-                self.svg_tiles.append(DraggableTile(tile_id, file, blank_file, Vector2(500, 500), scale=0.4))
+                self.svg_tiles.append(DraggableTile(tile_id, file, blank_file))
 
         # BASE_TILE
         print("Loading data for: base_tile...")

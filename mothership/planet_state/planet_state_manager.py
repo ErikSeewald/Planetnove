@@ -7,7 +7,7 @@ from util.direction import Direction
 
 class PlanetStateManager:
     """
-    Class managing the mother ship's internal representation of the planet, including the entities on it.
+    Manages the mothership's internal representation of the planet, including the entities on it.
     """
 
     planet: Optional[Planet]
@@ -31,7 +31,6 @@ class PlanetStateManager:
         decided path.
         """
 
-        # Tank entity is already initialized with the necessary variables
         if not self.tank.reached_first_node:
             self.tank.reached_first_node = True
             return
@@ -42,7 +41,7 @@ class PlanetStateManager:
             self.tank.facing_direction = self.tank.departure_direction.invert()
             return
 
-        # Else:
+        # Arrived at the next node
         last_node = self.planet.nodes.get(self.tank.cur_node_id)
         taken_path_id = last_node.direction_to_path_id.get(self.tank.departure_direction)
         taken_path = self.planet.paths.get(taken_path_id)
@@ -54,6 +53,19 @@ class PlanetStateManager:
             self.tank.cur_node_id = taken_path.node_a
             self.tank.facing_direction = taken_path.direction_a.invert()
 
+    def handle_tank_path_blocked(self):
+        """
+        Handles the case where the tank notifies the mothership of the path it has taken being blocked and needing
+        to return to the starting node. Updates state variables so that on_tank_arrival() can function normally.
+        """
+
+        self.tank.returned_from_path_blocked = True
+
+        # The mothership does not keep track of which paths have been blocked.
+        # Only let the mothership keep track of it if there is an internal way to unblock paths when an
+        # obstacle has been removed that does not rely on communications with the tank. The tank, from the
+        # perspective of the mothership, can not be trusted to be correct on that information.
+
     def tank_arrival_response(self) -> dict:
         """
         Returns the message to be sent to the tank client upon node arrival.
@@ -63,7 +75,7 @@ class PlanetStateManager:
         return {
             "type": "arrival_response",
             "facing_direction": self.tank.facing_direction.name,
-            "node_id": node.name,
+            "node_id": node.id,
             "node_coord": {"x": node.coord.x, "y": node.coord.y},
             "available_paths": [direction.name for direction in node.available_paths]
         }
@@ -84,29 +96,7 @@ class PlanetStateManager:
         else:
             response = RequestResponse.deny(f"Node {self.tank.cur_node_id} has no valid path in direction {direction}")
 
-        # TODO: Remove this DEBUG stuff
-        """
-        approval = response.is_approved() and input("Approve? Y/N: ").upper() == "Y"
-        if approval:
-            response = RequestResponse.approve("")
-        else:
-            response = RequestResponse.deny("User denied you. Sorry :/")
-
-        if response.is_approved():
-            self.tank.departure_direction = direction
-        """
-
         return {
             "type": "path_chosen_response",
             "request_response": response.as_dict()
         }
-
-    def handle_tank_path_blocked(self):
-        """
-        Handles the case where the tank notifies the mothership of the path it has taken being blocked and needing
-        to return to the starting node. Updates state variables so that on_tank_arrival() can function normally.
-        """
-
-        self.tank.returned_from_path_blocked = True
-        self.planet.block_path_in_direction(self.tank.cur_node_id, self.tank.departure_direction)
-

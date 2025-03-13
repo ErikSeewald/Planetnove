@@ -3,7 +3,7 @@ from __future__ import annotations
 
 class RequestResponse:
     """
-    Util class for approving and denying requests with additionally response messages.
+    Util class for approving and denying requests with additional response messages.
     """
 
     _approved: bool

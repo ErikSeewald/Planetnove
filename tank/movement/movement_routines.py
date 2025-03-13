@@ -27,35 +27,35 @@ class MovementRoutines:
 
     def node_arrival(self) -> RoutineResult:
         """
-            This routine is to be called immediately after the infrared sensor scans a node.
-            After the routine, the tank should have moved forward to roughly center itself above the node.
+        This routine is to be called immediately after the infrared sensor scans a node.
         """
 
-        self.motor.move_straight(seconds=0.4)
+        self.motor.stop_motors()
         return self.RoutineResult.SUCCESS
 
     def node_departure(self, target_direction: RelativeDirection) -> RoutineResult:
         """
         Handles the movement routine required to depart from a node before the line follower can be activated.
-        Turns to face the target direction and then moves slightly forward to avoid the infrared sensor picking
-        scanning the same node again.
 
-        :param target_direction: The relative direction to the facing direction to depart in
+        :param target_direction: The direction (relative to the facing direction) to depart in
         """
 
         if target_direction == RelativeDirection.UNKNOWN:
             return self.RoutineResult.FAILURE
 
-        if target_direction == RelativeDirection.AHEAD:
-            pass
-        elif target_direction == RelativeDirection.RIGHT:
-            self.motor.rotate_right(seconds=1)
-        elif target_direction == RelativeDirection.LEFT:
-            self.motor.rotate_left(seconds=1)
-        elif target_direction == RelativeDirection.BEHIND:
-            self.motor.rotate_right(seconds=1.8)
-
-        self.motor.move_straight(seconds=0.3)
+        # TODO: Automatic departure currently broken
+        departure_confirmed = input("Confirm departure by pressing ENTER")
+        """
+                if target_direction == RelativeDirection.AHEAD:
+                    pass
+                elif target_direction == RelativeDirection.RIGHT:
+                    pass
+        
+                elif target_direction == RelativeDirection.LEFT:
+                    pass
+                elif target_direction == RelativeDirection.BEHIND:
+                    pass
+        """
         return self.RoutineResult.SUCCESS
 
     def turn_around_avoid_obstacle(self) -> RoutineResult:
@@ -63,6 +63,7 @@ class MovementRoutines:
         Handles the movement routine upon encountering an obstacle and needing to turn around completely.
         """
 
-        self.motor.rotate_right(seconds=1.6)
+        # TODO: Automatic turning around currently broken
+        self.motor.stop_motors()
+        turned_around = input("Turn me around and press ENTER")
         return self.RoutineResult.SUCCESS
-

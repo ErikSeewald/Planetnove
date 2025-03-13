@@ -1,17 +1,17 @@
 from pygame import Vector2
-from planets.code.tiles.tile import DraggableTile
+from mothership.gui.planet_view.draggable_tile import DraggableTile
 from planets.code.node import Node
 from planets.code.path import Path
 from planets.code.planet import Planet
-from planets.code.tiles.tile_data import Tile
+from planets.code.tiles.tile_data import Tile, TileMeasure
 from util.direction import Direction
 
 
 def parse_planet(draggable_tiles: list[DraggableTile], tile_data: list[Tile]) -> Planet:
     """
     Parses the given set of draggable tiles and the corresponding tile data into a planet with a single coordinate
-    system and no joints inbetween.
-    Therein it also maps all local direction data to global directions.
+    system and no joints in between.
+    In doing so it also maps all local direction data to global directions.
     """
 
     # Mapping tile ids to their data and draggable representations
@@ -40,21 +40,21 @@ def parse_nodes(tile_data: dict[str, tuple[DraggableTile, Tile]]) -> dict[str, N
     # and use that tiles origin as the planet coordinate origin. All other tiles receive coordinate offsets
     # based on their connection to the lowest tile.
     origin_tile = max(tile_data.values(), key=lambda value: value[0].rect.y)
+    size_mm = TileMeasure.tile_size_mm
     for tile_id, tile in tile_data.items():
-        x_offset = (tile[0].rect.x - origin_tile[0].rect.x) * (1000 / tile[0].rect.width)
-        y_offset = (origin_tile[0].rect.y - tile[0].rect.y) * (1000 / tile[0].rect.height)
+        x_offset = (tile[0].rect.x - origin_tile[0].rect.x) * (size_mm / tile[0].rect.width)
+        y_offset = (origin_tile[0].rect.y - tile[0].rect.y) * (size_mm / tile[0].rect.height)
         tile_coord_offsets[tile_id] = node_offset(x_offset), node_offset(y_offset)
 
     # NODES
     for tile_id, tile in tile_data.items():
         coord_offset = tile_coord_offsets.get(tile_id)
         for node in tile[1].nodes:
-
             # COORD
             coord = Vector2(node.node_coord.x, node.node_coord.y)
 
             # Match draggable tile rotation
-            coord = rotate_coord(coord, origin=Vector2(2, 2), rotation_deg=-tile[0].rotation_deg)
+            coord = rotate_coord(coord, center=Vector2(2, 2), rotation_deg=-tile[0].rotation_deg)
 
             # Positional offset
             coord.x += coord_offset[0]
@@ -71,17 +71,17 @@ def node_offset(tile_offset: float) -> float:
     :return: The node coord offset based on the given tile coord offset
     """
 
-    return int(tile_offset / 1000) * 3
+    return int(tile_offset / TileMeasure.tile_size_mm) * 3
 
 
-def rotate_coord(coord: Vector2, origin: Vector2, rotation_deg: int) -> Vector2:
+def rotate_coord(coord: Vector2, center: Vector2, rotation_deg: int) -> Vector2:
     """
-    Rotates the given coordinate around the given origin by the given amount of degrees and returns the result.
+    Rotates the given coordinate around the given center by the given amount of degrees and returns the result.
     """
 
-    translated_vector = coord - origin
+    translated_vector = coord - center
     rotated_vector = translated_vector.rotate(rotation_deg)
-    return rotated_vector + origin
+    return rotated_vector + center
 
 
 def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[str, Node]) -> dict[str, Path]:
@@ -96,8 +96,8 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
 
     for tile_id, tile in tile_data.items():
         for path in tile[1].paths:
-            # Do not consider joint to joint paths here, only in the recursion of parse_path_node()
-            # Doing so would break the tile.rotation_deg use
+            # Do not consider joint to joint paths here (only consider them in parse_path_node())
+            # Otherwise it would break the use of tile.rotation_deg
             if "joint" in path.from_ and "joint" in path.to_:
                 continue
 
@@ -105,7 +105,7 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
             node_a: str = parse_path_node(path.from_, tile_id, tile_data)
             node_b: str = parse_path_node(path.to_, tile_id, tile_data)
             if node_a == "None" or node_b == "None":
-                continue # Do not add paths that do not connect two nodes
+                continue  # Do not add paths that do not connect two nodes
 
             # DRAG TILE ROTATION
             split_a = node_a.split(":")
@@ -149,7 +149,7 @@ def parse_path_node(node_id: str, tile_id: str, tile_data: dict[str, tuple[Dragg
     joint_num = int(split[1][1])
 
     # What node is the joint connected to on the other tile
-    connected_joint = tile_data[tile_id][0].joints.get(joint_side)[joint_num-1]
+    connected_joint = tile_data[tile_id][0].joints.get(joint_side)[joint_num - 1]
     connected_tile = tile_data.get(connected_joint.split("_joint")[0])
 
     if connected_tile is None:

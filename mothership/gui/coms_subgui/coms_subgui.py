@@ -23,6 +23,7 @@ class ComsSubGUI(SubGUI):
         CONNECTING = 1
         PENDING_START_MESSAGE = 2
         STARTED = 3
+
     tank_header_state: TankHeaderState
 
     # Whether the last attempt to connect failed -> used for changing connect button label
@@ -39,7 +40,7 @@ class ComsSubGUI(SubGUI):
         super().__init__(tag, gui_core)
 
         self.coms = coms
-        self.tank_header_state = self.TankHeaderState.ADDING_TANK
+        self._set_tank_header_state(self.TankHeaderState.ADDING_TANK)
         self.tank_add_event_scheduled = False
         self.tank_disconnect_event_scheduled = False
         self.failed_to_connect_tank = False
@@ -192,7 +193,7 @@ class ComsSubGUI(SubGUI):
     def _tank_start_message_callback(self):
         """
         Callback function for the 'Send start message' button.
-        Switches the mode 'STARTED' and calls the send_tank_start_message() of the Communications class.
+        Switches the mode 'STARTED' and calls send_tank_start_message() of the Communications class.
         """
 
         self.coms.send_tank_start_message()

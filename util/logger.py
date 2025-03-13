@@ -5,7 +5,7 @@ import inspect
 
 class Logger:
     """
-    Console logger with debug information that remembers logs in a deque.
+    Console logger with debug information. Saves logs in a deque.
     """
 
     logs: deque

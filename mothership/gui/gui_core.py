@@ -5,15 +5,13 @@ from mothership.gui.tank_internal_map.tank_map_subgui import TankMapSubGUI
 from mothership.update_event import UpdateEvent, TankPlanetUpdate
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
-from mothership.gui.planet_view.tile import DraggableTile
+from mothership.gui.planet_view.draggable_tile import DraggableTile
 from mothership.gui.coms_subgui.coms_subgui import ComsSubGUI
 from mothership.gui.sub_gui import SubGUI
 from mothership.io.communications import Communications
-from planets.code.planet import Planet
-from planets.code.parsing.tile_data import Tile
+from planets.code.tiles.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
-from planets.code.route import Route
 from util.direction import Direction
 
 
@@ -24,7 +22,7 @@ class GUICore:
     """
 
     planet_view: PlanetView
-    sub_GUIs: dict[str, SubGUI] # window tag to SubGui
+    sub_GUIs: dict[str, SubGUI]  # window tag to SubGui
     coms: Communications
 
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], coms: Communications):
@@ -47,7 +45,7 @@ class GUICore:
 
     def update(self) -> list[UpdateEvent]:
         """
-        Updates the mothership's GUI and returns a list of all update events that occured.
+        Updates the mothership's GUI and returns a list of all update events that occurred.
         These events are to be handled by the mothership only. It may be that the mothership finds events
         that require functions in gui_core to be called, but first and foremost all events should be propagated
         upwards to the mothership.
@@ -119,7 +117,7 @@ class GUICore:
         self.sub_GUIs.get("tank_map").remove_image()
         self.sub_GUIs.get("coms").tank_header_state = ComsSubGUI.TankHeaderState.ADDING_TANK
 
-        self.planet_view.reset_planet() # Rebuild planet to remove any changes made by tank coms
+        self.planet_view.reset_planet()  # Rebuild planet to remove any changes made by tank coms
         self.tank_connection_event()
 
     def tank_connection_event(self):
@@ -137,4 +135,3 @@ class GUICore:
         """
 
         self.sub_GUIs.get("planet_view").event_update()
-

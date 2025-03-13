@@ -8,8 +8,7 @@ class CalibratedMotor:
     """
     PWM: PWM
 
-    # Calibrated speed values
-    # -> move(c_left, c_right) should move straight
+    # Calibrated speed values (move(c_left, c_right) should move straight forwards)
     c_left: int
     c_right: int
 
@@ -31,7 +30,7 @@ class CalibratedMotor:
 
     def move_straight(self, seconds: float, speed: float = 1):
         """
-        Moves in a straight line based on the currently set calibration values.
+        Moves in a straight line based on the current calibration values.
         A negative speed parameter will make the tank move backwards.
         The thread sleeps during the movement.
         :param seconds: How many seconds the tank should move for
@@ -45,7 +44,7 @@ class CalibratedMotor:
     def rotate_right(self, seconds: float, rotation_speed: float = 1):
         """
         Rotates in place to the right. Due to the wheel layout of the tank this is not a perfect rotation
-        around it's center and longer rotations will introduce large shifts in position.
+        around it's center -> longer rotations will introduce large shifts in position.
         The thread sleeps during the rotation.
         :param seconds: How many seconds the tank should rotate for
         :param rotation_speed: The speed multiplier. Values too small or too large will be cut off.
@@ -58,7 +57,7 @@ class CalibratedMotor:
     def rotate_left(self, seconds: float, rotation_speed: float = 1):
         """
         Rotates in place to the left. Due to the wheel layout of the tank this is not a perfect rotation
-        around it's center and longer rotations will introduce large shifts in position.
+        around it's center -> longer rotations will introduce large shifts in position.
         The thread sleeps during the rotation.
         :param seconds: How many seconds the tank should rotate for
         :param rotation_speed: The speed multiplier. Values too small or too large will be cut off.
@@ -67,6 +66,14 @@ class CalibratedMotor:
         self.PWM.setMotors(-1500 * rotation_speed, 1500 * rotation_speed)
         time.sleep(seconds)
         self.PWM.setMotors(0, 0)
+
+    def setMotors(self, left_speed: float, right_speed: float):
+        """
+        Sets the motors to the given speed values based on the current calibration values.
+        The motors will remain at these speeds until changed again.
+        """
+
+        self.PWM.setMotors(self.c_left * left_speed, self.c_right * right_speed)
 
     def stop_motors(self):
         """

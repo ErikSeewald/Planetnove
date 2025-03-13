@@ -11,33 +11,34 @@ from util.direction import Direction
 class Planet:
     """
     Class representing a planet.
-    While the planet is constructed from tiles, once initialized it ignores the original tile structure completely
+    Though the planet is constructed from tiles, once initialized it ignores the original tile structure completely
     and treats every node and path as belonging to one entity - the planet.
     The joints of the original tiles are no longer considered, instead, a path connected to a joint either becomes
     a path between the two nodes on different tiles that are connected to that joint or 'None' if no such pair exists.
     """
 
-    nodes: dict[str, Node] # Maps node id to Node
-    paths: dict[str, Path] # Maps path id to Path
+    nodes: dict[str, Node]  # Maps node id to Node
+    paths: dict[str, Path]  # Maps path id to Path
 
     def __init__(self, nodes: dict[str, Node], paths: dict[str, Path]):
         self.nodes = nodes
         self.paths = paths
 
-    def add_node_with_unknown_paths(self, name: str, coord: Vector2, available_paths: set[Direction]):
+    def add_node_with_unknown_paths(self, node_id: str, coord: Vector2, available_paths: set[Direction]):
         """
-        Adds a node with the given name, coordinates and set of available paths to the planet without setting
+        Adds a node with the given id, coordinates and set of available paths to the planet without setting
         the node's direction_to_path_id dictionary.
         """
 
-        node = Node(name, coord)
+        node = Node(node_id, coord)
         node.available_paths = available_paths
-        self.nodes[name] = node
+        self.nodes[node_id] = node
 
     def add_path(self, path: Path):
         """
-        Adds the given path to the planet. Raises a ValueError if either of the path's nodes are not part of
-        the planet.
+        Adds the given path to the planet.
+
+        :raises ValueError: If either of the path's nodes are not part of the planet.
         """
 
         if path.node_a not in self.nodes:
@@ -45,15 +46,16 @@ class Planet:
         if path.node_b not in self.nodes:
             raise ValueError(f"Cannot add path with unknown node {path.node_b}")
 
-        self.paths[path.name] = path
+        self.paths[path.id] = path
 
     def block_path_in_direction(self, node_id: str, direction: Direction):
         """
         Blocks the path in the given direction of the node represented by the given node_id by removing
-        it from both available_paths and direction_to_path_id and, if the path object already exists
+        it from available_paths and direction_to_path_id and, if the path object already exists
         on the planet, setting its length to float("inf"). If the path does not yet exist as an object,
         a loopback path is added to the planet at that node with infinite length.
-        Raises a ValueError if the given node_id does not exist or the direction is invalid.
+
+        :raises ValueError: If the given node_id does not exist or the direction is invalid.
         """
 
         node = self.nodes.get(node_id)
@@ -68,27 +70,40 @@ class Planet:
         node.direction_to_path_id[direction] = "None"
 
         # Edit path object on planet to have inf length
-        node_with_dir = f"{node_id}:{direction.abbreviation()}".lower()
+        id_dir_key = Node.id_direction_key(node_id, direction)
         path_found = False
-        for path_id, path in self.paths.items():
-            if node_with_dir in path_id.lower():
+        for path in self.paths.values():
+            if path.contains_id_dir_key(id_dir_key):
                 path.length = float("inf")
                 path_found = True
                 break
 
-        # Add looping path with inf length
+        # Add loopback path with inf length if no path exists yet
         if not path_found:
-            path_id = f"{node_with_dir}-{node_with_dir}"
-            self.paths[path_id] = Path(path_id, node_with_dir, node_with_dir, length=float("inf"))
+            path = Path(id_dir_key, id_dir_key, length=float("inf"))
+            self.paths[path.id] = path
 
-    def path_exists(self, node_a_with_dir: str, node_b_with_dir: str):
+    def remove_blocked_loopback_if_exists(self, id_dir_key_b: str):
+        """
+        Removes a blocked loopback path for node_b, defined by the given id_dir_key_b, if it exists on the planet.
+        A blocked loopback path is a path looping back to the same direction it started from that is added when a
+        direction needs to be blocked without knowing where that blocked path leads to.
+        If, later, the full path is discovered (e.g. from the other side), this temporary blocked
+        loopback path needs to be removed.
+        """
+
+        path_id = Path.id_from_node_keys(id_dir_key_b, id_dir_key_b)
+        path = self.paths.get(path_id)
+        if path and path.length == float("inf"):
+            self.paths.pop(path_id)
+
+    def path_exists(self, id_dir_key_a: str, id_dir_key_b: str):
         """
         Returns whether a path described by the two parameters exists on the planet.
-        The parameters follow the convention '<node_id>:<Direction abbreviation>'.
         """
 
-        id_a = f"{node_a_with_dir}-{node_b_with_dir}"
-        id_b = f"{node_b_with_dir}-{node_a_with_dir}"
+        id_a = Path.id_from_node_keys(id_dir_key_a, id_dir_key_b)
+        id_b = Path.id_from_node_keys(id_dir_key_b, id_dir_key_a)
 
         return self.paths.get(id_a) or self.paths.get(id_b)
 
@@ -106,7 +121,7 @@ class Planet:
         parents: dict[str, tuple[str, str]] = dict()
 
         visited: set[str] = set()  # IDs of visited nodes
-        queue: list[tuple[float, str]] = list()  # list of (weight, node_id) of queued nodes
+        queue: list[tuple[float, str]] = list()  # list[(weight, node_id)] of queued nodes
 
         weights: dict[str, float] = dict()  # maps node_id to its current_weight
         weights.update({from_id: 0})
@@ -148,29 +163,29 @@ class Planet:
 
             path_id_list: list[str] = list()
             cur_node = node_id
-            cur_parents = parents.get(cur_node)
-            if cur_parents is None or math.isinf(weights[node_id]):
+            cur_parent = parents.get(cur_node)
+            if cur_parent is None or math.isinf(weights[node_id]):
                 continue  # No route exists
 
             while cur_node != from_id:  # walk backwards to the starting node
-                path_id_list.append(cur_parents[1])
-                cur_node = cur_parents[0]
-                cur_parents = parents.get(cur_node)
+                path_id_list.append(cur_parent[1])
+                cur_node = cur_parent[0]
+                cur_parent = parents.get(cur_node)
 
             routes[node_id] = Route(from_id, node_id, weights[node_id], path_id_list)
         return routes
 
     def to_dict(self) -> dict:
         return {
-            "nodes": {name: n.to_dict() for name, n in self.nodes.items()},
-            "paths": {name: p.to_dict() for name, p in self.paths.items()}
+            "nodes": {node_id: n.to_dict() for node_id, n in self.nodes.items()},
+            "paths": {path_id: p.to_dict() for path_id, p in self.paths.items()}
         }
 
     @staticmethod
     def from_dict(planet_dict: dict) -> Planet:
         return Planet(
-            nodes={name: Node.from_dict(n) for name, n in planet_dict['nodes'].items()},
-            paths={name: Path.from_dict(p) for name, p in planet_dict['paths'].items()}
+            nodes={node_id: Node.from_dict(n) for node_id, n in planet_dict['nodes'].items()},
+            paths={path_id: Path.from_dict(p) for path_id, p in planet_dict['paths'].items()}
         )
 
     def __str__(self) -> str:
