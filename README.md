@@ -76,6 +76,7 @@ The requirements are specified in 'requirements.txt' within the entity's source 
 The following subsections concern requirements with extra steps beyond pip install.
 
 ## Cairo
+Cairo needs to be installed in the system that is hosting the mothership.
 #### Linux
 ```
 sudo apt-get install libcairo2-dev

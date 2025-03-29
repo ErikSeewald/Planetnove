@@ -35,6 +35,10 @@ class Node:
         self.direction_to_path_id[direction] = path_id
         self.available_paths.add(direction)
 
+    @property
+    def __class__(self):
+        return super().__class__
+
     def make_path_unknown(self, direction: Direction):
         """
         Removes the path at the given direction from direction_to_path_id.
