@@ -70,6 +70,10 @@ There are a few rules for blocking:
 
 <img src="/docs/img/blocking_examples.png" alt="Blocking examples" width="1700">
 
+# Linux compatibility
+Currently, the mothership GUI cannot run on Linux due to the way the OpenGL context is shared on the same process by dearpygui and pygame. Windows is very lenient with this but Linux will not allow shared ownership of the context. Dividing the two windows into two processes instead of just two threads might fix the issue.
+
+
 # Requirements
 The tank and mothership have different requirements. You can run init_<entity>.py without having the requirements for the other entities. 
 The requirements are specified in 'requirements.txt' within the entity's source folder.
@@ -77,15 +81,6 @@ The following subsections concern requirements with extra steps beyond pip insta
 
 ## Cairo
 Cairo needs to be installed in the system that is hosting the mothership.
-#### Linux
-```
-sudo apt-get install libcairo2-dev
-```
-
-#### Mac OS X 
-```
-sudo port install cairo
-```
 
 #### Windows
 1. Install [MSYS2](https://github.com/msys2/msys2-installer?tab=readme-ov-file)
