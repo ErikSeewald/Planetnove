@@ -4,6 +4,7 @@ from tank.movement.PID_controller import PIDController
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor, SensorBitmap
 from tank.movement.calibrated_motor import CalibratedMotor
+from tank.signals.LEDs import LEDs
 import time
 
 from tank.sensors.ultrasonic import Ultrasonic
@@ -45,6 +46,7 @@ class LineFollower:
     infrared: InfraredSensor
     ultrasonic: Ultrasonic
     motor: CalibratedMotor
+    leds: LEDs
 
     # CONTROL CLASSES
     movement_routines: MovementRoutines
@@ -53,12 +55,13 @@ class LineFollower:
     SECONDS_UNTIL_TIMEOUT: float = 600 # Maximum time for a line following step
 
     def __init__(self, sensor: InfraredSensor, ultrasonic: Ultrasonic,
-                 motor: CalibratedMotor, movement_routines: MovementRoutines, logger: Logger):
+                 motor: CalibratedMotor, movement_routines: MovementRoutines, leds: LEDs, logger: Logger):
         self.logger = logger
         self.infrared = sensor
         self.ultrasonic = ultrasonic
         self.motor = motor
         self.movement_routines = movement_routines
+        self.leds = leds
         self.switch_state(self.State.IDLE)
 
     def update_state(self, bitmap: SensorBitmap):
@@ -144,6 +147,7 @@ class LineFollower:
         to the starting node.
         """
 
+        self.leds.obstacle_animation()
         self.movement_routines.turn_around_avoid_obstacle()
         self.switch_state(self.State.PID_FOLLOW)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)

@@ -1,6 +1,6 @@
 import sys
-import time
 from enum import Enum
+
 from tank.core.explorer import Explorer
 from tank.core.tank_client import TankClient
 from tank.movement.line_following import LineFollower
@@ -8,6 +8,7 @@ from tank.movement.calibrated_motor import CalibratedMotor
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor
 from tank.sensors.ultrasonic import Ultrasonic
+from tank.signals.LEDs import LEDs
 from util.direction import Direction, RelativeDirection
 from util.logger import Logger
 
@@ -32,6 +33,7 @@ class TankRobot:
     motor: CalibratedMotor
     infrared: InfraredSensor
     ultrasonic: Ultrasonic
+    leds: LEDs
 
     # CONTROL CLASSES
     movement_routines: MovementRoutines
@@ -40,9 +42,10 @@ class TankRobot:
     client: TankClient
     logger: Logger
 
-    def __init__(self, client: TankClient, logger: Logger):
+    def __init__(self, client: TankClient, leds: LEDs, logger: Logger):
         self.logger = logger
         self.client = client
+        self.leds = leds
 
         # STATE
         self.switch_state(self.TankState.INITIALIZING)
@@ -55,7 +58,7 @@ class TankRobot:
         # CONTROL CLASSES
         self.movement_routines = MovementRoutines(self.motor, self.infrared)
         self.line_follower = LineFollower(self.infrared, self.ultrasonic, self.motor,
-                                          self.movement_routines, self.logger)
+                                          self.movement_routines, self.leds, self.logger)
         self.explorer = Explorer(logger)
 
     def switch_state(self, new_state: TankState):
@@ -78,6 +81,7 @@ class TankRobot:
         while True:
             if self.state == self.TankState.FINISHED:
                 self.logger.log("Finished!")
+                self.leds.rainbow_cycle()
                 return
 
             if self.state == self.TankState.LINE_FOLLOWING:
@@ -174,6 +178,7 @@ class TankRobot:
 
         self.client.send_internal_planet_update(self.explorer.planet, self.explorer.cur_node_id,
                                                 self.explorer.target_node_id, self.explorer.target_route, depart_dir)
+        self.leds.global_direction_indicator(self.explorer.facing_direction)
         self.switch_state(self.TankState.READY_TO_DEPART)
 
     def handle_no_path_found(self):
@@ -206,7 +211,15 @@ class TankRobot:
                                                            self.explorer.next_departure_direction)
         self.logger.log(f"Next relative target direction: {target_direction}")
 
+        self.leds.turn_animation(target_direction)
         self.movement_routines.node_departure(target_direction)
+
+        self.leds.node_departure(
+            LEDs.DepartureType.NEW_PATH if not self.explorer.target_route \
+                else LEDs.DepartureType.TARGET_NEXT if len(self.explorer.target_route.path_id_list) == 1 \
+                else LEDs.DepartureType.KNOWN_PATH
+        )
+
         self.explorer.node_departure()
         self.switch_state(self.TankState.LINE_FOLLOWING)
 

@@ -1,9 +1,9 @@
 import json
-import time
 
 from util.logger import Logger
 from tank.core.tank_client import TankClient
 from tank.core.tank_robot import TankRobot
+from tank.signals.LEDs import LEDs
 
 _COMS_CONFIG_PATH = "coms_config.json"
 
@@ -21,6 +21,9 @@ def init():
     tank_client = TankClient(mothership_ip, mothership_port, logger)
     tank_client.wait_for_server_connection()
 
+    leds = LEDs()
+    leds.client_connected_animation()
+
     logger.log("Waiting for the mothership to send a start signal...")
     while True:
         msg = tank_client.receive_message()
@@ -32,7 +35,7 @@ def init():
                 logger.log(f"Received a message that was not a start signal: {msg}")
 
     # TANK ROBOT
-    tank = TankRobot(tank_client, logger)
+    tank = TankRobot(tank_client, leds, logger)
     try:
         tank.core_loop()
     except KeyboardInterrupt:
