@@ -1,4 +1,5 @@
 import json
+import os
 
 from util.logger import Logger
 from tank.core.tank_client import TankClient
@@ -10,6 +11,10 @@ _COMS_CONFIG_PATH = "coms_config.json"
 
 def init():
     logger = Logger()
+
+    if os.geteuid() != 0:
+        logger.log("Error: Tank script requires sudo privileges. Exiting...")
+        return
 
     # TANK CLIENT
     logger.log(f"Loading {_COMS_CONFIG_PATH}...")
