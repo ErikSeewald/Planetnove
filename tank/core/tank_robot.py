@@ -230,3 +230,6 @@ class TankRobot:
 
         self.logger.log("Stopping all motors")
         self.motor.stop_motors()
+
+        self.logger.log("Turning off LEDs")
+        self.leds.reset_all()

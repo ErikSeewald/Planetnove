@@ -132,12 +132,8 @@ class LineFollower:
 
         # MOTOR SPEEDS
         left_speed = self.base_speed - correction
-        if left_speed < self.base_speed / 3:
-            left_speed = -1.5 * self.base_speed
 
         right_speed = self.base_speed + correction
-        if right_speed < self.base_speed / 3:
-            right_speed = -1.5 * self.base_speed
 
         self.motor.setMotors(left_speed, right_speed)
 
@@ -147,6 +143,7 @@ class LineFollower:
         to the starting node.
         """
 
+        self.motor.stop_motors()
         self.leds.obstacle_animation()
         self.movement_routines.turn_around_avoid_obstacle()
         self.switch_state(self.State.PID_FOLLOW)
