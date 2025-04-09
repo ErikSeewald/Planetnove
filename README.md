@@ -1,35 +1,37 @@
 # Planetnove
-A planet exploration sim using Freenove robots.
+A planet exploration sim making use of Freenove robots.
 
-The tank robot explores the planet board using simple line following. Whenever it reaches a node, it starts communicating with the mothership. When it has decided what direction to depart in, it sends that information to the mothership and waits for confirmation. The mothership can then use its superior triangulation processing power to determine the next node the tank will arive at. Upon arrival the tank notifies the mothership and then receives a message with it's new position as well as the available paths from this
-position. To keep the cost of communications low, the tank has to remember the map layout and make its own pathing decisions based on only these short messages.
-Once the tank has explored the entire planet, i.e., has explored all paths of all nodes that it encountered, it informs the mothership.
+The tank robot explores the planet board using line following. Whenever it reaches a node, it starts communicating with the mothership. When it has decided what direction to depart in, it sends that information to the mothership and waits for confirmation. The mothership can then use its superior triangulation processing power to determine the next node that the tank will arive at. Upon arrival the tank notifies the mothership and then receives a message with its new position as well as the available paths from that node. To keep the cost of communications low, the tank has to remember the map layout and make its own pathing decisions based on only these short messages.
+Once the tank has explored the entire planet, i.e., has explored all available paths of all nodes that it encountered, it informs the mothership.
 
-There are a few additional cases that can happen:
-- The mothership rejects the tank's request for departure in a direction. In that case the tank will need to choose another direction and send another request. (Note: The motherships rejection of a direction at a node is temporary. If the tank returns to the same node
-later it can ask about taking that direction again.)
-- The tank encounters an obstacle on the path. More information in the section on [Path blocking](#path-blocking).
+There are a few additional cases that can occur:
+- The mothership rejects the tank's request for departure in a direction. In that case, the tank will need to choose another direction and send another request. (Note: The motherships rejection of a direction at a node is temporary. If the tank returns to the same node later, it can ask about taking that direction again.)
+- The tank encounters an obstacle on the path. More information in the section on [path blocking](#path-blocking).
 - The tank is stuck and unable to finish exploring the planet. This can happen if all routes to unexplored nodes lead through paths that have been blocked or if the mothership rejects all departure directions that the tank could take to get to the unexplored nodes.
 In that case, the tank informs the mothership that it is stuck and finishes.
 
 ## Board
-The board representing the planet is made up of 1m x 1m white wooden pieces that can be rearranged into different layouts. Each board has three connecting joints at each of its four edges. These are the only points
-on which a path can connect to another piece. This way, new maps can be constructed modularly and dynamically by simply shifting these puzzle pieces.
+The board representing the planet is made up of white pieces sized 1m x 1m that can be rearranged into different layouts. Each board has three connecting joints at each of its four edges. These are the only points
+on which a path can connect to another piece. This way, new maps can be constructed modularly and dynamically by simply shifting and rotating the pieces. The corresponding [GUI](#gui) allows for easy synchronization of the digital and physical tile layouts. 
 
 <div align="center"><img src="/docs/img/base_tile_joints.png" alt="Base tile with joint positions" width="250"></div>
 
-As you can see, the joints have a specific local direction and number assigned to them. Each tile and its joints are first described in local directions. Later, when it has been rotated and connected to other tiles, these directions are converted to the global directions
-of the planet (e.g., joint_N1 rotated becomes joint_E3 if the tile has been rotated 90 degrees clockwise).
+The joints have a specific local direction and number assigned to them. Internally, each tile and its joints are initially described in local directions only. Later, after rotation and connection to other tiles, the GUI converts these directions to the global directions
+of the planet (e.g., joint_N1 becomes joint_E3 if the tile has been rotated 90 degrees clockwise).
 
-All other tiles use this base tile to construct their paths and nodes. A node has to align with one of the joints both horizontally and vertically. If we treat the bottom corner of the tile as coordinate (0,0) and and give the joints coordinates corresponding to their number (e.g., joint_S1 = (0,1), joint_S3 = (0,3), joint_E3 = (3, 3), joint_N2 = (2, 3)) then a node can only have coordinates in the range ([1,3], [1,3]). Nodes are indicated to the line follower by a vertically and horizontally aligned cross of 2cm thick black tape. The cross should be
+All other tiles use this base tile to construct their paths and nodes. A node has to align with one of the joints both horizontally and vertically. Let the bottom corner of the tile be the coordinate (0,0) and assign the joints coordinates corresponding to their number (e.g., joint_S1 = (0,1), joint_S3 = (0,3), joint_E3 = (3, 3), joint_N2 = (2, 3)), then a node can only have coordinates in the range ([1,3], [1,3]). 
+
+Nodes are marked by a vertically and horizontally aligned cross of 2cm thick black tape. The cross should be
 at least 6cm wide and tall so that the three infrared sensors of the tank robot all read it at the same time.
-A path is 2cm thick and can only ever connect two end points, i.e., it needs one specific start and one specific end. No branching paths. These end points can either be nodes or joints. A path can also connect to the same node at a different direction or the same direction.
+
+A path is 2cm thick and can only ever connect two end points, i.e., it needs one specific start and one specific end. No branching paths. On individual tiles these end points can either be nodes or joints. On the finished planet board a path can only connect two nodes (multiple tile joints inbetween are allowed as long as the final end points are nodes). Any paths that do not match this criteria are discarded.
+A path can also connect to the same node at a different direction or the same direction (loopback paths).
 
 Provided with the repository are the following four example tiles:
 <div align="center"><img src="/docs/img/example_tiles.png" alt="Example tiles" width="500"></div>
 
-To create new tiles, the files tile_\<id>.json, tile_\<id>.svg and tile_\<id>_blank.svg need to be created and placed into /planets/data and /planets/svg respectively. 
-Please note that most of the rendering functions are calibrated to work with node names of length 6. The node rendering function of the tank internal map gui will cut off the node name if it is too many pixels wide.
+To create new tiles, the files tile_\<id>.json, tile_\<id>.svg and tile_\<id>_blank.svg need to be created and placed into ```/planets/data``` and ```/planets/svg``` respectively. 
+Please note that most of the rendering functions are calibrated to work with node names of length 6. Node names may be cut off if they extend too far beyond this length.
 
 ## Mothership
 Unlike the other actors, the mothership is not a physical agent on the board. It receives messages from and sends commands to its agents from afar.
