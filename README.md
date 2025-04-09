@@ -37,24 +37,24 @@ Please note that most of the rendering functions are calibrated to work with nod
 Unlike the other actors, the mothership is not a physical agent on the board. It receives messages from and sends commands to its agents from afar.
 The mothership is hosted on the main device running Planetnove, usually a PC or Laptop.
 Though the game is based on the mothership 'triangulating' the robots new position after reaching a node, behind the scenes it actually knows the entire layout of the map from the start. The mothership simply
-sends back information about the node connected to the path the tank robot last departed from.
+sends back information about the node connected to the path that the tank robot last departed from.
 
 #### GUI
-The mothership GUI can be used to handle communications with other entities and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'R' while holding the tile and attached to each other by dropping them near other tiles.
+The mothership GUI can be used to handle communications with other actors and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'R' while holding the tile and attached to each other by dropping them near other tiles.
 Once all tiles are snapped into place, the main GUI will enable the 'Finish planet' button. Once the planet is finished, all tiles are locked and cannot be moved until the 'Edit' button is pressed. While the planet is finished, the starting node and direction of the tank can be
-set. Specifically, the name of the node and the direction of the path from which the tank will arrive at the starting node need to be set so that the tank's facing direction and location can be tracked.
+set. Specifically, the name of the starting node and the direction of the path from which the tank will arrive need to be set. The tank's facing direction and location are tracked based on these parameters.
 
 #### Coms config
-You need to create a file called 'coms_config.json' at put it at the root level of the repository. The file should contain the following:
+You need to create a file called 'coms_config.json' and put it at the root level of the repository. The file should contain the following:
 ```
 {
-  "mothership_ip": "your-ip>",
+  "mothership_ip": "<host-ip>",
   "mothership_port": 65432
 }
 ```
 
 ## Tank
-The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). Planetnove does not make use of it's crane arm.Instead, it is recommended to use that space to mount the infrared sensor higher above the floor to avoid picking up small but passable bumps as obstacles.
+The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). Planetnove does not make use of its crane arm. Instead, it is recommended to use that space to mount the infrared sensor higher above the floor to avoid picking up small but passable bumps as obstacles.
 
 ## Hexapod
 The hexapod does not yet have an active role in Planetnove. It is hosted on raspberry pi 4 on the [Freenove Big Hexapod Robot](https://github.com/Freenove/Freenove_Big_Hexapod_Robot_Kit_for_Raspberry_Pi).
@@ -72,23 +72,23 @@ There are a few rules for blocking:
 
 <img src="/docs/img/blocking_examples.png" alt="Blocking examples" width="1700">
 
-# Linux compatibility
+# Runtime
+
+## Linux compatibility
 Currently, the mothership GUI cannot run on Linux due to the way the OpenGL context is shared on the same process by dearpygui and pygame. Windows is very lenient with this but Linux will not allow shared ownership of the context. Dividing the two windows into two processes instead of just two threads might fix the issue.
 
 
-# Requirements
+## Requirements
 The tank and mothership have different requirements. You can run init_<entity>.py without having the requirements for the other entities. 
 The requirements are specified in 'requirements.txt' within the entity's source folder.
 The following subsections concern requirements with extra steps beyond pip install.
 
-## Cairo
-Cairo needs to be installed in the system that is hosting the mothership.
-
-#### Windows
+#### Cairo Windows
+On windows, cairo needs to be installed separately.
 1. Install [MSYS2](https://github.com/msys2/msys2-installer?tab=readme-ov-file)
 2. Inside the MSYS2 console, run the following commands:
 - ``` 
   pacman -Syu
 - ```
-   pacman -S mingw-w64-x86_64-cairo
+  pacman -S mingw-w64-x86_64-cairo
 3. Add MSYS2 to PATH in environment variables (usually C:\msys64\mingw64\bin)
