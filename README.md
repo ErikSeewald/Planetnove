@@ -92,3 +92,4 @@ On windows, cairo needs to be installed separately.
 - ```
   pacman -S mingw-w64-x86_64-cairo
 3. Add MSYS2 to PATH in environment variables (usually C:\msys64\mingw64\bin)
+4. (If you already have another python-pip installation and do not want it to be overwritten, remove the python executable from msys64\mingw64\bin)
