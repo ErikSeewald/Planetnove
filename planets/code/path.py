@@ -54,7 +54,7 @@ class Path:
 
     def to_dict(self) -> dict:
         return {
-            # self.id can be excluded as it is fully dependant on the nodes and directions
+            # self.id can be excluded as it is fully dependent on the nodes and directions
             "node_a": self.node_a,
             "node_b": self.node_b,
             "direction_a": self.direction_a.abbreviation(),
