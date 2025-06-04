@@ -1,10 +1,11 @@
 import os
-import time
-from multiprocessing import Process, Pipe, connection
+import traceback
+
+import pygame
+from multiprocessing import Process, Pipe, Event, connection
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.io.load_tiles import TileLoader
 from mothership.update_event import UpdateEvent
-from planets.code.node import Node
 
 class PVProcess:
     """
@@ -13,20 +14,45 @@ class PVProcess:
     context on a single process on Linux X11. That is why this adapter exists to bridge the gap without
     having to change too much of the original code.
     """
+
     parent_conn: connection.Connection
     child_conn: connection.Connection
 
+    child: Process
+    quit_event: Event
+
     def __init__(self):
         self.parent_conn, self.child_conn = Pipe()
-
+        self.quit_event = Event()
         self.switch = False
 
     def start(self):
         """
         Starts the independent planet view process.
         """
+        self.child = Process(target=PVProcess.child_process_target, args=(self.child_conn, self.quit_event))
+        self.child.start()
 
-        Process(target=PVProcess.child_process_target, args=(self.child_conn, )).start()
+        msg = self.parent_conn.recv()
+        if msg == "failure":
+            self.child.join()
+            exit(1)
+
+    def exit(self):
+        """
+        Exits the planet view process.
+        """
+        self._safe_send("exit")
+        self.child.join()
+
+    def _safe_send(self, message: str):
+        """
+        Sends the given method to the planet view process while checking for its quit event.
+        """
+        if self.quit_event.is_set():
+            self.child.join()
+            exit(0)
+        self.parent_conn.send(message)
 
     def update(self) -> list[UpdateEvent]:
         """
@@ -34,7 +60,7 @@ class PVProcess:
         update events.
         """
 
-        self.parent_conn.send("update")
+        self._safe_send("update")
         return self.parent_conn.recv()
 
     def get_mode(self) -> PlanetView.Mode:
@@ -42,7 +68,7 @@ class PVProcess:
         Returns the current mode of the planet view process.
         """
 
-        self.parent_conn.send("get_mode")
+        self._safe_send("get_mode")
         return self.parent_conn.recv()
 
     def reset_planet(self):
@@ -50,14 +76,14 @@ class PVProcess:
         Calls reset_planet() on the planet view process.
         """
 
-        self.parent_conn.send("reset_planet")
+        self._safe_send("reset_planet")
 
     def can_finish_planet(self) -> bool:
         """
         Returns whether the planet view can parse and finish the planet that is currently being edited.
         """
 
-        self.parent_conn.send("can_finish_planet")
+        self._safe_send("can_finish_planet")
         return self.parent_conn.recv()
 
     def finish_planet(self):
@@ -65,42 +91,55 @@ class PVProcess:
         Schedules a planet view mode switch for the next update, provided that can_finish_planet() is true.
         """
 
-        self.parent_conn.send("finish_planet")
+        self._safe_send("finish_planet")
 
     def switch_to_edit(self):
         """
         Switches the planet view mode to EDIT.
         """
 
-        self.parent_conn.send("switch_to_edit")
+        self._safe_send("switch_to_edit")
 
     def get_planet(self) -> dict:
         """
         Returns the planet view's planet as a dict.
         """
 
-        self.parent_conn.send("get_planet")
+        self._safe_send("get_planet")
         return self.parent_conn.recv()
 
     @staticmethod
-    def child_process_target(conn: connection.Connection):
+    def child_process_target(conn: connection.Connection, quit_event: Event):
         """
         This function is the starting point of the planet view process and acts as an adapter
         for process setup that planet_view.py is unaware of.
         """
 
-        import pygame # Has to happen here to avoid pygame messing with opengl on the main process
         pygame.init()
 
+        # TRY TO LOAD AND PARSE PLANET DATA, ELSE EXIT AND LET PARENT KNOW
+        try:
+            planet_loader = TileLoader(os.path.join(os.getcwd(), "planets"))
+            planet_loader.load()
+            planet_view = PlanetView(planet_loader.svg_tiles, planet_loader.tile_data)
+        except Exception:
+            traceback.print_exc()
+            conn.send("failure")
+            return
+        conn.send("success")
 
-        planet_loader = TileLoader(os.path.join(os.getcwd(), "planets"))
-        planet_loader.load()
-
-        planet_view = PlanetView(planet_loader.svg_tiles, planet_loader.tile_data)
-
-        # PIPE COMMUNICATION LOOP
+        # PIPE LOOP
         while True:
+            # QUIT
+            if planet_view.has_quit:
+                quit_event.set()
+                exit(0)
+
+            # MESSAGE
             msg = conn.recv()
+
+            if msg == "exit":
+                exit(0)
 
             if msg == "update":
                 pv_events = planet_view.update()

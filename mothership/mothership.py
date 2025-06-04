@@ -47,7 +47,7 @@ class Mothership:
             self.handle_coms_events(coms_events)
 
             self.clock.tick(60)
-
+        self.gui.exit()
 
     def handle_gui_events(self, events: list[UpdateEvent]):
         """

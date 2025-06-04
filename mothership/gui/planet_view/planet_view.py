@@ -32,11 +32,11 @@ class PlanetView:
     # STATE
     is_dragging_screen: bool
     last_mouse_pos: Vector2
+    has_quit: bool
 
     class Mode(Enum):
         EDIT = 1
         PLANET = 2
-
     mode: Mode
 
     # EVENTS
@@ -45,7 +45,7 @@ class PlanetView:
 
     def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
         # PYGAME
-        self.screen = pygame.display.set_mode((1400, 800), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((1400, 800), pygame.RESIZABLE, vsync=1)
         pygame.display.set_caption("Planet view")
 
         # PLANET TILES
@@ -59,6 +59,7 @@ class PlanetView:
         # STATE
         self.is_dragging_screen = False
         self.last_mouse_pos = Vector2(0, 0)
+        self.has_quit = False
         self.mode = self.Mode.EDIT
 
         # EVENTS
@@ -74,6 +75,9 @@ class PlanetView:
 
         self.mode_update()
         self.handle_events()
+        if self.has_quit:
+            return list() # Let caller of update() check for quit before handling events
+
         self.render()
         pygame.display.flip()
 
@@ -99,7 +103,8 @@ class PlanetView:
         for event in events:
             # QUIT
             if event.type == pygame.QUIT:
-                sys.exit()
+                self.has_quit = True
+                return
 
             # KEY EVENTS
             if event.type == pygame.KEYDOWN:

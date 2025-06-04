@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 
 from mothership.gui.planet_view.planet_view import PlanetView
@@ -38,11 +39,18 @@ class GUICore:
 
         dpg.create_viewport(title='Mothership', width=1100, height=770)
         dpg.set_viewport_clear_color([20, 20, 20, 255])
-        dpg.show_viewport()
 
         self.pv_process.start()
 
         dpg.setup_dearpygui()
+        dpg.show_viewport()
+
+    def exit(self):
+        """
+        Handles closing the program through a dpg exit.
+        """
+
+        self.pv_process.exit()
 
     def update(self) -> list[UpdateEvent]:
         """
