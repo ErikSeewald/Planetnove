@@ -22,7 +22,8 @@ class SwitchedToPlanetMode(UpdateEvent):
     Contains the new_planet currently being used in planet mode.
     """
 
-    new_planet: Planet
+    # Dict instead of planet to enable sending it across a pipe
+    new_planet: dict
 
 
 @dataclass

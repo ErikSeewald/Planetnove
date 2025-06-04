@@ -1,15 +1,14 @@
 from typing import Optional
-import pygame
+
+from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.gui.tank_internal_map.tank_map_renderer import TankMapRenderer
 from mothership.gui.tank_internal_map.tank_map_subgui import TankMapSubGUI
 from mothership.update_event import UpdateEvent, TankPlanetUpdate
-from mothership.gui.planet_view.planet_view import PlanetView
+from mothership.gui.planet_view.pv_process import PVProcess
 from mothership.gui.planet_view.planet_view_subgui import PlanetViewSubGUI
-from mothership.gui.planet_view.draggable_tile import DraggableTile
 from mothership.gui.coms_subgui.coms_subgui import ComsSubGUI
 from mothership.gui.sub_gui import SubGUI
 from mothership.io.communications import Communications
-from planets.code.tiles.tile_data import Tile
 import dearpygui.dearpygui as dpg
 
 from util.direction import Direction
@@ -21,27 +20,29 @@ class GUICore:
     Handles communication between all SubGUIs and other mothership submodules.
     """
 
-    planet_view: PlanetView
+    pv_process: PVProcess
     sub_GUIs: dict[str, SubGUI]  # window tag to SubGui
     coms: Communications
 
-    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile], coms: Communications):
-        pygame.init()
+    def __init__(self, coms: Communications):
         dpg.create_context()
 
-        self.planet_view = PlanetView(draggable_tiles, tile_data)
         self.coms = coms
+        self.pv_process = PVProcess()
 
         self.sub_GUIs = {
-            "planet_view": PlanetViewSubGUI("planet_view", gui_core=self, planet_view=self.planet_view),
+            "planet_view": PlanetViewSubGUI("planet_view", gui_core=self, pv_process=self.pv_process),
             "coms": ComsSubGUI("coms", gui_core=self, coms=self.coms),
             "tank_map": TankMapSubGUI("tank_map", gui_core=self)
         }
 
         dpg.create_viewport(title='Mothership', width=1100, height=770)
         dpg.set_viewport_clear_color([20, 20, 20, 255])
-        dpg.setup_dearpygui()
         dpg.show_viewport()
+
+        self.pv_process.start()
+
+        dpg.setup_dearpygui()
 
     def update(self) -> list[UpdateEvent]:
         """
@@ -54,7 +55,7 @@ class GUICore:
         events: list[UpdateEvent] = list()
 
         # PLANET VIEW
-        pv_events = self.planet_view.update()
+        pv_events = self.pv_process.update()
         events.extend(pv_events)
 
         # DEARPYGUI
@@ -70,7 +71,7 @@ class GUICore:
         direct access to the class.
         """
 
-        return self.planet_view.mode
+        return self.pv_process.get_mode()
 
     def is_planet_view_start_pos_locked(self) -> bool:
         """
@@ -117,7 +118,7 @@ class GUICore:
         self.sub_GUIs.get("tank_map").remove_image()
         self.sub_GUIs.get("coms").tank_header_state = ComsSubGUI.TankHeaderState.ADDING_TANK
 
-        self.planet_view.reset_planet()  # Rebuild planet to remove any changes made by tank coms
+        self.pv_process.reset_planet()  # Rebuild planet to remove any changes made by tank coms
         self.tank_connection_event()
 
     def tank_connection_event(self):

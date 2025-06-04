@@ -1,16 +1,15 @@
-import pygame
+import time
+
 from mothership.gui.gui_core import GUICore
-from mothership.gui.planet_view.draggable_tile import DraggableTile
 from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
     TankPlanetUpdate, TankConnectionLost, TileGrabbed, TileReleased
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
 from planets.code.planet import Planet
-from planets.code.tiles.tile_data import Tile
 import dearpygui.dearpygui as dpg
 from util.logger import Logger
-
+from pygame.time import Clock
 
 class Mothership:
     """
@@ -21,15 +20,15 @@ class Mothership:
     planet_manager: PlanetStateManager
     communications: Communications
     gui: GUICore
-    clock: pygame.time.Clock
     logger: Logger
+    clock: Clock
 
-    def __init__(self, draggable_tiles: list[DraggableTile], tile_data: list[Tile]):
+    def __init__(self):
         self.logger = Logger()
         self.planet_manager = PlanetStateManager()
         self.communications = Communications(planet_manager=self.planet_manager, logger=self.logger)
-        self.gui = GUICore(draggable_tiles, tile_data, coms=self.communications)
-        self.clock = pygame.time.Clock()
+        self.gui = GUICore(coms=self.communications)
+        self.clock = Clock()
 
     def loop(self):
         """
@@ -49,6 +48,7 @@ class Mothership:
 
             self.clock.tick(60)
 
+
     def handle_gui_events(self, events: list[UpdateEvent]):
         """
         Handles all update events that occurred while updating the GUI.
@@ -56,7 +56,7 @@ class Mothership:
 
         for event in events:
             if isinstance(event, SwitchedToPlanetMode):
-                self.set_planet(event.new_planet)
+                self.set_planet(Planet.from_dict(event.new_planet))
                 self.gui.handle_planet_view_update()
 
             if isinstance(event, AddedTank):

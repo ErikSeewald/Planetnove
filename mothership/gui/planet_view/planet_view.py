@@ -81,12 +81,12 @@ class PlanetView:
 
     def mode_update(self):
         """
-        Updates the planet views mode to planet mode if a switch is scheduled.
+        Updates the planet view's mode to planet mode if a switch is scheduled.
         """
 
         if self.planet_mode_switch_scheduled:
             self.planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
-            self.update_events.append(SwitchedToPlanetMode(new_planet=self.planet))
+            self.update_events.append(SwitchedToPlanetMode(new_planet=self.planet.to_dict()))
             self.switch_mode(self.Mode.PLANET)
             self.planet_mode_switch_scheduled = False
 
@@ -209,7 +209,7 @@ class PlanetView:
 
     def finish_planet(self):
         """
-        Schedules a planet mode switch for the next update, provided that can_finish_planet() is true.
+        Schedules a planet view mode switch for the next update, provided that can_finish_planet() is true.
         """
 
         if not self.can_finish_planet():
