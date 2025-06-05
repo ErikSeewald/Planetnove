@@ -137,7 +137,6 @@ class DraggableTile:
         """
         Draws the tile to the given screen.
         """
-        max_alpha = 255 if is_planet_mode else 180
 
         image: pygame.Surface
         if self.blank_mode:
@@ -145,7 +144,11 @@ class DraggableTile:
         else:
             image = self.detailed_image.copy()
 
-        image.set_alpha(max_alpha if self.snapped_in_place else 90)
+        # Only set the alpha at all if it is going to be used.
+        # Calling set_alpha with 255 would still double rendering time.
+        if not self.snapped_in_place:
+            image.set_alpha(128)
+
         screen.blit(image, self.rect)
 
     def rotate_right(self):

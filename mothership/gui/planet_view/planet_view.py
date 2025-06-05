@@ -105,7 +105,6 @@ class PlanetView:
             if event.type == pygame.QUIT:
                 self.has_quit = True
                 return
-
             # KEY EVENTS
             if event.type == pygame.KEYDOWN:
                 # BLANK MODE
@@ -199,12 +198,15 @@ class PlanetView:
         """
         Renders the planet view using pygame.
         """
+        is_planet_mode = self.mode == self.Mode.PLANET
 
         # BACKGROUND
-        self.screen.fill((25, 25, 25))
+        if is_planet_mode:
+            self.screen.fill((20, 20, 20))
+        else:
+            self.screen.fill((30, 30, 30))
 
         # TILES
-        is_planet_mode = self.mode == self.Mode.PLANET
         for tile in self.draggable_tiles:
             if tile != self.dragged_tile:  # Draw all other tiles first
                 tile.draw(self.screen, is_planet_mode)

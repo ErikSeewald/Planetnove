@@ -15,13 +15,13 @@ class TankMapRenderer:
     """
 
     # COLORS
-    WHITE = (255, 255, 255)
-    GREY = (90, 90, 90)
-    BACKGROUND_COL = (25, 25, 25)
-    NODE_COL_RED = (150, 50, 40)
-    NODE_COL_GREEN = (10, 60, 35)
-    TARGET_COLOR = (20, 70, 130)
-    TARGET_PATH_COLOR = (60, 115, 245)
+    WHITE = (255, 255, 255, 255)
+    GREY = (90, 90, 90, 255)
+    BACKGROUND_COL = (25, 25, 25, 255)
+    NODE_COL_RED = (150, 50, 40, 255)
+    NODE_COL_GREEN = (10, 60, 35, 255)
+    TARGET_COLOR = (20, 70, 130, 255)
+    TARGET_PATH_COLOR = (60, 115, 245, 255)
 
     COORD_TO_PIXEL = 100
 
@@ -55,7 +55,7 @@ class TankMapRenderer:
         width = max(min_size, int((max_x - min_x) * TankMapRenderer.COORD_TO_PIXEL) + 200)
         height = max(min_size, int((max_y - min_y) * TankMapRenderer.COORD_TO_PIXEL) + 200)
 
-        image_surface: pygame.Surface = pygame.Surface((width, height))
+        image_surface: pygame.Surface = pygame.Surface((width, height), flags=pygame.SRCALPHA, depth=32)
         image_surface.fill(TankMapRenderer.BACKGROUND_COL)
 
         # UNEXPLORED NODE PATHS (Separate from both paths and node loops for rendering order)

@@ -1,8 +1,9 @@
 import os
+import time
 import traceback
-
+from typing import Any
 import pygame
-from multiprocessing import Process, Pipe, Event, connection
+from multiprocessing import Process, Event, Queue
 from mothership.gui.planet_view.planet_view import PlanetView
 from mothership.io.load_tiles import TileLoader
 from mothership.update_event import UpdateEvent
@@ -15,14 +16,16 @@ class PVProcess:
     having to change too much of the original code.
     """
 
-    parent_conn: connection.Connection
-    child_conn: connection.Connection
+    parent_to_child: Queue
+    child_to_parent: Queue
 
     child: Process
     quit_event: Event
 
     def __init__(self):
-        self.parent_conn, self.child_conn = Pipe()
+        self.parent_to_child = Queue()
+        self.child_to_parent = Queue()
+
         self.quit_event = Event()
         self.switch = False
 
@@ -30,10 +33,11 @@ class PVProcess:
         """
         Starts the independent planet view process.
         """
-        self.child = Process(target=PVProcess.child_process_target, args=(self.child_conn, self.quit_event))
+        self.child = Process(target=PVProcess.child_process_target, args=(self.parent_to_child,
+                                                                          self.child_to_parent, self.quit_event))
         self.child.start()
 
-        msg = self.parent_conn.recv()
+        msg = self.child_to_parent.get()
         if msg == "failure":
             self.child.join()
             exit(1)
@@ -49,10 +53,18 @@ class PVProcess:
         """
         Sends the given method to the planet view process while checking for its quit event.
         """
+
         if self.quit_event.is_set():
             self.child.join()
             exit(0)
-        self.parent_conn.send(message)
+        self.parent_to_child.put(message)
+
+    def _safe_recv(self) -> Any:
+        """
+        Safely receives a message from the planet view process.
+        """
+
+        return self.child_to_parent.get()
 
     def update(self) -> list[UpdateEvent]:
         """
@@ -61,7 +73,7 @@ class PVProcess:
         """
 
         self._safe_send("update")
-        return self.parent_conn.recv()
+        return self._safe_recv()
 
     def get_mode(self) -> PlanetView.Mode:
         """
@@ -69,7 +81,7 @@ class PVProcess:
         """
 
         self._safe_send("get_mode")
-        return self.parent_conn.recv()
+        return self._safe_recv()
 
     def reset_planet(self):
         """
@@ -84,7 +96,7 @@ class PVProcess:
         """
 
         self._safe_send("can_finish_planet")
-        return self.parent_conn.recv()
+        return self._safe_recv()
 
     def finish_planet(self):
         """
@@ -106,10 +118,10 @@ class PVProcess:
         """
 
         self._safe_send("get_planet")
-        return self.parent_conn.recv()
+        return self._safe_recv()
 
     @staticmethod
-    def child_process_target(conn: connection.Connection, quit_event: Event):
+    def child_process_target(p2c: Queue, c2p: Queue, quit_event: Event):
         """
         This function is the starting point of the planet view process and acts as an adapter
         for process setup that planet_view.py is unaware of.
@@ -124,11 +136,11 @@ class PVProcess:
             planet_view = PlanetView(planet_loader.svg_tiles, planet_loader.tile_data)
         except Exception:
             traceback.print_exc()
-            conn.send("failure")
+            c2p.put("failure")
             return
-        conn.send("success")
+        c2p.put("success")
 
-        # PIPE LOOP
+        # COMMUNICATION LOOP
         while True:
             # QUIT
             if planet_view.has_quit:
@@ -136,23 +148,23 @@ class PVProcess:
                 exit(0)
 
             # MESSAGE
-            msg = conn.recv()
+            msg = p2c.get()
 
             if msg == "exit":
                 exit(0)
 
             if msg == "update":
                 pv_events = planet_view.update()
-                conn.send(pv_events)
+                c2p.put(pv_events)
 
             elif msg == "get_mode":
-                conn.send(planet_view.mode)
+                c2p.put(planet_view.mode)
 
             elif msg == "reset_planet":
                 planet_view.reset_planet()
 
             elif msg == "can_finish_planet":
-                conn.send(planet_view.can_finish_planet())
+                c2p.put(planet_view.can_finish_planet())
 
             elif msg == "finish_planet":
                 planet_view.finish_planet()
@@ -161,4 +173,4 @@ class PVProcess:
                 planet_view.switch_mode(PlanetView.Mode.EDIT)
 
             elif msg == "get_planet":
-                conn.send(planet_view.planet.to_dict())
+                c2p.put(planet_view.planet.to_dict())
