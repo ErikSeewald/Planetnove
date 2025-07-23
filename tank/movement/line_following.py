@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tank.movement.PID_controller import PIDController
+from tank.movement.PI_controller import PIController
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor, SensorBitmap
 from tank.movement.calibrated_motor import CalibratedMotor
@@ -33,7 +33,7 @@ class LineFollower:
     # STATE
     class State(Enum):
         IDLE = 0
-        PID_FOLLOW = 1
+        PI_FOLLOW = 1
         NODE_ARRIVAL = 3
 
     state: State
@@ -91,7 +91,7 @@ class LineFollower:
         C) has timed out
         """
 
-        self.switch_state(self.State.PID_FOLLOW)
+        self.switch_state(self.State.PI_FOLLOW)
         return self.follow_to_node_with_result(target_result=self.FollowResult.ARRIVED_AT_NODE)
 
     def follow_to_node_with_result(self, target_result: FollowResult):
@@ -115,20 +115,20 @@ class LineFollower:
                 self.switch_state(self.State.IDLE)
                 return target_result
 
-            if self.state == self.State.PID_FOLLOW:
-                self.update_motors_PID(bitmap)
+            if self.state == self.State.PI_FOLLOW:
+                self.update_motors_PI(bitmap)
 
         self.motor.PWM.stop()
         return self.FollowResult.TIMED_OUT
 
-    def update_motors_PID(self, bitmap: SensorBitmap):
+    def update_motors_PI(self, bitmap: SensorBitmap):
         """
-        Updates the motors using a PID controller based on the given SensorBitmap.
+        Updates the motors using a PI controller based on the given SensorBitmap.
         """
 
-        # Use new PIDController each time to reset old values
-        pid = PIDController(kp=0.75, ki=0.2, kd=0.1)
-        correction = pid.compute_correction(bitmap)
+        # Use new PIController each time to reset old values
+        pi = PIController(kp=2.0, ki=1.0)
+        correction = pi.compute_correction(bitmap)
 
         # MOTOR SPEEDS
         left_speed = self.base_speed - correction
@@ -146,5 +146,5 @@ class LineFollower:
         self.motor.stop_motors()
         self.leds.obstacle_animation()
         self.movement_routines.turn_around_avoid_obstacle()
-        self.switch_state(self.State.PID_FOLLOW)
+        self.switch_state(self.State.PI_FOLLOW)
         return self.follow_to_node_with_result(target_result=self.FollowResult.PATH_BLOCKED)

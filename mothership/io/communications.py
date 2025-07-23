@@ -118,7 +118,7 @@ class Communications:
     def try_connect_tank(self, expected_ip: str) -> bool:
         """
         Tries to connect a tank client with the given ip to the tank socket.
-        Returns whether or not a connection was made.
+        Returns whether a connection was made.
         """
 
         # Try to connect something
