@@ -1,11 +1,11 @@
 # Planetnove
 A planet exploration sim making use of Freenove robots.
 
-The tank robot explores the planet board using line following. Whenever it reaches a node, it starts communicating with the mothership. When it has decided what direction to depart in, it sends that information to the mothership and waits for confirmation. The mothership can then use its superior triangulation processing power to determine the next node that the tank will arive at. Upon arrival the tank notifies the mothership and then receives a message with its new position as well as the available paths from that node. To keep the cost of communications low, the tank has to remember the map layout and make its own pathing decisions based on only these short messages.
+The tank robot explores the planet board using line following. Whenever it reaches a node, it starts communicating with the mothership. When it has decided what direction to depart in, it sends that information to the mothership and waits for confirmation. The mothership can then use its superior triangulation processing power to determine the next node that the tank will arrive at. Upon arrival, the tank notifies the mothership and then receives a message with its new position as well as the available paths from that node. To keep the cost of communications low, the tank has to remember the map layout and make its own pathing decisions based on only these short messages.
 Once the tank has explored the entire planet, i.e., has explored all available paths of all nodes that it encountered, it informs the mothership.
 
 There are a few additional cases that can occur:
-- The mothership rejects the tank's request for departure in a direction. In that case, the tank will need to choose another direction and send another request. (Note: The motherships rejection of a direction at a node is temporary. If the tank returns to the same node later, it can ask about taking that direction again.)
+- The mothership rejects the tank's request for departure in a direction. In that case, the tank will need to choose another direction and send another request. (Note: The mothership's rejection of a direction at a node is temporary. If the tank returns to the same node later, it can ask about taking that direction again.)
 - The tank encounters an obstacle on the path. More information in the section on [path blocking](#path-blocking).
 - The tank is stuck and unable to finish exploring the planet. This can happen if all routes to unexplored nodes lead through paths that have been blocked or if the mothership rejects all departure directions that the tank could take to get to the unexplored nodes.
 In that case, the tank informs the mothership that it is stuck and finishes.
@@ -24,8 +24,8 @@ All other tiles use this base tile to construct their paths and nodes. A node ha
 Nodes are marked by a vertically and horizontally aligned cross of 2cm thick black tape. The cross should be
 at least 6cm wide and tall so that the three infrared sensors of the tank robot all read it at the same time.
 
-A path is 2cm thick and can only ever connect two end points, i.e., it needs one specific start and one specific end. No branching paths. On individual tiles these end points can either be nodes or joints. On the finished planet board a path can only connect two nodes (multiple tile joints inbetween are allowed as long as the final end points are nodes). Any paths that do not match this criteria are discarded.
-A path can also connect to the same node at a different direction or the same direction (loopback paths).
+A path is 2cm thick and can only ever connect two end points, i.e., it needs one specific start and one specific end. No branching paths. On individual tiles, these endpoints can either be nodes or joints. On the finished planet board, a path can only connect two nodes (multiple tile joints in between are allowed as long as the final end points are nodes). Any paths that do not match this criteria are discarded.
+A path can also connect to the same node in a different direction or the same direction (loopback paths).
 
 Provided with the repository are the following four example tiles:
 <div align="center"><img src="/docs/img/example_tiles.png" alt="Example tiles" width="500"></div>
@@ -36,11 +36,11 @@ Please note that most of the rendering functions are calibrated to work with nod
 ## Mothership
 Unlike the other actors, the mothership is not a physical agent on the board. It receives messages from and sends commands to its agents from afar.
 The mothership is hosted on the main device running Planetnove, usually a PC or Laptop.
-Though the game is based on the mothership 'triangulating' the robots new position after reaching a node, behind the scenes it actually knows the entire layout of the map from the start. The mothership simply
+Though the game is based on the mothership 'triangulating' the robot's new position after reaching a node, behind the scenes it actually knows the entire layout of the map from the start. The mothership simply
 sends back information about the node connected to the path that the tank robot last departed from.
 
 #### GUI
-The mothership GUI can be used to handle communications with other actors and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'R' while holding the tile and attached to each other by dropping them near other tiles.
+The mothership GUI can be used to handle communications with other actors and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'R' while holding the tile, and attached to each other by dropping them near other tiles.
 Once all tiles are snapped into place, the main GUI will enable the 'Finish planet' button. Once the planet is finished, all tiles are locked and cannot be moved until the 'Edit' button is pressed. While the planet is finished, the starting node and direction of the tank can be
 set. Specifically, the name of the starting node and the direction of the path from which the tank will arrive need to be set. The tank's facing direction and location are tracked based on these parameters.
 
