@@ -63,7 +63,23 @@ class MovementRoutines:
         Handles the movement routine upon encountering an obstacle and needing to turn around completely.
         """
 
-        # TODO: Automatic turning around currently broken
         self.motor.stop_motors()
-        turned_around = input("Turn me around and press ENTER")
+
+        # Turn right until the left sensor is over the line, then continue turning until
+        # the right sensor is over the line again.
+        #
+        # The only cases where this does not lead to a correct turn around are:
+        # 1. The sensor malfunctions or the tank is not on a path at all -> Irrelevant
+        # 2. All sensors are already to the right of the path but still close -> Will result in 360-degree turn
+        #   -> Should recognize the obstacle again and turn around again. This time properly.
+        self.motor.setMotors(1.5, -1.5)
+        left_seen = False
+        while True:
+            bitmap = self.infrared.update()
+            if bitmap == SensorBitmap.LEFT:
+                left_seen = True
+            elif left_seen and bitmap == SensorBitmap.RIGHT:
+                break
+
+        self.motor.stop_motors()
         return self.RoutineResult.SUCCESS

@@ -239,7 +239,7 @@ class LEDs:
         """
 
         for _ in range(iterations):
-            for i in range(3):
+            for i in range(2):
                 self.reset_all()
                 time.sleep(step_s)
                 self.set_pixels_at_direction(RelativeDirection.AHEAD, self._COLOR_OBSTACLE)

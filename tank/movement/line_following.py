@@ -88,7 +88,7 @@ class LineFollower:
 
     def follow_to_next_node(self) -> FollowResult:
         """
-        Main line following loop that runs until the the tank:
+        Main line following loop that runs until the tank:
         A) has arrived at a new node
         B) has returned to the starting node after encountering an obstacle
         C) has timed out
