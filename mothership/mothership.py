@@ -59,14 +59,14 @@ class Mothership:
                 self.set_planet(Planet.from_dict(event.new_planet))
                 self.gui.handle_planet_view_update()
 
-            if isinstance(event, AddedTank):
+            elif isinstance(event, AddedTank):
                 tank_entity = TankEntity(event.tank_ip, event.starting_node_id, event.arrival_from.invert())
                 self.planet_manager.set_tank_entity(tank_entity)
 
-            if isinstance(event, DisconnectedTank):
+            elif isinstance(event, DisconnectedTank):
                 self.disconnect_tank()
 
-            if isinstance(event, TileGrabbed) or isinstance(event, TileReleased):
+            elif isinstance(event, TileGrabbed) or isinstance(event, TileReleased):
                 self.gui.handle_planet_view_update()
 
     def handle_coms_events(self, events: list[UpdateEvent]):
@@ -78,7 +78,7 @@ class Mothership:
             if isinstance(event, TankPlanetUpdate):
                 self.gui.display_tank_internal_planet(event)
 
-            if isinstance(event, TankConnectionLost):
+            elif isinstance(event, TankConnectionLost):
                 self.logger.log(f"Connection to tank-{event.tank_ip} lost")
                 self.handle_tank_disconnected()
 

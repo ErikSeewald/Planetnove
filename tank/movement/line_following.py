@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tank.movement.PI_controller import PIController
+from tank.movement.p_controller import PController
 from tank.movement.movement_routines import MovementRoutines
 from tank.sensors.infrared import InfraredSensor, SensorBitmap
 from tank.movement.calibrated_motor import CalibratedMotor
@@ -50,6 +50,7 @@ class LineFollower:
 
     # CONTROL CLASSES
     movement_routines: MovementRoutines
+    p_controller: PController
 
     # ATTRIBUTES
     SECONDS_UNTIL_TIMEOUT: float = 600 # Maximum time for a line following step
@@ -60,8 +61,10 @@ class LineFollower:
         self.infrared = sensor
         self.ultrasonic = ultrasonic
         self.motor = motor
-        self.movement_routines = movement_routines
         self.leds = leds
+
+        self.movement_routines = movement_routines
+        self.p_controller = PController(kp=1.0)
         self.switch_state(self.State.IDLE)
 
     def update_state(self, bitmap: SensorBitmap):
@@ -100,6 +103,10 @@ class LineFollower:
         Returns FollowResult.TIMED_OUT otherwise.
         """
 
+        # Initial 'take-off' boost
+        self.motor.setMotors(self.base_speed*4, self.base_speed*4)
+        self.p_controller.reset()
+
         start_time = time.time()
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
             distance = self.ultrasonic.get_distance_cm()
@@ -116,23 +123,18 @@ class LineFollower:
                 return target_result
 
             if self.state == self.State.PI_FOLLOW:
-                self.update_motors_PI(bitmap)
+                self.update_motors(bitmap)
 
         self.motor.PWM.stop()
         return self.FollowResult.TIMED_OUT
 
-    def update_motors_PI(self, bitmap: SensorBitmap):
+    def update_motors(self, bitmap: SensorBitmap):
         """
-        Updates the motors using a PI controller based on the given SensorBitmap.
+        Updates the motors based on the given SensorBitmap.
         """
+        correction = self.p_controller.compute_correction(bitmap)
 
-        # Use new PIController each time to reset old values
-        pi = PIController(kp=2.0, ki=1.0)
-        correction = pi.compute_correction(bitmap)
-
-        # MOTOR SPEEDS
         left_speed = self.base_speed - correction
-
         right_speed = self.base_speed + correction
 
         self.motor.setMotors(left_speed, right_speed)

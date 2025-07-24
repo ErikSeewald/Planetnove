@@ -225,7 +225,13 @@ class Communications:
         Sends the given message to the tank client, logs it, and saves it to the last_msg_to_tank variable.
         """
 
-        self.tank_socket.sendall(json.dumps(message).encode('utf-8'))
+        try:
+            self.tank_socket.sendall(json.dumps(message).encode('utf-8'))
+        except BrokenPipeError as e:
+            self.logger.log(f"Lost connection to tank: {e}")
+            self.handle_tank_lost_event()
+            return
+
         self.logger.log(f"Sent message to tank: {message}")
         self.last_msg_to_tank = message
 

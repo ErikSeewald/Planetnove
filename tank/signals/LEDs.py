@@ -187,7 +187,7 @@ class LEDs:
         self.reset_all()
 
     def turn_animation(self, direction: RelativeDirection, color: LEDColor = LEDColor(255, 255, 255),
-                       step_s: float = 0.25, iterations: int = 3):
+                       step_s: float = 0.25, iterations: int = 1):
         """
             Plays an animation indicating a turn in the given RelativeDirection.
             Function only returns once the animation has finished.
