@@ -11,6 +11,8 @@ class MovementRoutines:
     Each routine returns a RoutineResult.
     """
 
+    ROTATION_SPEED = 1.5
+
     class RoutineResult(Enum):
         """
         Enum representing the result of a movement routine
@@ -43,19 +45,36 @@ class MovementRoutines:
         if target_direction == RelativeDirection.UNKNOWN:
             return self.RoutineResult.FAILURE
 
-        # TODO: Automatic departure currently broken
-        departure_confirmed = input("Confirm departure by pressing ENTER")
-        """
-                if target_direction == RelativeDirection.AHEAD:
-                    pass
-                elif target_direction == RelativeDirection.RIGHT:
-                    pass
-        
-                elif target_direction == RelativeDirection.LEFT:
-                    pass
-                elif target_direction == RelativeDirection.BEHIND:
-                    pass
-        """
+        if target_direction == RelativeDirection.AHEAD:
+            pass
+        elif target_direction == RelativeDirection.BEHIND:
+            self.motor.setMotors(-self.ROTATION_SPEED, self.ROTATION_SPEED)
+            time.sleep(1)
+            while self.infrared.update() == SensorBitmap.NONE:
+                pass
+        else:
+            self.motor.move_straight(seconds=0.3)
+            if target_direction == RelativeDirection.RIGHT:
+                self.motor.setMotors(self.ROTATION_SPEED, -self.ROTATION_SPEED)
+            elif target_direction == RelativeDirection.LEFT:
+                self.motor.setMotors(-self.ROTATION_SPEED, self.ROTATION_SPEED)
+
+            if self.infrared.update() == SensorBitmap.NONE:
+                while True:
+                    bitmap = self.infrared.update()
+                    if bitmap == SensorBitmap.MIDDLE:
+                        break
+            else:
+                cleared = False
+                while True:
+                    bitmap = self.infrared.update()
+                    if cleared and bitmap == SensorBitmap.MIDDLE:
+                        break
+                    elif bitmap == SensorBitmap.NONE:
+                        cleared = True
+
+
+        self.motor.stop_motors()
         return self.RoutineResult.SUCCESS
 
     def turn_around_avoid_obstacle(self) -> RoutineResult:
@@ -72,7 +91,7 @@ class MovementRoutines:
         # 1. The sensor malfunctions or the tank is not on a path at all -> Irrelevant
         # 2. All sensors are already to the right of the path but still close -> Will result in 360-degree turn
         #   -> Should recognize the obstacle again and turn around again. This time properly.
-        self.motor.setMotors(1.5, -1.5)
+        self.motor.setMotors(self.ROTATION_SPEED, -self.ROTATION_SPEED)
         left_seen = False
         while True:
             bitmap = self.infrared.update()

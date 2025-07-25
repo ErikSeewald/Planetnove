@@ -247,7 +247,7 @@ class LEDs:
             self.turn_animation(RelativeDirection.BEHIND, self._COLOR_OBSTACLE)
         self.reset_all()
 
-    def node_departure(self, departure_type: DepartureType, step_s: float = 0.2, iterations: int = 2):
+    def node_departure(self, departure_type: DepartureType, step_s: float = 0.2, iterations: int = 1):
         """
             Plays an animation for the event of departing from a node (after already having rotated to face the
             departure direction).

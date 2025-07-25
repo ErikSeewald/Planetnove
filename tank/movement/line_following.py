@@ -105,6 +105,8 @@ class LineFollower:
 
         # Initial 'take-off' boost
         self.motor.setMotors(self.base_speed*4, self.base_speed*4)
+        while self.infrared.update() == SensorBitmap.ALL:
+            pass # Move off of current node
         self.p_controller.reset()
 
         start_time = time.time()

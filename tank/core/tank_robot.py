@@ -192,7 +192,7 @@ class TankRobot:
         else:
             self.client.send_stuck()
 
-        # Send internal planet afterwards. Due to it being such a large
+        # Send internal planet afterward. Due to it being such a large
         # message, if the smaller finish message is sent after this one it could mix into
         # the chunks of internal planet message that are currently being processed
         # by the mothership and cause an unparsable message.
