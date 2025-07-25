@@ -73,7 +73,10 @@ class PVProcess:
         """
 
         self._safe_send("update")
-        return self._safe_recv()
+        events = self._safe_recv()
+        if not isinstance(events, list):
+            return list() # Fallback on incorrect recv
+        return events
 
     def get_mode(self) -> PlanetView.Mode:
         """

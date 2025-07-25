@@ -21,7 +21,7 @@ class PController:
 
     def __init__(self, kp: float):
         self.kp = kp
-        self.MAX_ABS_ERROR = kp * 2 # Maximum absolute cumulative error
+        self.MAX_ABS_ERROR = kp * 3 # Maximum absolute cumulative error
         self.last_error = 0.0
         self.last_bitmap = SensorBitmap.NONE
 
@@ -39,10 +39,11 @@ class PController:
 
         error = self.bitmap_to_error[bitmap]
 
+        # Accumulate error if the line is out of sight
         if error == float("inf"):
             error = self.last_error
             if abs(error) < self.MAX_ABS_ERROR:
-                error *= 1.25 # Accumulate error if the line is out of sight
+                error = min(error * 1.5, self.MAX_ABS_ERROR)
 
         correction = self.kp * error
         self.last_error = error

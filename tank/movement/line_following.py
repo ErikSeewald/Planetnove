@@ -64,7 +64,7 @@ class LineFollower:
         self.leds = leds
 
         self.movement_routines = movement_routines
-        self.p_controller = PController(kp=1.0)
+        self.p_controller = PController(kp=0.8)
         self.switch_state(self.State.IDLE)
 
     def update_state(self, bitmap: SensorBitmap):
@@ -104,16 +104,14 @@ class LineFollower:
         """
 
         # Initial 'take-off' boost
-        self.motor.setMotors(self.base_speed*4, self.base_speed*4)
+        self.motor.setMotors(self.base_speed*3, self.base_speed*3)
         while self.infrared.update() == SensorBitmap.ALL:
             pass # Move off of current node
         self.p_controller.reset()
 
         start_time = time.time()
         while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
-            distance = self.ultrasonic.get_distance_cm()
-            if distance < 12:
-                self.logger.log(f"Encountered obstacle (distance: {distance})")
+            if self.obstacle_ahead(threshold_cm=10):
                 return self.handle_obstacle_encounter()
 
             bitmap = self.infrared.update()
@@ -130,10 +128,27 @@ class LineFollower:
         self.motor.PWM.stop()
         return self.FollowResult.TIMED_OUT
 
+    def obstacle_ahead(self, threshold_cm: int) -> bool:
+        """
+        Returns whether the ultrasonic currently detects an obstacle ahead.
+        Logs the distance to the obstacle if one is detected.
+        Uses the given threshold to decide whether something is an obstacle.
+        """
+
+        if self.ultrasonic.get_distance_cm() < threshold_cm:
+            # Double check to avoid one time errors
+            time.sleep(0.01)
+            distance = self.ultrasonic.get_distance_cm()
+            if distance < threshold_cm:
+                self.logger.log(f"Encountered obstacle (distance: {distance})")
+                return True
+        return False
+
     def update_motors(self, bitmap: SensorBitmap):
         """
         Updates the motors based on the given SensorBitmap.
         """
+
         correction = self.p_controller.compute_correction(bitmap)
 
         left_speed = self.base_speed - correction

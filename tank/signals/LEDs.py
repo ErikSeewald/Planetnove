@@ -118,11 +118,8 @@ class LEDs:
 
     def rainbow_color_from_pos(self, pos: int) -> LEDColor:
         """
-        Generate a rainbow color for a given position in the range 0–255.
-
-        - Positions outside 0–255 return black
-        - Positions within 0–85 map from black/red to green,
-          85–170 from green to blue, and 170–255 from blue to red
+        Generates a rainbow color for a given position in the range 0–255.
+        0–85 maps from black/red to green, 85–170 from green to blue, and 170–255 from blue to red.
         """
 
         if not (0 <= pos <= 255):
@@ -206,7 +203,7 @@ class LEDs:
                 time.sleep(step_s)
         self.reset_all()
 
-    def global_direction_indicator(self, facing_direction: Direction, step_s: float = 0.5, iterations: int = 1):
+    def global_direction_indicator(self, facing_direction: Direction, step_s: float = 0.25, iterations: int = 1):
         """
             Plays an animation indicating which global direction matches which relative direction of the LED strip.
             Colors: {north: red, east: green, south: blue, west: yellow}

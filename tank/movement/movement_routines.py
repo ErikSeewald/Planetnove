@@ -11,7 +11,7 @@ class MovementRoutines:
     Each routine returns a RoutineResult.
     """
 
-    ROTATION_SPEED = 1.5
+    ROTATION_SPEED = 1.25
 
     class RoutineResult(Enum):
         """
@@ -47,32 +47,39 @@ class MovementRoutines:
 
         if target_direction == RelativeDirection.AHEAD:
             pass
+
         elif target_direction == RelativeDirection.BEHIND:
+            # Turn left until left path (if it exists) is cleared, then turn to the path.
             self.motor.setMotors(-self.ROTATION_SPEED, self.ROTATION_SPEED)
             time.sleep(1)
-            while self.infrared.update() == SensorBitmap.NONE:
+            while self.infrared.update() == SensorBitmap.MIDDLE:
                 pass
+
         else:
+            # 1. Get a little headroom ahead of the node
             self.motor.move_straight(seconds=0.3)
+
+            # 2. Rotate off of the forward path (if it exists), then continue rotating
+            # The reason this needs the timed rotation and not the following while loop
+            # is because the path can be between two sensors and show up as NONE.
             if target_direction == RelativeDirection.RIGHT:
+                self.motor.rotate_right(seconds=0.3)
                 self.motor.setMotors(self.ROTATION_SPEED, -self.ROTATION_SPEED)
             elif target_direction == RelativeDirection.LEFT:
+                self.motor.rotate_left(seconds=0.3)
                 self.motor.setMotors(-self.ROTATION_SPEED, self.ROTATION_SPEED)
 
-            if self.infrared.update() == SensorBitmap.NONE:
-                while True:
-                    bitmap = self.infrared.update()
-                    if bitmap == SensorBitmap.MIDDLE:
-                        break
-            else:
-                cleared = False
-                while True:
-                    bitmap = self.infrared.update()
-                    if cleared and bitmap == SensorBitmap.MIDDLE:
-                        break
-                    elif bitmap == SensorBitmap.NONE:
-                        cleared = True
+            # 3. Fully clear forward path with all sensors.
+            # After step 2 there should no longer be a risk of this finding NONE
+            # inbetween two sensors. After this loop the forward path should be cleared
+            # enough for the next detected MIDDLE to be the correct destination.
+            while self.infrared.update() != SensorBitmap.NONE:
+                pass
 
+            # 4. Continue rotating until the sensor detects MIDDLE.
+            # Now we should face the destination path.
+            while self.infrared.update() != SensorBitmap.MIDDLE:
+                pass
 
         self.motor.stop_motors()
         return self.RoutineResult.SUCCESS
@@ -85,19 +92,14 @@ class MovementRoutines:
         self.motor.stop_motors()
 
         # Turn right until the left sensor is over the line, then continue turning until
-        # the right sensor is over the line again.
-        #
-        # The only cases where this does not lead to a correct turn around are:
-        # 1. The sensor malfunctions or the tank is not on a path at all -> Irrelevant
-        # 2. All sensors are already to the right of the path but still close -> Will result in 360-degree turn
-        #   -> Should recognize the obstacle again and turn around again. This time properly.
+        # the middle sensor is over the line again.
         self.motor.setMotors(self.ROTATION_SPEED, -self.ROTATION_SPEED)
         left_seen = False
         while True:
             bitmap = self.infrared.update()
             if bitmap == SensorBitmap.LEFT:
                 left_seen = True
-            elif left_seen and bitmap == SensorBitmap.RIGHT:
+            elif left_seen and bitmap == SensorBitmap.MIDDLE:
                 break
 
         self.motor.stop_motors()
