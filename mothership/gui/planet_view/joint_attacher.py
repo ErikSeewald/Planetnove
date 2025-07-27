@@ -8,14 +8,16 @@ from util.direction import Direction
 def try_attach(tile: DraggableTile, all_tiles: list[DraggableTile]):
     """
     Tries to find potential joint matches between the given tile and the given list of all tiles
-    and attaches them together.
+    and attaches them together. Ignores inactive tiles.
     ('tile' is allowed to be included in 'all_tiles'. This function makes sure no tile is attached to itself)
     :param tile: The tile to attach to the others.
     :param all_tiles: The list of all potential attachment partners.
     """
 
-    # Skip calculation if the given tile is also the only tile
-    if len(all_tiles) == 1 and tile == all_tiles[0]:
+    active_tiles: list[DraggableTile] = list(t for t in all_tiles if t.active)
+
+    # Skip calculation if the given tile is also the only active tile
+    if len(active_tiles) == 1 and tile == active_tiles[0]:
         tile.snapped_in_place = True
         return
 
@@ -30,7 +32,11 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
     """
     Tries to attach tile_a to a single other tile_b. Uses information about the layout of all tiles to
     calculate attachment parameters.
+    Ignores inactive tiles.
     """
+
+    if not tile_a.active or not tile_b.active:
+        return
 
     # IMPORTANT: Maintain nesting structure. Looping over the sides of both tiles in the outer loops
     # and the side joints in the inner loops allows for early returns if a side has been attached.
@@ -111,10 +117,13 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
 def would_overlap(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: list[DraggableTile], snap_offset: Vector2):
     """
     :return: Whether snapping tile_a to tile_b with the given snap offset would result in any tiles overlapping.
+    Ignores inactive tiles
     """
 
     tile_a_moved = tile_a.rect.move(snap_offset)
     for tile in all_tiles:
+        if not tile.active:
+            continue
         if tile != tile_a and tile_a_moved.colliderect(tile):
             return True
 
@@ -191,26 +200,29 @@ def all_tiles_form_one_planet(all_tiles: list[DraggableTile]) -> bool:
     """
     Returns whether the given list of tiles is fully connected into a single planet and not multiple
     different planets.
+    Ignores inactive tiles.
     """
 
-    # Skip calculation if there is only one tile
-    if len(all_tiles) == 1 and all_tiles[0].snapped_in_place:
+    active_tiles: set[DraggableTile] = set(t for t in all_tiles if t.active)
+    if len(active_tiles) == 1:
         return True
+    elif len(active_tiles) == 0:
+        return False
 
-    # Begin with one tile and try to reach all tiles from it -> Success: return True
-    id_to_tile: dict[str, DraggableTile] = {t.tile_id: t for t in all_tiles}
-    reached_tile_ids: set[str] = set()
+    id_to_tile: dict[str, DraggableTile] = {t.tile_id: t for t in active_tiles}
+    reached_ids: set[str] = set()
     tile_stack: deque[DraggableTile] = deque()
-    tile_stack.append(all_tiles[0])
 
+    # Begin with one active tile and try to reach all tiles from it -> Success: return True
+    tile_stack.append(next(iter(active_tiles)))
     while tile_stack:
-        if len(reached_tile_ids) == len(id_to_tile):
+        if reached_ids == id_to_tile.keys():
             return True
 
         cur_tile = tile_stack.pop()
         for direction in cur_tile.joints.keys():
             connected_tile_id = cur_tile.joints.get(direction)[0].split("_joint")[0]
-            if connected_tile_id != "None" and connected_tile_id not in reached_tile_ids:
+            if connected_tile_id != "None" and connected_tile_id not in reached_ids:
                 tile_stack.append(id_to_tile.get(connected_tile_id))
-                reached_tile_ids.add(connected_tile_id)
+                reached_ids.add(connected_tile_id)
     return False

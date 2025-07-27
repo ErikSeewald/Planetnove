@@ -40,7 +40,8 @@ Though the game is based on the mothership 'triangulating' the robot's new posit
 sends back information about the node connected to the path that the tank robot last departed from.
 
 #### GUI
-The mothership GUI can be used to handle communications with other actors and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'R' while holding the tile, and attached to each other by dropping them near other tiles.
+The mothership GUI can be used to handle communications with other actors and to edit the planet. In the planet view window, planet tiles can be dragged and dropped, rotated by pressing 'r' while holding the tile, and attached to each other by dropping them near other tiles.
+A selected tile can be deactivated/reactivated by pressing 'd'. Deactivated tiles are no longer 'in play', which means the planet can be finished without attaching them.
 Once all tiles are snapped into place, the main GUI will enable the 'Finish planet' button. Once the planet is finished, all tiles are locked and cannot be moved until the 'Edit' button is pressed. While the planet is finished, the starting node and direction of the tank can be
 set. Specifically, the name of the starting node and the direction of the path from which the tank will arrive need to be set. The tank's facing direction and location are tracked based on these parameters.
 

@@ -2,7 +2,7 @@ import time
 
 from mothership.gui.gui_core import GUICore
 from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, AddedTank, DisconnectedTank, \
-    TankPlanetUpdate, TankConnectionLost, TileGrabbed, TileReleased
+    TankPlanetUpdate, TankConnectionLost, TileGrabbed, TileReleased, TileActivation
 from mothership.io.communications import Communications
 from mothership.planet_state.planet_state_manager import PlanetStateManager
 from mothership.planet_state.tank_entity import TankEntity
@@ -66,7 +66,7 @@ class Mothership:
             elif isinstance(event, DisconnectedTank):
                 self.disconnect_tank()
 
-            elif isinstance(event, TileGrabbed) or isinstance(event, TileReleased):
+            elif isinstance(event, TileGrabbed) or isinstance(event, TileReleased) or isinstance(event, TileActivation):
                 self.gui.handle_planet_view_update()
 
     def handle_coms_events(self, events: list[UpdateEvent]):

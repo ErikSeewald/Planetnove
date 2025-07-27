@@ -14,6 +14,7 @@ class DraggableTile:
     """
 
     tile_id: str  # e.g. 'tile_a'
+    active: bool # Is the tile 'in play' or ignored?
 
     # DISPLAY
     blank_image: pygame.Surface
@@ -38,6 +39,8 @@ class DraggableTile:
     def __init__(self, tile_id: str, svg_file: str, svg_blank_file: str, pos: Vector2 = Vector2(500, 500),
                  scale: float = 0.4):
         self.tile_id = tile_id
+        self.active = True
+
         self.joints = {direction: ["None"] * 3
                        for direction in [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]}
         self.num_attached_joints = 0
@@ -133,7 +136,7 @@ class DraggableTile:
         if self.num_attached_joints < 1:
             self.snapped_in_place = False
 
-    def draw(self, screen: pygame.Surface, is_planet_mode: bool):
+    def draw(self, screen: pygame.Surface):
         """
         Draws the tile to the given screen.
         """
@@ -146,7 +149,9 @@ class DraggableTile:
 
         # Only set the alpha at all if it is going to be used.
         # Calling set_alpha with 255 would still double rendering time.
-        if not self.snapped_in_place:
+        if not self.active:
+            image.set_alpha(8)
+        elif not self.snapped_in_place:
             image.set_alpha(128)
 
         screen.blit(image, self.rect)
@@ -179,3 +184,12 @@ class DraggableTile:
             if self.is_dragging:
                 self.rect.x = event.pos[0] + self.offset_x
                 self.rect.y = event.pos[1] + self.offset_y
+
+    def try_toggle_active(self):
+        """
+        Toggles the tile's activation (whether it is 'in play') between on and off.
+        If the tile is not in a state that allows the change, does nothing instead.
+        """
+
+        if not self.snapped_in_place:
+            self.active = not self.active

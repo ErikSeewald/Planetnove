@@ -6,12 +6,16 @@ from planets.code.planet import Planet
 from planets.code.tiles.tile_data import Tile, TileMeasure
 from util.direction import Direction
 
+# Note: None of the functions here ignore inactive tiles.
+# Callers will have to filter inactive tiles first if they want them to be ignored.
+
 
 def parse_planet(draggable_tiles: list[DraggableTile], tile_data: list[Tile]) -> Planet:
     """
     Parses the given set of draggable tiles and the corresponding tile data into a planet with a single coordinate
     system and no joints in between.
     In doing so it also maps all local direction data to global directions.
+    Does not ignore inactive tiles.
     """
 
     # Mapping tile ids to their data and draggable representations

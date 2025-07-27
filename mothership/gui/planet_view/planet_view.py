@@ -7,7 +7,7 @@ from pygame.math import Vector2
 from mothership.gui.planet_view import joint_attacher
 from planets.code.tiles import planet_parser
 from mothership.gui.planet_view.draggable_tile import DraggableTile
-from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, TileGrabbed, TileReleased
+from mothership.update_event import UpdateEvent, SwitchedToPlanetMode, TileGrabbed, TileReleased, TileActivation
 from planets.code.planet import Planet
 from planets.code.tiles.tile_data import Tile
 
@@ -24,6 +24,7 @@ class PlanetView:
     # TILES
     draggable_tiles: list[DraggableTile]
     dragged_tile: Optional[DraggableTile]
+    last_clicked_tile: Optional[DraggableTile]
     tile_data: list[Tile]
 
     # PLANET
@@ -51,6 +52,7 @@ class PlanetView:
         # PLANET TILES
         self.draggable_tiles = draggable_tiles
         self.dragged_tile = None
+        self.last_clicked_tile = None
         self.tile_data = tile_data
 
         # PLANET
@@ -89,7 +91,11 @@ class PlanetView:
         """
 
         if self.planet_mode_switch_scheduled:
-            self.planet = planet_parser.parse_planet(self.draggable_tiles, self.tile_data)
+            active_tiles = list(t for t in self.draggable_tiles if t.active)
+            active_ids = set(t.tile_id for t in active_tiles)
+            active_data = list(d for d in self.tile_data if d.tile_id in active_ids)
+            self.planet = planet_parser.parse_planet(active_tiles, active_data)
+
             self.update_events.append(SwitchedToPlanetMode(new_planet=self.planet.to_dict()))
             self.switch_mode(self.Mode.PLANET)
             self.planet_mode_switch_scheduled = False
@@ -130,11 +136,15 @@ class PlanetView:
 
             # KEY EVENTS
             if event.type == pygame.KEYDOWN:
-                # ROTATE TILE
-                if event.key == pygame.K_r:
-                    for tile in self.draggable_tiles:
-                        if tile.is_dragging:
-                            tile.rotate_right()
+                if event.key == pygame.K_r and self.last_clicked_tile:
+                    self.last_clicked_tile.rotate_right()
+
+                elif event.key == pygame.K_d and self.last_clicked_tile:
+                    self.last_clicked_tile.try_toggle_active()
+                    active_tiles = list(t for t in self.draggable_tiles if t.active)
+                    if len(active_tiles) == 1: # Auto snap last active tile
+                        active_tiles.pop().snapped_in_place = True
+                    self.update_events.append(TileActivation())
 
             # TILE DRAG
             keys = pygame.key.get_pressed()
@@ -144,6 +154,7 @@ class PlanetView:
                     tile.handle_drag_event(event)
                     if tile.is_dragging:
                         self.dragged_tile = tile
+                        self.last_clicked_tile = self.dragged_tile
                         break
 
                 if self.dragged_tile is not None:
@@ -204,15 +215,17 @@ class PlanetView:
         if is_planet_mode:
             self.screen.fill((20, 20, 20))
         else:
-            self.screen.fill((30, 30, 30))
+            self.screen.fill((35, 35, 35))
 
         # TILES
         for tile in self.draggable_tiles:
             if tile != self.dragged_tile:  # Draw all other tiles first
-                tile.draw(self.screen, is_planet_mode)
+                if self.mode == self.Mode.PLANET and not tile.active:
+                    continue
+                tile.draw(self.screen)
 
         if self.dragged_tile:  # Draw dragged tile on top
-            self.dragged_tile.draw(self.screen, is_planet_mode)
+            self.dragged_tile.draw(self.screen)
 
     def finish_planet(self):
         """

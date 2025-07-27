@@ -76,6 +76,14 @@ class TileReleased(UpdateEvent):
 
     pass
 
+@dataclass
+class TileActivation(UpdateEvent):
+    """
+    Update event that occurs whenever a tile's activation is toggled.
+    """
+
+    pass
+
 
 @dataclass
 class TankPlanetUpdate(UpdateEvent):

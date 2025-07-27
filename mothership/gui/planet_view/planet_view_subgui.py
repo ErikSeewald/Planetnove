@@ -130,6 +130,7 @@ class PlanetViewSubGUI(SubGUI):
         self.pv_process.finish_planet()
 
     def _edit_callback(self):
+        self.start_pos_locked = False # User might remove tile that has starting node
         self.pv_process.switch_to_edit()
         self._update_all__widgets()
 
