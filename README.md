@@ -22,7 +22,7 @@ of the planet (e.g., joint_N1 becomes joint_E3 if the tile has been rotated 90 d
 All other tiles use this base tile to construct their paths and nodes. A node has to align with one of the joints both horizontally and vertically. Let the bottom corner of the tile be the coordinate (0,0) and assign the joints coordinates corresponding to their number (e.g., joint_S1 = (0,1), joint_S3 = (0,3), joint_E3 = (3, 3), joint_N2 = (2, 3)), then a node can only have coordinates in the range ([1,3], [1,3]). 
 
 Nodes are marked by a vertically and horizontally aligned cross of 2cm thick black tape. The cross should be
-at least 6cm wide and tall so that the three infrared sensors of the tank robot all read it at the same time.
+at least 8cm wide and tall (3cm beyond the 2cm tape on each side) so that the three infrared sensors of the tank robot all read it at the same time.
 
 A path is 2cm thick and can only ever connect two end points, i.e., it needs one specific start and one specific end. No branching paths. On individual tiles, these endpoints can either be nodes or joints. On the finished planet board, a path can only connect two nodes (multiple tile joints in between are allowed as long as the final end points are nodes). Any paths that do not match this criteria are discarded.
 A path can also connect to the same node in a different direction or the same direction (loopback paths).

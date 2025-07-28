@@ -319,8 +319,9 @@ class Communications:
         self.logger.log("Tank is stuck!")
 
     def handle_tank_path_blocked(self, _message: dict):
-        self.planet_manager.handle_tank_path_blocked()
-        self.send_msg_to_tank({"type": "path_blocked_response"})
+        if self.tank_socket: # Tank might have disconnected inbetween
+            self.planet_manager.handle_tank_path_blocked()
+            self.send_msg_to_tank({"type": "path_blocked_response"})
 
     def send_tank_start_message(self):
         """

@@ -20,6 +20,7 @@ class LineFollower:
 
     logger: Logger
     base_speed = 0.8
+    drift_left_correction = 0.1
 
     # FOLLOW RESULT
     class FollowResult(Enum):
@@ -28,7 +29,6 @@ class LineFollower:
         """
         ARRIVED_AT_NODE = 1
         PATH_BLOCKED = 2
-        TIMED_OUT = -1
 
     # STATE
     class State(Enum):
@@ -51,9 +51,6 @@ class LineFollower:
     # CONTROL CLASSES
     movement_routines: MovementRoutines
     p_controller: PController
-
-    # ATTRIBUTES
-    SECONDS_UNTIL_TIMEOUT: float = 600 # Maximum time for a line following step
 
     def __init__(self, sensor: InfraredSensor, ultrasonic: Ultrasonic,
                  motor: CalibratedMotor, movement_routines: MovementRoutines, leds: LEDs, logger: Logger):
@@ -103,30 +100,48 @@ class LineFollower:
         Returns FollowResult.TIMED_OUT otherwise.
         """
 
+        self.p_controller.reset()
+        obstacle_check_due = True # Only check for obstacles every second iteration -> higher infrared check frequency
+
         # Initial 'take-off' boost
         self.motor.setMotors(self.base_speed*3, self.base_speed*3)
         while self.infrared.update() == SensorBitmap.ALL:
             pass # Move off of current node
-        self.p_controller.reset()
 
-        start_time = time.time()
-        while time.time() - start_time < self.SECONDS_UNTIL_TIMEOUT:
-            if self.obstacle_ahead(threshold_cm=10):
-                return self.handle_obstacle_encounter()
-
-            bitmap = self.infrared.update()
-            self.update_state(bitmap)
-
-            if self.state == self.State.NODE_ARRIVAL:
-                self.movement_routines.node_arrival()
-                self.switch_state(self.State.IDLE)
+        # The line following loop.
+        # The bitmap is checked for arrival twice, once after each other routine to
+        # avoid missing an arrival.
+        while True:
+            if self.update_with_arrival_handler() == SensorBitmap.ALL:
                 return target_result
 
-            if self.state == self.State.PI_FOLLOW:
-                self.update_motors(bitmap)
+            if obstacle_check_due and self.obstacle_ahead(threshold_cm=11):
+                return self.handle_obstacle_encounter()
+            obstacle_check_due = not obstacle_check_due
 
-        self.motor.PWM.stop()
-        return self.FollowResult.TIMED_OUT
+            bitmap = self.update_with_arrival_handler()
+            if self.update_with_arrival_handler() == SensorBitmap.ALL:
+                return target_result
+
+            self.update_motors(bitmap)
+
+    def update_with_arrival_handler(self) -> SensorBitmap:
+        """
+        Updates the InfraredSensor, returns the SensorBitmap and executes the node arrival
+        routine if necessary before returning.
+        This is intended to allow checking for arrival more often, as that is the most prone to being
+        missed while something else (e.g., obstacle checker) is running.
+        """
+
+        bitmap = self.infrared.update()
+        self.update_state(bitmap)
+
+        if self.state == self.State.NODE_ARRIVAL:
+            self.movement_routines.node_arrival()
+            self.switch_state(self.State.IDLE)
+
+        return bitmap
+
 
     def obstacle_ahead(self, threshold_cm: int) -> bool:
         """
@@ -151,7 +166,7 @@ class LineFollower:
 
         correction = self.p_controller.compute_correction(bitmap)
 
-        left_speed = self.base_speed - correction
+        left_speed = self.base_speed - correction + self.drift_left_correction
         right_speed = self.base_speed + correction
 
         self.motor.setMotors(left_speed, right_speed)

@@ -49,10 +49,10 @@ class MovementRoutines:
             pass
 
         elif target_direction == RelativeDirection.BEHIND:
-            # Turn left until left path (if it exists) is cleared, then turn to the path.
-            self.motor.setMotors(-self.ROTATION_SPEED, self.ROTATION_SPEED)
+            # Turn right until right path (if it exists) is cleared, then turn to the path.
+            self.motor.setMotors(self.ROTATION_SPEED, -self.ROTATION_SPEED)
             time.sleep(1)
-            while self.infrared.update() == SensorBitmap.MIDDLE:
+            while self.infrared.update() != SensorBitmap.MIDDLE:
                 pass
 
         else:
