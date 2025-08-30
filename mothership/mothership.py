@@ -38,11 +38,9 @@ class Mothership:
         """
 
         while dpg.is_dearpygui_running():
-            # GUI
             gui_events = self.gui.update()
             self.handle_gui_events(gui_events)
 
-            # COMMUNICATIONS
             coms_events = self.communications.update()
             self.handle_coms_events(coms_events)
 

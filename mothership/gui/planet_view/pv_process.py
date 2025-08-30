@@ -145,14 +145,11 @@ class PVProcess:
 
         # COMMUNICATION LOOP
         while True:
-            # QUIT
             if planet_view.has_quit:
                 quit_event.set()
                 exit(0)
 
-            # MESSAGE
             msg = p2c.get()
-
             if msg == "exit":
                 exit(0)
 

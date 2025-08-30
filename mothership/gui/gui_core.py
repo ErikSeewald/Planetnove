@@ -62,11 +62,9 @@ class GUICore:
 
         events: list[UpdateEvent] = list()
 
-        # PLANET VIEW
         pv_events = self.pv_process.update()
         events.extend(pv_events)
 
-        # DEARPYGUI
         dpg.render_dearpygui_frame()
         for gui in self.sub_GUIs.values():
             events.extend(gui.update())

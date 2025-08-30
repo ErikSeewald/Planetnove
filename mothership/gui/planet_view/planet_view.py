@@ -1,5 +1,4 @@
 from __future__ import annotations
-import sys
 from enum import Enum
 from typing import Optional
 import pygame
@@ -107,18 +106,15 @@ class PlanetView:
 
         events: list[pygame.event.Event] = pygame.event.get()
         for event in events:
-            # QUIT
             if event.type == pygame.QUIT:
                 self.has_quit = True
                 return
-            # KEY EVENTS
+
             if event.type == pygame.KEYDOWN:
-                # BLANK MODE
                 if event.key == pygame.K_b:
                     for tile in self.draggable_tiles:
                         tile.set_blank_mode(not tile.blank_mode)
 
-            # SCREEN DRAG
             self.drag_screen(event)
 
         if self.mode == self.Mode.EDIT:

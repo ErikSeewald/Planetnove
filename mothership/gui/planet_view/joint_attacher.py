@@ -16,12 +16,10 @@ def try_attach(tile: DraggableTile, all_tiles: list[DraggableTile]):
 
     active_tiles: list[DraggableTile] = list(t for t in all_tiles if t.active)
 
-    # Skip calculation if the given tile is also the only active tile
     if len(active_tiles) == 1 and tile == active_tiles[0]:
         tile.snapped_in_place = True
         return
 
-    # Check every tile for joint connections
     for tile_b in all_tiles:
         if tile_b == tile:
             continue
@@ -93,7 +91,6 @@ def try_attach_single(tile_a: DraggableTile, tile_b: DraggableTile, all_tiles: l
                             # -> no cascading snapping
                             tile_b.snapped_in_place = True
 
-                        # Attach
                         tile_a.attach_joint(local_dir_a, joint_num_a,
                                             tile_b.tile_id + "_joint_" + local_dir_b.abbreviation() + str(joint_num_b))
                         tile_b.attach_joint(local_dir_b, joint_num_b,

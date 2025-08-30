@@ -106,7 +106,6 @@ class Explorer:
                 self.planet.add_path(new_path)
                 self.planet.remove_blocked_loopback_if_exists(id_dir_key_b)
 
-                # Add path to nodes
                 self.planet.nodes.get(self.cur_node_id).set_path(arrival_path_dir, new_path.id)
                 self.planet.nodes.get(prev_node_id).set_path(self.last_departure_direction, new_path.id)
 

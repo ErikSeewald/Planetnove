@@ -136,7 +136,7 @@ class Planet:
             cur_node = self.nodes.get(node_id)
             for direction, path_id in cur_node.direction_to_path_id.items():
                 if path_id == "None":
-                    continue  # Ignore unknown paths
+                    continue
 
                 cur_path = self.paths.get(path_id)
                 if cur_path.node_a == cur_path.node_b:
@@ -165,7 +165,7 @@ class Planet:
             cur_node = node_id
             cur_parent = parents.get(cur_node)
             if cur_parent is None or math.isinf(weights[node_id]):
-                continue  # No route exists
+                continue
 
             while cur_node != from_id:  # walk backwards to the starting node
                 path_id_list.append(cur_parent[1])

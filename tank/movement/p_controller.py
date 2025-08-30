@@ -21,7 +21,7 @@ class PController:
 
     def __init__(self, kp: float):
         self.kp = kp
-        self.MAX_ABS_ERROR = kp * 3 # Maximum absolute cumulative error
+        self.MAX_ABS_ERROR = kp * 3
         self.last_error = 0.0
         self.last_bitmap = SensorBitmap.NONE
 

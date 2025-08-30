@@ -35,13 +35,11 @@ class PlanetStateManager:
             self.tank.reached_first_node = True
             return
 
-        # Returned from blocked path
         if self.tank.returned_from_path_blocked:
             self.tank.returned_from_path_blocked = False
             self.tank.facing_direction = self.tank.departure_direction.invert()
             return
 
-        # Arrived at the next node
         last_node = self.planet.nodes.get(self.tank.cur_node_id)
         taken_path_id = last_node.direction_to_path_id.get(self.tank.departure_direction)
         taken_path = self.planet.paths.get(taken_path_id)
@@ -87,8 +85,6 @@ class PlanetStateManager:
         """
 
         response: RequestResponse
-
-        # VALID DIRECTION
         node = self.planet.nodes.get(self.tank.cur_node_id)
         if node.direction_to_path_id.get(direction) != "None":
             self.tank.departure_direction = direction

@@ -46,27 +46,21 @@ class TankMapSubGUI(SubGUI):
         Replaces the displayed image with the given nd.array.
         """
 
-        texture_tag = f"frame_{self.cur_frame_index}"
-
-        # Normalize image format
         if image.dtype != np.float32:
             image = image.astype(np.float32) / 255.0
 
-        # Delete the oldest frame if necessary
         if len(self.frame_tags) >= self.MAX_FRAMES:
             oldest_tag = self.frame_tags.pop(0)
             dpg.delete_item(oldest_tag)
 
-        # Add new texture to the texture registry
+        texture_tag = f"frame_{self.cur_frame_index}"
         with dpg.texture_registry(show=False):
             height, width = image.shape[:2]
             dpg.add_static_texture(width, height, image.flatten(), tag=texture_tag)
 
-        # Update the image display
         if dpg.does_item_exist("image"):
             dpg.delete_item("image")
         dpg.add_image(texture_tag, parent="image_container", tag="image")
 
-        # Update frames
         self.frame_tags.append(texture_tag)
         self.cur_frame_index = (self.cur_frame_index + 1) % self.MAX_FRAMES

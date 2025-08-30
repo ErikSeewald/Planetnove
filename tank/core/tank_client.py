@@ -112,14 +112,12 @@ class TankClient:
                 return response
         return None
 
-    # NODE ARRIVAL
     def send_node_arrival(self):
         self.send_message({"type": "node_arrival"})
 
     def get_node_arrival_response(self) -> Optional[dict]:
         return self.get_response_of_type("arrival_response")
 
-    # PATH CHOSEN
     def send_path_chosen(self, direction: Direction):
         message = {
             "type": "path_chosen",
@@ -130,7 +128,6 @@ class TankClient:
     def get_path_chosen_response(self) -> Optional[dict]:
         return self.get_response_of_type("path_chosen_response")
 
-    # INTERNAL PLANET
     def send_internal_planet_update(self, planet: Planet, cur_node: str, target_node: str,
                                     target_route: Route, depart_dir: Direction):
         message = {
@@ -143,15 +140,12 @@ class TankClient:
         }
         self.send_message(message)
 
-    # FINISHED EXPLORING
     def send_finished_exploring(self):
         self.send_message({"type": "finished_exploring"})
 
-    # STUCK
     def send_stuck(self):
         self.send_message({"type": "stuck"})
 
-    # PATH BLOCKED
     def send_path_blocked(self):
         self.send_message({"type": "path_blocked"})
 

@@ -3,6 +3,10 @@ from Led import *
 from Ultrasonic import *
 import time
 
+"""
+The Hexapod is not currently used in Planetnove.
+This testing code is still kept in the project for future reference.
+"""
 
 # --------------------------------------
 # -------------- MOVEMENT --------------
@@ -18,15 +22,12 @@ def relax(control, turn_on: bool) -> None:
 
 
 def parseMoveCMD(turn='none', move='none', gait_mode=1, speed=10, action_mode=2) -> list:
-    # TURN
     turn_to_x = {'none': '0', 'right': '10', 'left': '-10'}
     x = turn_to_x.get(turn)
 
-    # MOVE
     move_to_y = {'none': '0', 'forward': '30', 'backward': '-30'}
     y = move_to_y.get(move)
 
-    # ANGLE
     angle = 0
     if action_mode == 2:
         if turn == 'none':
@@ -123,10 +124,10 @@ def setAllLEDsTo(led, r, g, b) -> None:
 
 # This file needs to be placed in <hexapod-Directory>/Code/Server to run
 def main() -> None:
-    # Erik: All the functions in the file do not even come close to all the things the
+    # The functions in the file do not even come close to all the things the
     # hexapod can do yet. To add more, just look through the python files in the Code/Server directory
-    # and see what functions have not been added here yet
-    # This file mainly focuses on providing an easier interface for understanding the hexapod Commands
+    # and see what functions have not been added here yet.
+    # This file mainly focuses on providing an easier interface for understanding the Hexapod Commands
 
     # CONTROL
     control = Control()

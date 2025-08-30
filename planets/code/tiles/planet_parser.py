@@ -36,8 +36,6 @@ def parse_nodes(tile_data: dict[str, tuple[DraggableTile, Tile]]) -> dict[str, N
     """
 
     nodes: dict[str, Node] = dict()
-
-    # COORDINATE OFFSETS
     tile_coord_offsets: dict[str, tuple[float, float]] = dict()
 
     # Because all tiles are squares and connected -> find tile with the highest y coordinate (lowest on screen)
@@ -50,17 +48,13 @@ def parse_nodes(tile_data: dict[str, tuple[DraggableTile, Tile]]) -> dict[str, N
         y_offset = (origin_tile[0].rect.y - tile[0].rect.y) * (size_mm / tile[0].rect.height)
         tile_coord_offsets[tile_id] = node_offset(x_offset), node_offset(y_offset)
 
-    # NODES
     for tile_id, tile in tile_data.items():
         coord_offset = tile_coord_offsets.get(tile_id)
         for node in tile[1].nodes:
-            # COORD
             coord = Vector2(node.node_coord.x, node.node_coord.y)
 
-            # Match draggable tile rotation
+            # Match draggable tile rotation and position
             coord = rotate_coord(coord, center=Vector2(2, 2), rotation_deg=-tile[0].rotation_deg)
-
-            # Positional offset
             coord.x += coord_offset[0]
             coord.y += coord_offset[1]
 
@@ -111,7 +105,6 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
             if node_a == "None" or node_b == "None":
                 continue  # Do not add paths that do not connect two nodes
 
-            # DRAG TILE ROTATION
             split_a = node_a.split(":")
             drag_tile_a = tile[0]
             direction_a = Direction.rotated(Direction.from_str(split_a[1]), drag_tile_a.rotation_deg)
@@ -130,7 +123,6 @@ def parse_paths(tile_data: dict[str, tuple[DraggableTile, Tile]], nodes: dict[st
             path = Path(id_dir_key_a, id_dir_key_b)
             paths[path.id] = path
 
-            # ADD PATH TO NODES
             nodes.get(split_a[0]).set_path(direction_a, path.id)
             nodes.get(split_b[0]).set_path(direction_b, path.id)
 
@@ -147,12 +139,10 @@ def parse_path_node(node_id: str, tile_id: str, tile_data: dict[str, tuple[Dragg
     if "joint" not in node_id:
         return node_id
 
-    # JOINT
     split = node_id.split("_")
     joint_side = Direction.from_str(split[1][0])
     joint_num = int(split[1][1])
 
-    # What node is the joint connected to on the other tile
     connected_joint = tile_data[tile_id][0].joints.get(joint_side)[joint_num - 1]
     connected_tile = tile_data.get(connected_joint.split("_joint")[0])
 
@@ -164,7 +154,6 @@ def parse_path_node(node_id: str, tile_id: str, tile_data: dict[str, tuple[Dragg
     node_b = "None"
     connected_joint_id = "joint" + connected_joint.split("_joint")[1]
     for path in connected_tile[1].paths:
-        # CONNECTED TO 'TO'
         if path.to_ == connected_joint_id:
             if "joint" not in path.from_:
                 node_b = path.from_
@@ -172,7 +161,6 @@ def parse_path_node(node_id: str, tile_id: str, tile_data: dict[str, tuple[Dragg
                 node_b = parse_path_node(path.from_, connected_tile[1].tile_id, tile_data)
             break
 
-        # CONNECTED TO 'FROM'
         elif path.from_ == connected_joint_id:
             if "joint" not in path.to_:
                 node_b = path.to_

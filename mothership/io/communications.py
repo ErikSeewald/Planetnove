@@ -121,7 +121,6 @@ class Communications:
         Returns whether a connection was made.
         """
 
-        # Try to connect something
         try:
             tank_socket, tank_address = self.server_socket.accept()
         except TimeoutError:
@@ -130,7 +129,6 @@ class Communications:
 
         self.logger.log(f"Connection attempt from {tank_address}")
 
-        # See if the ip matches
         if tank_address[0] == expected_ip:
             self.tank_socket = tank_socket
             self.tank_address = tank_address
@@ -179,8 +177,6 @@ class Communications:
         """
 
         while True:
-
-            # Blocked waiting for valid socket
             self.socket_ready_event.wait()
             if self.tank_socket is None:
                 self.socket_ready_event.clear()
@@ -235,7 +231,6 @@ class Communications:
         self.logger.log(f"Sent message to tank: {message}")
         self.last_msg_to_tank = message
 
-    # --- TANK MESSAGE HANDLING ---
     def handle_tank_message(self, message: dict) -> list[UpdateEvent]:
         """
         Handles a single message from the tank client.
@@ -252,7 +247,6 @@ class Communications:
             events.extend(self.handle_tank_internal_planet(message))
 
         else:
-            # Log all other kinds of messages
             self.logger.log(f"Processing message from tank: {message}")
 
             if message['type'] == "connection_request":

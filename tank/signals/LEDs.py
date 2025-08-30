@@ -47,7 +47,6 @@ class LEDs:
 
         @staticmethod
         def from_int24(color_int: int) -> LEDs.LEDColor:
-            # Extract each channel
             b = color_int & 0xFF
             g = (color_int >> 8) & 0xFF
             r = (color_int >> 16) & 0xFF

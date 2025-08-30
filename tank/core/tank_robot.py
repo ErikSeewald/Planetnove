@@ -131,14 +131,12 @@ class TankRobot:
         By the end of the function, the tank should be ready to depart.
         """
 
-        # GET RESPONSE
         response = None
         while response is None:
             self.client.send_node_arrival()
             self.logger.log("Waiting for arrival_response...")
             response = self.client.get_node_arrival_response()
 
-        # HANDLE RESPONSE
         self.explorer.handle_arrival_response(response)
         self.choose_path()
 
@@ -150,7 +148,6 @@ class TankRobot:
         Communicates to the mothership accordingly if all chosen paths are denied or the planet is fully explored.
         """
 
-        # CHOOSE PATH
         depart_dir = Direction.UNKNOWN
         rejected_directions: set[Direction] = set()
 
@@ -161,14 +158,12 @@ class TankRobot:
                 self.handle_no_path_found()
                 return
 
-            # GET RESPONSE
             response = None
             while response is None:
                 self.client.send_path_chosen(depart_dir)
                 self.logger.log("Waiting for path_chosen_response...")
                 response = self.client.get_path_chosen_response()
 
-            # HANDLE RESPONSE
             if response['request_response']['is_approved']:
                 self.explorer.next_departure_direction = depart_dir
                 self.logger.log(f"Next departure direction: {self.explorer.next_departure_direction}")
