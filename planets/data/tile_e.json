@@ -1,0 +1,102 @@
+{
+	"joints": "base_tile",
+
+	"nodes": [
+		{
+			"name": "erdana",
+			"node_coord": [3, 2]
+		},
+
+		{
+			"name": "esopor",
+			"node_coord": [2, 2]
+		},
+
+		{
+			"name": "etheim",
+			"node_coord": [1, 2]
+		},
+
+		{
+			"name": "enkora",
+			"node_coord": [1, 1]
+		},
+
+		{
+			"name": "emklar",
+			"node_coord": [3, 1]
+		}
+	],
+
+	"paths": [
+		{
+			"from": "joint_N3",
+			"to": "joint_E3"
+		},
+
+		{
+			"from": "joint_W3",
+			"to": "esopor:W"
+		},
+
+		{
+			"from": "esopor:E",
+			"to": "emklar:W"
+		},
+
+		{
+			"from": "emklar:N",
+			"to": "etheim:S"
+		},
+
+		{
+			"from": "erdana:E",
+			"to": "enkora:E"
+		},
+
+		{
+			"from": "erdana:S",
+			"to": "enkora:N"
+		},
+
+		{
+			"from": "enkora:S",
+			"to": "joint_S1"
+		},
+
+		{
+			"from": "enkora:W",
+			"to": "joint_W1"
+		},
+
+		{
+			"from": "erdana:W",
+			"to": "joint_W2"
+		},
+
+		{
+			"from": "emklar:E",
+			"to": "joint_E1"
+		},
+
+		{
+			"from": "emklar:S",
+			"to": "joint_S3"
+		},
+
+		{
+			"from": "etheim:E",
+			"to": "joint_E2"
+		},
+
+		{
+			"from": "esopor:N",
+			"to": "joint_N2"
+		},
+
+		{
+			"from": "esopor:S",
+			"to": "joint_S2"
+		}
+	]
+}

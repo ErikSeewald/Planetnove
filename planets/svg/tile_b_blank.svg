@@ -15,10 +15,10 @@
 
     <g id="base-tile">
       <rect x="0" y="0" width="1000" height="1000" fill="white"/>
-      <use href="#h_joints" x="0" y="0"/>    <!--WEST DOCKERS-->
-      <use href="#h_joints" x="977" y="0"/>  <!--EAST DOCKERS-->
-      <use href="#v_joints" x="0" y="0"/>    <!--NORTH DOCKERS-->
-      <use href="#v_joints" x="0" y="977"/>  <!--SOUTH DOCKERS-->
+      <use href="#h_joints" x="0" y="0"/>    <!--WEST JOINTS-->
+      <use href="#h_joints" x="977" y="0"/>  <!--EAST JOINTS-->
+      <use href="#v_joints" x="0" y="0"/>    <!--NORTH JOINTS-->
+      <use href="#v_joints" x="0" y="977"/>  <!--SOUTH JOINTS-->
     </g>
   </defs>
 

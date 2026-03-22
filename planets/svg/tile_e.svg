@@ -1,0 +1,65 @@
+<svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <g id="h_joints">
+      <rect x="0" y="110" width="23" height="20" fill="black"/>
+      <rect x="0" y="490" width="23" height="20" fill="black"/>
+      <rect x="0" y="870" width="23" height="20" fill="black"/>
+    </g>
+
+    <g id="v_joints">
+      <rect x="110" y="0" width="20" height="23" fill="black"/>
+      <rect x="490" y="0" width="20" height="23" fill="black"/>
+      <rect x="870" y="0" width="20" height="23" fill="black"/>
+    </g>
+
+    <g id="base-tile">
+      <rect x="0" y="0" width="1000" height="1000" fill="white"/>
+      <use href="#h_joints" x="0" y="0"/>    <!--WEST JOINTS-->
+      <use href="#h_joints" x="977" y="0"/>  <!--EAST JOINTS-->
+      <use href="#v_joints" x="0" y="0"/>    <!--NORTH JOINTS-->
+      <use href="#v_joints" x="0" y="977"/>  <!--SOUTH JOINTS-->
+    </g>
+  </defs>
+
+  <use href="#base-tile" x="0" y="0"/>
+
+  <!--PATHS-->
+  <rect x="490" y="0" width="20" height="1000" fill="black"/>
+  <rect x="110" y="460" width="20" height="1000" fill="black"/>
+  <rect x="870" y="460" width="20" height="1000" fill="black"/>
+  <rect x="840" y="490" width="540" height="20" fill="black"/>
+  <rect x="0" y="490" width="160" height="20" fill="black"/>
+  <rect x="0" y="870" width="160" height="20" fill="black"/>
+  <rect x="840" y="870" width="160" height="20" fill="black"/>
+  <rect x="500" y="490" width="100" height="20" fill="black"/>
+
+  <path d="M 351 701 Q 250 500, 155 500" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 110 880 Q 430 887, 350 699" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 200 251 Q 230 120, 20 120" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 200 250 Q 150 500, 500 500" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 590 500 Q 780 500, 745 671" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 745 670 Q 700 880, 840 880" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 804 285 Q 590 600, 600 200" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 700 110 Q 890 100, 880 10" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 701 110 Q 600 110, 600 201" fill="none" stroke="black" stroke-width="20"/>
+  <path d="M 803 287 Q 900 120, 980 120" fill="none" stroke="black" stroke-width="20"/>
+
+  <!--INFO-->
+  <rect x="67" y="410" width="110" height="40" fill="#f23920"/>
+  <text x="80" y="438" font-family="Verdana" font-size="25" fill="#ffffff">erdana</text>
+
+  <rect x="820" y="410" width="110" height="40" fill="#f23920"/>
+  <text x="833" y="438" font-family="Verdana" font-size="25" fill="#ffffff">etheim</text>
+
+  <rect x="145" y="905" width="110" height="40" fill="#f23920"/>
+  <text x="155" y="932" font-family="Verdana" font-size="25" fill="#ffffff">enkora</text>
+
+  <rect x="745" y="905" width="110" height="40" fill="#f23920"/>
+  <text x="753" y="932" font-family="Verdana" font-size="25" fill="#ffffff">emklar</text>
+
+  <rect x="530" y="530" width="115" height="40" fill="#f23920"/>
+  <text x="544" y="558" font-family="Verdana" font-size="25" fill="#ffffff">esopor</text>
+
+
+</svg>
