@@ -132,8 +132,8 @@ class PlanetView:
 
             # KEY EVENTS
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r and self.last_clicked_tile:
-                    self.last_clicked_tile.rotate_right()
+                if event.key == pygame.K_r and self.dragged_tile:
+                    self.dragged_tile.rotate_right()
 
                 elif event.key == pygame.K_d and self.last_clicked_tile:
                     self.last_clicked_tile.try_toggle_active()

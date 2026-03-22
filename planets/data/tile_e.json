@@ -4,7 +4,7 @@
 	"nodes": [
 		{
 			"name": "erdana",
-			"node_coord": [3, 2]
+			"node_coord": [1, 2]
 		},
 
 		{
@@ -14,7 +14,7 @@
 
 		{
 			"name": "etheim",
-			"node_coord": [1, 2]
+			"node_coord": [3, 2]
 		},
 
 		{
