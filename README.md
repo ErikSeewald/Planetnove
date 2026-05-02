@@ -73,7 +73,11 @@ There are a few rules for blocking:
 
 <img src="/docs/img/blocking_examples.png" alt="Blocking examples" width="1700">
 
-# Runtime
+# Software
+
+## Architecture
+![Tank robot UML diagram](/docs/img/tank_uml.svg)
+
 
 ## Requirements
 The tank and mothership have different requirements. You can run init_<entity>.py without having the requirements for the other entities. 
