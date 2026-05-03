@@ -45,6 +45,10 @@ A selected tile can be deactivated/reactivated by pressing 'd'. Deactivated tile
 Once all tiles are snapped into place, the main GUI will enable the 'Finish planet' button. Once the planet is finished, all tiles are locked and cannot be moved until the 'Edit' button is pressed. While the planet is finished, the starting node and direction of the tank can be
 set. Specifically, the name of the starting node and the direction of the path from which the tank will arrive need to be set. The tank's facing direction and location are tracked based on these parameters.
 
+
+The GUI also displays the current state of the tank's internal map. That is, what nodes, paths, and path blockages the tank is currently aware of and which routes it intends to follow. The current node is red while the target node and the route towards it (if they exist) are blue. All other nodes and paths are green and white respectively.
+Every time the tank updates its internal map it sends the updated state to the mothership.
+
 #### Coms config
 You need to create a file called 'coms_config.json' and put it at the root level of the repository. The file should contain the following:
 ```
@@ -76,9 +80,8 @@ There are a few rules for blocking:
 # Software
 
 ## Architecture
-![Tank robot UML diagram](/docs/img/tank_uml.svg)
+![Software architecture diagram](/docs/img/architecture_diagram.svg)
 
-![Planets UML diagram](/docs/img/planets_uml.svg)
 
 
 ## Requirements

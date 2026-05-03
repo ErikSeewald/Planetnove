@@ -6,7 +6,7 @@ from util.direction import Direction
 @dataclass
 class TankEntity:
     """
-    Dataclass representing a tank entity on the mother ship's internal representation of the planet.
+    Dataclass as a compact representation of all parts of the tank class that are relevant to the mothership.
     """
 
     tank_ip: str

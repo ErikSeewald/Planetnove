@@ -10,7 +10,7 @@ from mothership.io.communications import Communications
 
 class ComsSubGUI(SubGUI):
     """
-    SubGUI responsible for managing the mothership's communications.
+    SubGUI for the mothership's communication interface.
     """
 
     # State

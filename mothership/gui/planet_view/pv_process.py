@@ -5,7 +5,7 @@ from typing import Any
 import pygame
 from multiprocessing import Process, Event, Queue
 from mothership.gui.planet_view.planet_view import PlanetView
-from mothership.io.load_tiles import TileLoader
+from mothership.io.tile_loader import TileLoader
 from mothership.update_event import UpdateEvent
 
 class PVProcess:
