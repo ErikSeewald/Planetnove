@@ -80,6 +80,9 @@ There are a few rules for blocking:
 # Software
 
 ## Architecture
+The following diagram displays a fundamental overview of the software architecture of Planetnove, divided into the 'util', 'mothership', 'tank', and 'planets' packages.
+It is important to note that a lot of smaller classes and relations were left out for clarity. What can be seen here is only
+a selection of the most relevant information needed to gain an understanding of how the system works.
 ![Software architecture diagram](/docs/img/architecture_diagram.svg)
 
 
