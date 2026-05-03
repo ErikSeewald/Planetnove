@@ -78,6 +78,8 @@ There are a few rules for blocking:
 ## Architecture
 ![Tank robot UML diagram](/docs/img/tank_uml.svg)
 
+![Planets UML diagram](/docs/img/planets_uml.svg)
+
 
 ## Requirements
 The tank and mothership have different requirements. You can run init_<entity>.py without having the requirements for the other entities. 
