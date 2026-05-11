@@ -64,7 +64,7 @@ To configure communications for entities that do not have a GUI (i.e., the tank)
 ## Tank
 The tank explores the planet and communicates with the mothership. It is hosted on a raspberry pi 4 on the [Freenove Tank Robot](https://github.com/Freenove/Freenove_Tank_Robot_Kit_for_Raspberry_Pi). Planetnove does not make use of its crane arm. Instead, it is recommended to use that space to mount the ultrasound sensor higher above the floor to avoid picking up small but passable bumps as obstacles.
 
-<img src="/docs/img/tank.jpeg" alt="Tank example" width="500">
+<img src="/docs/img/tank.jpeg" alt="Tank example" width="250">
 
 #### Physical components
 - Ultrasound sensor for detecting obstacles ahead
